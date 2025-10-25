@@ -1,0 +1,539 @@
+import React, { useState } from 'react';
+import { useForm, Controller } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { ArrowLeft, Save } from 'lucide-react';
+import type { Vendor } from '../../hooks/useVendorAPI';
+import { FileUpload } from '@/components/ui/FileUpload';
+import { useCategories } from '../../../master/hooks/useCategoryAPI';
+import { useSubCategories } from '../../../master/hooks/useSubCategoryAPI';
+
+const vendorSchema = z.object({
+  name: z.string().min(1, 'Supplier name is required').max(150, 'Supplier name cannot exceed 150 characters'),
+  code: z.string().max(50, 'Supplier code cannot exceed 50 characters').optional().or(z.literal('')),
+  legalForm: z.string().max(255, 'Legal form cannot exceed 255 characters').optional().or(z.literal('')),
+  webLink: z.string().max(255, 'Website cannot exceed 255 characters').optional().or(z.literal('')),
+  gst: z.string().max(255, 'GST cannot exceed 255 characters').optional().or(z.literal('')),
+  pan: z.string().max(50, 'PAN cannot exceed 50 characters').optional().or(z.literal('')),
+  cin: z.string().max(50, 'CIN cannot exceed 50 characters').optional().or(z.literal('')),
+  dunsNo: z.string().max(255, 'DUNS number cannot exceed 255 characters').optional().or(z.literal('')),
+  industry: z.string().max(255, 'Industry cannot exceed 255 characters').optional().or(z.literal('')),
+  email: z.string().email('Invalid email').optional().or(z.literal('')),
+
+  // Address fields
+  address1: z.string().max(150, 'Address 1 cannot exceed 150 characters').optional().or(z.literal('')),
+  address2: z.string().max(150, 'Address 2 cannot exceed 150 characters').optional().or(z.literal('')),
+  pinCode: z.string().max(100, 'PIN code cannot exceed 100 characters').optional().or(z.literal('')),
+  state: z.string().max(100, 'State cannot exceed 100 characters').optional().or(z.literal('')),
+  phone: z.string().max(50, 'Phone cannot exceed 50 characters').optional().or(z.literal('')),
+  mobileNo: z.string().max(100, 'Mobile cannot exceed 100 characters').optional().or(z.literal('')),
+
+  // Contact person
+  contactFirstName: z.string().max(100, 'First name cannot exceed 100 characters').optional().or(z.literal('')),
+  contactLastName: z.string().max(255, 'Last name cannot exceed 255 characters').optional().or(z.literal('')),
+  contactDesignation: z.string().max(100, 'Designation cannot exceed 100 characters').optional().or(z.literal('')),
+  contactPhone: z.string().max(100, 'Contact phone cannot exceed 100 characters').optional().or(z.literal('')),
+  contactMobile: z.string().max(100, 'Contact mobile cannot exceed 100 characters').optional().or(z.literal('')),
+  contactEmail: z.string().email('Invalid email').optional().or(z.literal('')),
+  password: z.string().max(500, 'Password cannot exceed 500 characters').optional().or(z.literal('')),
+
+  // Categories
+  categoryIds: z.string().optional().or(z.literal('')),
+  subCategoryIds: z.string().optional().or(z.literal('')),
+
+  // Certificate file paths
+  gstFilePath: z.string().optional().or(z.literal('')),
+  panFilePath: z.string().optional().or(z.literal('')),
+  tdsFilePath: z.string().optional().or(z.literal('')),
+  msmeFilePath: z.string().optional().or(z.literal('')),
+  isoFilePath: z.string().optional().or(z.literal('')),
+  incorporationFilePath: z.string().optional().or(z.literal('')),
+  otherFilePath: z.string().optional().or(z.literal('')),
+});
+
+type VendorFormData = z.infer<typeof vendorSchema>;
+
+interface VendorFormProps {
+  vendor?: Vendor;
+  onSubmit: (data: VendorFormData) => void;
+  onCancel: () => void;
+  isSubmitting?: boolean;
+}
+
+const VendorForm: React.FC<VendorFormProps> = ({
+  vendor,
+  onSubmit,
+  onCancel,
+  isSubmitting = false,
+}) => {
+  const [activeTab, setActiveTab] = useState(0);
+  const [selectedCategories, setSelectedCategories] = useState<number[]>([]);
+
+  const { data: categories = [] } = useCategories();
+  const { data: allSubCategories = [] } = useSubCategories();
+
+  // Filter subcategories based on selected categories
+  const filteredSubCategories = allSubCategories.filter(
+    (sub) => selectedCategories.includes(sub.categoryId)
+  );
+
+  const {
+    register,
+    handleSubmit,
+    control,
+    formState: { errors },
+    reset,
+    watch,
+    setValue,
+  } = useForm<VendorFormData>({
+    resolver: zodResolver(vendorSchema),
+    defaultValues: vendor || {
+      name: '',
+      code: '',
+      legalForm: '',
+      webLink: '',
+      gst: '',
+      pan: '',
+      cin: '',
+      dunsNo: '',
+      industry: '',
+      email: '',
+      address1: '',
+      address2: '',
+      pinCode: '',
+      state: '',
+      phone: '',
+      mobileNo: '',
+      contactFirstName: '',
+      contactLastName: '',
+      contactDesignation: '',
+      contactPhone: '',
+      contactMobile: '',
+      contactEmail: '',
+      password: '',
+      categoryIds: '',
+      subCategoryIds: '',
+      gstFilePath: '',
+      panFilePath: '',
+      tdsFilePath: '',
+      msmeFilePath: '',
+      isoFilePath: '',
+      incorporationFilePath: '',
+      otherFilePath: '',
+    },
+  });
+
+  React.useEffect(() => {
+    if (vendor) {
+      reset(vendor);
+      // Parse categoryIds for multi-select
+      if (vendor.categoryIds) {
+        const catIds = vendor.categoryIds.split(',').map(Number).filter(Boolean);
+        setSelectedCategories(catIds);
+      }
+    }
+  }, [vendor, reset]);
+
+  const handleCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const options = Array.from(e.target.selectedOptions);
+    const values = options.map((opt) => Number(opt.value));
+    setSelectedCategories(values);
+    setValue('categoryIds', values.join(','));
+
+    // Clear subcategories if parent categories changed
+    setValue('subCategoryIds', '');
+  };
+
+  const handleSubCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const options = Array.from(e.target.selectedOptions);
+    const values = options.map((opt) => opt.value);
+    setValue('subCategoryIds', values.join(','));
+  };
+
+  const tabs = [
+    { id: 0, name: 'Basic Information' },
+    { id: 1, name: 'Address Details' },
+    { id: 2, name: 'Contact Person' },
+    { id: 3, name: 'Categories' },
+    { id: 4, name: 'Certificates' },
+  ];
+
+  const inputClass = (hasError: boolean) =>
+    `w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+      hasError ? 'border-red-500' : 'border-gray-300'
+    }`;
+
+  return (
+    <div className="bg-white rounded-lg shadow-md">
+      <div className="border-b border-gray-200 p-6">
+        <div className="flex items-center gap-4">
+          <button
+            onClick={onCancel}
+            className="text-gray-600 hover:text-gray-800 transition-colors"
+            disabled={isSubmitting}
+          >
+            <ArrowLeft size={24} />
+          </button>
+          <h2 className="text-2xl font-bold text-gray-800">
+            {vendor?.id ? 'Edit Supplier' : 'New Supplier'}
+          </h2>
+        </div>
+      </div>
+
+      {/* Tabs */}
+      <div className="border-b border-gray-200">
+        <nav className="flex -mb-px px-6 overflow-x-auto">
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`py-4 px-6 border-b-2 font-medium text-sm transition-colors whitespace-nowrap ${
+                activeTab === tab.id
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+              disabled={isSubmitting}
+            >
+              {tab.name}
+            </button>
+          ))}
+        </nav>
+      </div>
+
+      <form onSubmit={handleSubmit(onSubmit)} className="p-6">
+        <div className="space-y-6 max-w-4xl">
+          {/* Tab 0: Basic Information */}
+          {activeTab === 0 && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
+                  Supplier Name <span className="text-red-500">*</span>
+                </label>
+                <input {...register('name')} type="text" id="name" className={inputClass(!!errors.name)} placeholder="Enter supplier name" disabled={isSubmitting} />
+                {errors.name && <p className="mt-1 text-sm text-red-600">{errors.name.message}</p>}
+              </div>
+
+              <div>
+                <label htmlFor="code" className="block text-sm font-medium text-gray-700 mb-2">Supplier Code</label>
+                <input {...register('code')} type="text" id="code" className={inputClass(!!errors.code)} placeholder="Enter supplier code" disabled={isSubmitting} />
+                {errors.code && <p className="mt-1 text-sm text-red-600">{errors.code.message}</p>}
+              </div>
+
+              <div>
+                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                <input {...register('email')} type="email" id="email" className={inputClass(!!errors.email)} placeholder="Enter email address" disabled={isSubmitting} />
+                {errors.email && <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>}
+              </div>
+
+              <div>
+                <label htmlFor="webLink" className="block text-sm font-medium text-gray-700 mb-2">Website</label>
+                <input {...register('webLink')} type="text" id="webLink" className={inputClass(!!errors.webLink)} placeholder="Enter website URL" disabled={isSubmitting} />
+                {errors.webLink && <p className="mt-1 text-sm text-red-600">{errors.webLink.message}</p>}
+              </div>
+
+              <div>
+                <label htmlFor="legalForm" className="block text-sm font-medium text-gray-700 mb-2">Legal Form</label>
+                <input {...register('legalForm')} type="text" id="legalForm" className={inputClass(!!errors.legalForm)} placeholder="Enter legal form (e.g., Pvt Ltd, LLC)" disabled={isSubmitting} />
+                {errors.legalForm && <p className="mt-1 text-sm text-red-600">{errors.legalForm.message}</p>}
+              </div>
+
+              <div>
+                <label htmlFor="industry" className="block text-sm font-medium text-gray-700 mb-2">Industry</label>
+                <input {...register('industry')} type="text" id="industry" className={inputClass(!!errors.industry)} placeholder="Enter industry" disabled={isSubmitting} />
+                {errors.industry && <p className="mt-1 text-sm text-red-600">{errors.industry.message}</p>}
+              </div>
+
+              <div>
+                <label htmlFor="gst" className="block text-sm font-medium text-gray-700 mb-2">GST Number</label>
+                <input {...register('gst')} type="text" id="gst" className={inputClass(!!errors.gst)} placeholder="Enter GST number" disabled={isSubmitting} />
+                {errors.gst && <p className="mt-1 text-sm text-red-600">{errors.gst.message}</p>}
+              </div>
+
+              <div>
+                <label htmlFor="pan" className="block text-sm font-medium text-gray-700 mb-2">PAN Number</label>
+                <input {...register('pan')} type="text" id="pan" className={inputClass(!!errors.pan)} placeholder="Enter PAN number" disabled={isSubmitting} />
+                {errors.pan && <p className="mt-1 text-sm text-red-600">{errors.pan.message}</p>}
+              </div>
+
+              <div>
+                <label htmlFor="cin" className="block text-sm font-medium text-gray-700 mb-2">CIN Number</label>
+                <input {...register('cin')} type="text" id="cin" className={inputClass(!!errors.cin)} placeholder="Enter CIN number" disabled={isSubmitting} />
+                {errors.cin && <p className="mt-1 text-sm text-red-600">{errors.cin.message}</p>}
+              </div>
+
+              <div>
+                <label htmlFor="dunsNo" className="block text-sm font-medium text-gray-700 mb-2">DUNS Number</label>
+                <input {...register('dunsNo')} type="text" id="dunsNo" className={inputClass(!!errors.dunsNo)} placeholder="Enter DUNS number" disabled={isSubmitting} />
+                {errors.dunsNo && <p className="mt-1 text-sm text-red-600">{errors.dunsNo.message}</p>}
+              </div>
+            </div>
+          )}
+
+          {/* Tab 1: Address Details */}
+          {activeTab === 1 && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="md:col-span-2">
+                <label htmlFor="address1" className="block text-sm font-medium text-gray-700 mb-2">Address Line 1</label>
+                <input {...register('address1')} type="text" id="address1" className={inputClass(!!errors.address1)} placeholder="Enter address line 1" disabled={isSubmitting} />
+                {errors.address1 && <p className="mt-1 text-sm text-red-600">{errors.address1.message}</p>}
+              </div>
+
+              <div className="md:col-span-2">
+                <label htmlFor="address2" className="block text-sm font-medium text-gray-700 mb-2">Address Line 2</label>
+                <input {...register('address2')} type="text" id="address2" className={inputClass(!!errors.address2)} placeholder="Enter address line 2" disabled={isSubmitting} />
+                {errors.address2 && <p className="mt-1 text-sm text-red-600">{errors.address2.message}</p>}
+              </div>
+
+              <div>
+                <label htmlFor="state" className="block text-sm font-medium text-gray-700 mb-2">State</label>
+                <input {...register('state')} type="text" id="state" className={inputClass(!!errors.state)} placeholder="Enter state" disabled={isSubmitting} />
+                {errors.state && <p className="mt-1 text-sm text-red-600">{errors.state.message}</p>}
+              </div>
+
+              <div>
+                <label htmlFor="pinCode" className="block text-sm font-medium text-gray-700 mb-2">PIN Code</label>
+                <input {...register('pinCode')} type="text" id="pinCode" className={inputClass(!!errors.pinCode)} placeholder="Enter PIN code" disabled={isSubmitting} />
+                {errors.pinCode && <p className="mt-1 text-sm text-red-600">{errors.pinCode.message}</p>}
+              </div>
+
+              <div>
+                <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
+                <input {...register('phone')} type="text" id="phone" className={inputClass(!!errors.phone)} placeholder="Enter phone number" disabled={isSubmitting} />
+                {errors.phone && <p className="mt-1 text-sm text-red-600">{errors.phone.message}</p>}
+              </div>
+
+              <div>
+                <label htmlFor="mobileNo" className="block text-sm font-medium text-gray-700 mb-2">Mobile Number</label>
+                <input {...register('mobileNo')} type="text" id="mobileNo" className={inputClass(!!errors.mobileNo)} placeholder="Enter mobile number" disabled={isSubmitting} />
+                {errors.mobileNo && <p className="mt-1 text-sm text-red-600">{errors.mobileNo.message}</p>}
+              </div>
+            </div>
+          )}
+
+          {/* Tab 2: Contact Person */}
+          {activeTab === 2 && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label htmlFor="contactFirstName" className="block text-sm font-medium text-gray-700 mb-2">First Name</label>
+                <input {...register('contactFirstName')} type="text" id="contactFirstName" className={inputClass(!!errors.contactFirstName)} placeholder="Enter first name" disabled={isSubmitting} />
+                {errors.contactFirstName && <p className="mt-1 text-sm text-red-600">{errors.contactFirstName.message}</p>}
+              </div>
+
+              <div>
+                <label htmlFor="contactLastName" className="block text-sm font-medium text-gray-700 mb-2">Last Name</label>
+                <input {...register('contactLastName')} type="text" id="contactLastName" className={inputClass(!!errors.contactLastName)} placeholder="Enter last name" disabled={isSubmitting} />
+                {errors.contactLastName && <p className="mt-1 text-sm text-red-600">{errors.contactLastName.message}</p>}
+              </div>
+
+              <div>
+                <label htmlFor="contactDesignation" className="block text-sm font-medium text-gray-700 mb-2">Designation</label>
+                <input {...register('contactDesignation')} type="text" id="contactDesignation" className={inputClass(!!errors.contactDesignation)} placeholder="Enter designation" disabled={isSubmitting} />
+                {errors.contactDesignation && <p className="mt-1 text-sm text-red-600">{errors.contactDesignation.message}</p>}
+              </div>
+
+              <div>
+                <label htmlFor="contactEmail" className="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                <input {...register('contactEmail')} type="email" id="contactEmail" className={inputClass(!!errors.contactEmail)} placeholder="Enter email" disabled={isSubmitting} />
+                {errors.contactEmail && <p className="mt-1 text-sm text-red-600">{errors.contactEmail.message}</p>}
+              </div>
+
+              <div>
+                <label htmlFor="contactPhone" className="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
+                <input {...register('contactPhone')} type="text" id="contactPhone" className={inputClass(!!errors.contactPhone)} placeholder="Enter phone number" disabled={isSubmitting} />
+                {errors.contactPhone && <p className="mt-1 text-sm text-red-600">{errors.contactPhone.message}</p>}
+              </div>
+
+              <div>
+                <label htmlFor="contactMobile" className="block text-sm font-medium text-gray-700 mb-2">Mobile Number</label>
+                <input {...register('contactMobile')} type="text" id="contactMobile" className={inputClass(!!errors.contactMobile)} placeholder="Enter mobile number" disabled={isSubmitting} />
+                {errors.contactMobile && <p className="mt-1 text-sm text-red-600">{errors.contactMobile.message}</p>}
+              </div>
+
+              <div>
+                <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">Password</label>
+                <input {...register('password')} type="password" id="password" className={inputClass(!!errors.password)} placeholder="Enter password" disabled={isSubmitting} />
+                {errors.password && <p className="mt-1 text-sm text-red-600">{errors.password.message}</p>}
+              </div>
+            </div>
+          )}
+
+          {/* Tab 3: Categories */}
+          {activeTab === 3 && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label htmlFor="categoryIds" className="block text-sm font-medium text-gray-700 mb-2">
+                  Categories
+                </label>
+                <select
+                  multiple
+                  size={8}
+                  onChange={handleCategoryChange}
+                  value={selectedCategories.map(String)}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  disabled={isSubmitting}
+                >
+                  {categories.map((cat) => (
+                    <option key={cat.id} value={cat.id}>
+                      {cat.name}
+                    </option>
+                  ))}
+                </select>
+                <p className="mt-1 text-xs text-gray-500">Hold Ctrl/Cmd to select multiple categories</p>
+              </div>
+
+              <div>
+                <label htmlFor="subCategoryIds" className="block text-sm font-medium text-gray-700 mb-2">
+                  Sub-Categories
+                </label>
+                <select
+                  multiple
+                  size={8}
+                  onChange={handleSubCategoryChange}
+                  defaultValue={vendor?.subCategoryIds?.split(',') || []}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  disabled={isSubmitting || selectedCategories.length === 0}
+                >
+                  {filteredSubCategories.map((subCat) => (
+                    <option key={subCat.id} value={subCat.id}>
+                      {subCat.name}
+                    </option>
+                  ))}
+                </select>
+                <p className="mt-1 text-xs text-gray-500">
+                  {selectedCategories.length === 0
+                    ? 'Select categories first'
+                    : 'Hold Ctrl/Cmd to select multiple sub-categories'}
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* Tab 4: Certificates */}
+          {activeTab === 4 && (
+            <div className="space-y-6">
+              <Controller
+                name="gstFilePath"
+                control={control}
+                render={({ field }) => (
+                  <FileUpload
+                    label="GST Certificate"
+                    value={field.value}
+                    onChange={field.onChange}
+                    disabled={isSubmitting}
+                    multiple
+                  />
+                )}
+              />
+
+              <Controller
+                name="panFilePath"
+                control={control}
+                render={({ field }) => (
+                  <FileUpload
+                    label="PAN Card"
+                    value={field.value}
+                    onChange={field.onChange}
+                    disabled={isSubmitting}
+                    multiple
+                  />
+                )}
+              />
+
+              <Controller
+                name="tdsFilePath"
+                control={control}
+                render={({ field }) => (
+                  <FileUpload
+                    label="TDS Letter"
+                    value={field.value}
+                    onChange={field.onChange}
+                    disabled={isSubmitting}
+                    multiple
+                  />
+                )}
+              />
+
+              <Controller
+                name="msmeFilePath"
+                control={control}
+                render={({ field }) => (
+                  <FileUpload
+                    label="MSME Declaration"
+                    value={field.value}
+                    onChange={field.onChange}
+                    disabled={isSubmitting}
+                    multiple
+                  />
+                )}
+              />
+
+              <Controller
+                name="isoFilePath"
+                control={control}
+                render={({ field }) => (
+                  <FileUpload
+                    label="ISO Certificates"
+                    value={field.value}
+                    onChange={field.onChange}
+                    disabled={isSubmitting}
+                    multiple
+                  />
+                )}
+              />
+
+              <Controller
+                name="incorporationFilePath"
+                control={control}
+                render={({ field }) => (
+                  <FileUpload
+                    label="Certificate of Incorporation"
+                    value={field.value}
+                    onChange={field.onChange}
+                    disabled={isSubmitting}
+                    multiple
+                  />
+                )}
+              />
+
+              <Controller
+                name="otherFilePath"
+                control={control}
+                render={({ field }) => (
+                  <FileUpload
+                    label="Other Documents"
+                    value={field.value}
+                    onChange={field.onChange}
+                    disabled={isSubmitting}
+                    multiple
+                  />
+                )}
+              />
+            </div>
+          )}
+
+          {/* Action Buttons */}
+          <div className="flex gap-4 pt-4 border-t border-gray-200">
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="flex items-center gap-2 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+            >
+              <Save size={20} />
+              <span>{isSubmitting ? 'Saving...' : 'Save'}</span>
+            </button>
+            <button
+              type="button"
+              onClick={onCancel}
+              disabled={isSubmitting}
+              className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors disabled:bg-gray-100 disabled:cursor-not-allowed"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+  );
+};
+
+export default VendorForm;

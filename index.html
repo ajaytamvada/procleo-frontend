@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/png" href="/riditstack-logo.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Autovitica P2P - RiditStack Pvt Ltd</title>
+    <script>
+      // Force light mode - remove dark class immediately
+      (function() {
+        document.documentElement.classList.remove('dark');
+        document.documentElement.removeAttribute('data-theme');
+        localStorage.removeItem('autovitica-theme');
+
+        // Add inline styles to force light backgrounds
+        const style = document.createElement('style');
+        style.textContent = `
+          * { color-scheme: light !important; }
+          html, html.dark, html[data-theme="dark"] {
+            background: #ffffff !important;
+            color: #1f2937 !important;
+          }
+          input, textarea, select {
+            background-color: #ffffff !important;
+            color: #1f2937 !important;
+          }
+        `;
+        document.head.appendChild(style);
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

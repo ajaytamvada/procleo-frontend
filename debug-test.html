@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug Test</title>
+</head>
+<body>
+    <div id="root">Loading...</div>
+    <script type="module">
+        try {
+            console.log('Script started');
+            // Try to import React
+            const React = await import('http://localhost:3001/node_modules/.vite/deps/react.js?v=95633e9d');
+            console.log('React imported successfully:', React);
+            
+            // Try to import the main app
+            const App = await import('http://localhost:3001/src/App.tsx');
+            console.log('App imported successfully:', App);
+            
+            document.getElementById('root').innerHTML = 'Imports successful - check console for details';
+        } catch (error) {
+            console.error('Import error:', error);
+            document.getElementById('root').innerHTML = 'Error: ' + error.message;
+        }
+    </script>
+</body>
+</html>
