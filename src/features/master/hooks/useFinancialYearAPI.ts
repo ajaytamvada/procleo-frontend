@@ -11,34 +11,49 @@ const financialYearAPI = {
       size: size.toString(),
     });
 
-    if (activeYear !== undefined) params.append('activeYear', activeYear.toString());
+    if (activeYear !== undefined)
+      params.append('activeYear', activeYear.toString());
 
-    const response = await apiClient.get<PagedResponse<FinancialYear>>(`/master/financial-year?${params}`);
+    const response = await apiClient.get<PagedResponse<FinancialYear>>(
+      `/master/financial-year?${params}`
+    );
     return response.data;
   },
 
   getAllYears: async () => {
-    const response = await apiClient.get<FinancialYear[]>(`/master/financial-year/all`);
+    const response = await apiClient.get<FinancialYear[]>(
+      `/master/financial-year/all`
+    );
     return response.data;
   },
 
   getById: async (id: number) => {
-    const response = await apiClient.get<FinancialYear>(`/master/financial-year/${id}`);
+    const response = await apiClient.get<FinancialYear>(
+      `/master/financial-year/${id}`
+    );
     return response.data;
   },
 
   getActive: async () => {
-    const response = await apiClient.get<FinancialYear>(`/master/financial-year/active`);
+    const response = await apiClient.get<FinancialYear>(
+      `/master/financial-year/active`
+    );
     return response.data;
   },
 
   create: async (financialYear: Omit<FinancialYear, 'id'>) => {
-    const response = await apiClient.post<FinancialYear>(`/master/financial-year`, financialYear);
+    const response = await apiClient.post<FinancialYear>(
+      `/master/financial-year`,
+      financialYear
+    );
     return response.data;
   },
 
   update: async (id: number, financialYear: Partial<FinancialYear>) => {
-    const response = await apiClient.put<FinancialYear>(`/master/financial-year/${id}`, financialYear);
+    const response = await apiClient.put<FinancialYear>(
+      `/master/financial-year/${id}`,
+      financialYear
+    );
     return response.data;
   },
 
@@ -56,7 +71,7 @@ export const useFinancialYears = (page = 0, size = 20, activeYear?: number) => {
   return useQuery({
     queryKey: ['financial-years', page, size, activeYear],
     queryFn: () => financialYearAPI.getAll(page, size, activeYear),
-    placeholderData: (previousData) => previousData,
+    placeholderData: previousData => previousData,
   });
 };
 
@@ -92,7 +107,8 @@ export const useCreateFinancialYear = () => {
       toast.success('Financial year created successfully');
     },
     onError: (error: any) => {
-      const message = error.response?.data?.message || 'Failed to create financial year';
+      const message =
+        error.response?.data?.message || 'Failed to create financial year';
       toast.error(message);
     },
   });
@@ -102,15 +118,23 @@ export const useUpdateFinancialYear = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, financialYear }: { id: number; financialYear: Partial<FinancialYear> }) =>
-      financialYearAPI.update(id, financialYear),
+    mutationFn: ({
+      id,
+      financialYear,
+    }: {
+      id: number;
+      financialYear: Partial<FinancialYear>;
+    }) => financialYearAPI.update(id, financialYear),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['financial-years'] });
-      queryClient.invalidateQueries({ queryKey: ['financial-year', variables.id] });
+      queryClient.invalidateQueries({
+        queryKey: ['financial-year', variables.id],
+      });
       toast.success('Financial year updated successfully');
     },
     onError: (error: any) => {
-      const message = error.response?.data?.message || 'Failed to update financial year';
+      const message =
+        error.response?.data?.message || 'Failed to update financial year';
       toast.error(message);
     },
   });
@@ -126,7 +150,8 @@ export const useDeleteFinancialYear = () => {
       toast.success('Financial year deleted successfully');
     },
     onError: (error: any) => {
-      const message = error.response?.data?.message || 'Failed to delete financial year';
+      const message =
+        error.response?.data?.message || 'Failed to delete financial year';
       toast.error(message);
     },
   });
@@ -143,7 +168,8 @@ export const useMakeCurrentYear = () => {
       toast.success('Financial year set as current successfully');
     },
     onError: (error: any) => {
-      const message = error.response?.data?.message || 'Failed to set current financial year';
+      const message =
+        error.response?.data?.message || 'Failed to set current financial year';
       toast.error(message);
     },
   });

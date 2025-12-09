@@ -3,10 +3,14 @@ import { Plus } from 'lucide-react';
 import type { UserType } from '../../hooks/useUserTypeAPI';
 import UserTypeList from './UserTypeList';
 import UserTypeForm from './UserTypeForm';
+import ExcelImportDialog from '@/components/ExcelImportDialog';
 
 const UserTypePage: React.FC = () => {
   const [showForm, setShowForm] = useState(false);
-  const [selectedUserType, setSelectedUserType] = useState<UserType | null>(null);
+  const [showImportDialog, setShowImportDialog] = useState(false);
+  const [selectedUserType, setSelectedUserType] = useState<UserType | null>(
+    null
+  );
 
   const handleAdd = () => {
     setSelectedUserType(null);
@@ -28,34 +32,51 @@ const UserTypePage: React.FC = () => {
   };
 
   return (
-    <div className="p-6">
-      {/* Header */}
-      <div className="mb-6 flex justify-between items-center">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">User Type Management</h1>
-          <p className="text-gray-600 mt-1">Manage user types for access control</p>
+    <>
+      <div className='p-6'>
+        {/* Header */}
+        <div className='mb-6 flex justify-between items-center'>
+          <div>
+            <h1 className='text-2xl font-bold text-gray-900'>
+              User Type Management
+            </h1>
+            <p className='text-gray-600 mt-1'>
+              Manage user types for access control
+            </p>
+          </div>
+          <button
+            onClick={handleAdd}
+            className='px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2'
+          >
+            <Plus size={20} />
+            Add User Type
+          </button>
         </div>
-        <button
-          onClick={handleAdd}
-          className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
-        >
-          <Plus size={20} />
-          Add User Type
-        </button>
-      </div>
 
-      {/* User Type List */}
-      <UserTypeList onEdit={handleEdit} />
-
-      {/* Form Modal */}
-      {showForm && (
-        <UserTypeForm
-          userType={selectedUserType}
-          onClose={handleCloseForm}
-          onSuccess={handleSuccess}
+        {/* User Type List */}
+        <UserTypeList
+          onEdit={handleEdit}
+          onImport={() => setShowImportDialog(true)}
         />
-      )}
-    </div>
+
+        {/* Form Modal */}
+        {showForm && (
+          <UserTypeForm
+            userType={selectedUserType}
+            onClose={handleCloseForm}
+            onSuccess={handleSuccess}
+          />
+        )}
+      </div>
+      <ExcelImportDialog
+        isOpen={showImportDialog}
+        onClose={() => setShowImportDialog(false)}
+        entityName='User Type'
+        importEndpoint='/master/user-types/import'
+        templateEndpoint='/master/user-types/template'
+        onImportSuccess={() => {}}
+      />
+    </>
   );
 };
 

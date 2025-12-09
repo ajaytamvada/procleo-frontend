@@ -1,7 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { ArrowLeft, Plus, Trash2, Save, FileText, Calculator } from 'lucide-react';
-import type { Invoice, InvoiceItem, PurchaseOrder, GRN } from '../../purchaseorder/types';
+import {
+  ArrowLeft,
+  Plus,
+  Trash2,
+  Save,
+  FileText,
+  Calculator,
+} from 'lucide-react';
+import type {
+  Invoice,
+  InvoiceItem,
+  PurchaseOrder,
+  GRN,
+} from '../../purchaseorder/types';
 import { InvoiceStatus, InvoiceType } from '../../purchaseorder/types';
 import { format, addDays } from 'date-fns';
 
@@ -18,10 +30,12 @@ const CreateInvoicePage: React.FC = () => {
     status: InvoiceStatus.DRAFT,
     currency: 'INR',
     exchangeRate: 1,
-    items: []
+    items: [],
   });
 
-  const [purchaseOrder, setPurchaseOrder] = useState<PurchaseOrder | null>(null);
+  const [purchaseOrder, setPurchaseOrder] = useState<PurchaseOrder | null>(
+    null
+  );
   const [grn, setGrn] = useState<GRN | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -65,10 +79,10 @@ const CreateInvoicePage: React.FC = () => {
             tax1Type: 'CGST',
             tax1Rate: 9,
             tax2Type: 'SGST',
-            tax2Rate: 9
-          }
+            tax2Rate: 9,
+          },
         ],
-        grandTotal: 496000
+        grandTotal: 496000,
       };
       setPurchaseOrder(mockPO);
       updateFormWithPOData(mockPO);
@@ -99,9 +113,9 @@ const CreateInvoicePage: React.FC = () => {
             receivedQuantity: 2,
             acceptedQuantity: 2,
             unitPrice: 200000,
-            totalValue: 400000
-          }
-        ]
+            totalValue: 400000,
+          },
+        ],
       };
       setGrn(mockGRN);
       updateFormWithGRNData(mockGRN);
@@ -123,26 +137,27 @@ const CreateInvoicePage: React.FC = () => {
       paymentTerms: po.paymentTerms,
       billToAddress: po.billToAddress,
       shipToAddress: po.shipToAddress,
-      dueDate: po.paymentTerms?.includes('30') 
+      dueDate: po.paymentTerms?.includes('30')
         ? format(addDays(new Date(), 30), 'yyyy-MM-dd')
         : format(addDays(new Date(), 45), 'yyyy-MM-dd'),
-      items: po.items?.map(item => ({
-        poItemId: item.id,
-        itemName: item.itemName,
-        itemCode: item.itemCode,
-        itemDescription: item.itemDescription,
-        poQuantity: item.quantity || 0,
-        invoiceQuantity: item.quantity || 0,
-        unitOfMeasurement: item.unitOfMeasurement,
-        unitPrice: item.unitPrice || 0,
-        baseAmount: (item.quantity || 0) * (item.unitPrice || 0),
-        cgstRate: item.tax1Type === 'CGST' ? (item.tax1Rate || 0) : 0,
-        sgstRate: item.tax2Type === 'SGST' ? (item.tax2Rate || 0) : 0,
-        cgstAmount: 0,
-        sgstAmount: 0,
-        totalTaxAmount: 0,
-        totalAmount: 0
-      })) || []
+      items:
+        po.items?.map(item => ({
+          poItemId: item.id,
+          itemName: item.itemName,
+          itemCode: item.itemCode,
+          itemDescription: item.itemDescription,
+          poQuantity: item.quantity || 0,
+          invoiceQuantity: item.quantity || 0,
+          unitOfMeasurement: item.unitOfMeasurement,
+          unitPrice: item.unitPrice || 0,
+          baseAmount: (item.quantity || 0) * (item.unitPrice || 0),
+          cgstRate: item.tax1Type === 'CGST' ? item.tax1Rate || 0 : 0,
+          sgstRate: item.tax2Type === 'SGST' ? item.tax2Rate || 0 : 0,
+          cgstAmount: 0,
+          sgstAmount: 0,
+          totalTaxAmount: 0,
+          totalAmount: 0,
+        })) || [],
     }));
     calculateTotals();
   };
@@ -154,48 +169,63 @@ const CreateInvoicePage: React.FC = () => {
       grnNumber: grnData.grnNumber,
       supplierId: grnData.supplierId,
       supplierName: grnData.supplierName,
-      items: grnData.items?.map(item => ({
-        grnItemId: item.id,
-        itemName: item.itemName,
-        itemCode: item.itemCode,
-        itemDescription: item.itemDescription,
-        grnQuantity: item.acceptedQuantity || 0,
-        invoiceQuantity: item.acceptedQuantity || 0,
-        unitOfMeasurement: item.unitOfMeasurement,
-        unitPrice: item.unitPrice || 0,
-        baseAmount: (item.acceptedQuantity || 0) * (item.unitPrice || 0)
-      })) || []
+      items:
+        grnData.items?.map(item => ({
+          grnItemId: item.id,
+          itemName: item.itemName,
+          itemCode: item.itemCode,
+          itemDescription: item.itemDescription,
+          grnQuantity: item.acceptedQuantity || 0,
+          invoiceQuantity: item.acceptedQuantity || 0,
+          unitOfMeasurement: item.unitOfMeasurement,
+          unitPrice: item.unitPrice || 0,
+          baseAmount: (item.acceptedQuantity || 0) * (item.unitPrice || 0),
+        })) || [],
     }));
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+    >
+  ) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleItemChange = (index: number, field: keyof InvoiceItem, value: any) => {
+  const handleItemChange = (
+    index: number,
+    field: keyof InvoiceItem,
+    value: any
+  ) => {
     const updatedItems = [...(formData.items || [])];
     updatedItems[index] = { ...updatedItems[index], [field]: value };
 
     // Recalculate item totals
-    if (field === 'invoiceQuantity' || field === 'unitPrice' || field.includes('Rate') || field === 'discountPercentage') {
+    if (
+      field === 'invoiceQuantity' ||
+      field === 'unitPrice' ||
+      field.includes('Rate') ||
+      field === 'discountPercentage'
+    ) {
       const item = updatedItems[index];
       const quantity = parseFloat(String(item.invoiceQuantity)) || 0;
       const unitPrice = parseFloat(String(item.unitPrice)) || 0;
-      const discountPercentage = parseFloat(String(item.discountPercentage)) || 0;
-      
+      const discountPercentage =
+        parseFloat(String(item.discountPercentage)) || 0;
+
       item.baseAmount = quantity * unitPrice;
       item.discountAmount = (item.baseAmount * discountPercentage) / 100;
       item.taxableAmount = item.baseAmount - item.discountAmount;
-      
+
       const cgstRate = parseFloat(String(item.cgstRate)) || 0;
       const sgstRate = parseFloat(String(item.sgstRate)) || 0;
       const igstRate = parseFloat(String(item.igstRate)) || 0;
-      
+
       item.cgstAmount = (item.taxableAmount * cgstRate) / 100;
       item.sgstAmount = (item.taxableAmount * sgstRate) / 100;
       item.igstAmount = (item.taxableAmount * igstRate) / 100;
-      
+
       item.totalTaxAmount = item.cgstAmount + item.sgstAmount + item.igstAmount;
       item.totalAmount = item.taxableAmount + item.totalTaxAmount;
     }
@@ -217,7 +247,7 @@ const CreateInvoicePage: React.FC = () => {
       sgstAmount: 0,
       igstAmount: 0,
       totalTaxAmount: 0,
-      totalAmount: 0
+      totalAmount: 0,
     };
     setFormData(prev => ({ ...prev, items: [...(prev.items || []), newItem] }));
   };
@@ -230,10 +260,24 @@ const CreateInvoicePage: React.FC = () => {
 
   const calculateTotals = () => {
     const items = formData.items || [];
-    const subTotal = items.reduce((sum, item) => sum + (item.baseAmount || 0), 0);
-    const taxAmount = items.reduce((sum, item) => sum + (item.totalTaxAmount || 0), 0);
-    const discountAmount = items.reduce((sum, item) => sum + (item.discountAmount || 0), 0);
-    const grandTotal = subTotal + taxAmount - discountAmount + (formData.freightCharges || 0) + (formData.otherCharges || 0);
+    const subTotal = items.reduce(
+      (sum, item) => sum + (item.baseAmount || 0),
+      0
+    );
+    const taxAmount = items.reduce(
+      (sum, item) => sum + (item.totalTaxAmount || 0),
+      0
+    );
+    const discountAmount = items.reduce(
+      (sum, item) => sum + (item.discountAmount || 0),
+      0
+    );
+    const grandTotal =
+      subTotal +
+      taxAmount -
+      discountAmount +
+      (formData.freightCharges || 0) +
+      (formData.otherCharges || 0);
     const balanceAmount = grandTotal - (formData.paidAmount || 0);
 
     setFormData(prev => ({
@@ -242,23 +286,23 @@ const CreateInvoicePage: React.FC = () => {
       taxAmount,
       discountAmount,
       grandTotal,
-      balanceAmount
+      balanceAmount,
     }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     try {
       const invoiceData = {
         ...formData,
         createdBy: 'Current User',
-        createdDate: new Date().toISOString()
+        createdDate: new Date().toISOString(),
       };
 
       console.log('Submitting invoice:', invoiceData);
       // API call would go here
-      
+
       navigate('/invoices');
     } catch (error) {
       console.error('Error creating invoice:', error);
@@ -271,136 +315,142 @@ const CreateInvoicePage: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className='space-y-6'>
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-4">
+      <div className='flex items-center justify-between'>
+        <div className='flex items-center space-x-4'>
           <button
             onClick={() => navigate('/invoices')}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            className='p-2 hover:bg-gray-100 rounded-lg transition-colors'
           >
-            <ArrowLeft className="w-5 h-5" />
+            <ArrowLeft className='w-5 h-5' />
           </button>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Create Invoice</h1>
-            <p className="text-sm text-gray-500 mt-1">Record supplier invoice and process payment</p>
+            <h1 className='text-2xl font-bold text-gray-900'>Create Invoice</h1>
+            <p className='text-sm text-gray-500 mt-1'>
+              Record supplier invoice and process payment
+            </p>
           </div>
         </div>
-        <div className="flex items-center space-x-3">
+        <div className='flex items-center space-x-3'>
           <button
-            type="button"
+            type='button'
             onClick={() => navigate('/invoices')}
-            className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+            className='px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors'
           >
             Cancel
           </button>
           <button
-            type="button"
+            type='button'
             onClick={handleSubmit}
-            className="flex items-center px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
+            className='flex items-center px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors'
           >
-            <Save className="w-4 h-4 mr-2" />
+            <Save className='w-4 h-4 mr-2' />
             Save as Draft
           </button>
           <button
-            type="button"
+            type='button'
             onClick={handleSaveAndSubmit}
-            className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+            className='flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors'
           >
-            <FileText className="w-4 h-4 mr-2" />
+            <FileText className='w-4 h-4 mr-2' />
             Save & Submit
           </button>
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit} className='space-y-6'>
         {/* Basic Information */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <h2 className="text-lg font-semibold text-gray-900">Invoice Information</h2>
+        <div className='bg-white rounded-lg shadow-sm border border-gray-200'>
+          <div className='px-6 py-4 border-b border-gray-200'>
+            <h2 className='text-lg font-semibold text-gray-900'>
+              Invoice Information
+            </h2>
           </div>
-          <div className="p-6">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className='p-6'>
+            <div className='grid grid-cols-1 md:grid-cols-3 gap-6'>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className='block text-sm font-medium text-gray-700 mb-2'>
                   Invoice Number
                 </label>
                 <input
-                  type="text"
-                  name="invoiceNumber"
+                  type='text'
+                  name='invoiceNumber'
                   value={formData.invoiceNumber}
                   readOnly
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50"
+                  className='w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50'
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Invoice Date <span className="text-red-500">*</span>
+                <label className='block text-sm font-medium text-gray-700 mb-2'>
+                  Invoice Date <span className='text-red-500'>*</span>
                 </label>
                 <input
-                  type="date"
-                  name="invoiceDate"
+                  type='date'
+                  name='invoiceDate'
                   value={formData.invoiceDate}
                   onChange={handleInputChange}
                   required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                  className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent'
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Invoice Type <span className="text-red-500">*</span>
+                <label className='block text-sm font-medium text-gray-700 mb-2'>
+                  Invoice Type <span className='text-red-500'>*</span>
                 </label>
                 <select
-                  name="invoiceType"
+                  name='invoiceType'
                   value={formData.invoiceType}
                   onChange={handleInputChange}
                   required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                  className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent'
                 >
                   {Object.values(InvoiceType).map(type => (
-                    <option key={type} value={type}>{type.replace(/_/g, ' ')}</option>
+                    <option key={type} value={type}>
+                      {type.replace(/_/g, ' ')}
+                    </option>
                   ))}
                 </select>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className='block text-sm font-medium text-gray-700 mb-2'>
                   Supplier Invoice Number
                 </label>
                 <input
-                  type="text"
-                  name="supplierInvoiceNumber"
+                  type='text'
+                  name='supplierInvoiceNumber'
                   value={formData.supplierInvoiceNumber || ''}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                  className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent'
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className='block text-sm font-medium text-gray-700 mb-2'>
                   Supplier Invoice Date
                 </label>
                 <input
-                  type="date"
-                  name="supplierInvoiceDate"
+                  type='date'
+                  name='supplierInvoiceDate'
                   value={formData.supplierInvoiceDate || ''}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                  className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent'
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className='block text-sm font-medium text-gray-700 mb-2'>
                   Due Date
                 </label>
                 <input
-                  type="date"
-                  name="dueDate"
+                  type='date'
+                  name='dueDate'
                   value={formData.dueDate || ''}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                  className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent'
                 />
               </div>
             </div>
@@ -409,22 +459,31 @@ const CreateInvoicePage: React.FC = () => {
 
         {/* Reference Information */}
         {(purchaseOrder || grn) && (
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-            <div className="px-6 py-4 border-b border-gray-200">
-              <h2 className="text-lg font-semibold text-gray-900">Reference Information</h2>
+          <div className='bg-white rounded-lg shadow-sm border border-gray-200'>
+            <div className='px-6 py-4 border-b border-gray-200'>
+              <h2 className='text-lg font-semibold text-gray-900'>
+                Reference Information
+              </h2>
             </div>
-            <div className="p-6">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className='p-6'>
+              <div className='grid grid-cols-1 md:grid-cols-3 gap-6'>
                 {purchaseOrder && (
                   <>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">PO Number</label>
-                      <p className="text-sm text-gray-900">{purchaseOrder.poNumber}</p>
+                      <label className='block text-sm font-medium text-gray-700 mb-2'>
+                        PO Number
+                      </label>
+                      <p className='text-sm text-gray-900'>
+                        {purchaseOrder.poNumber}
+                      </p>
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">PO Date</label>
-                      <p className="text-sm text-gray-900">
-                        {purchaseOrder.poDate && format(new Date(purchaseOrder.poDate), 'dd/MM/yyyy')}
+                      <label className='block text-sm font-medium text-gray-700 mb-2'>
+                        PO Date
+                      </label>
+                      <p className='text-sm text-gray-900'>
+                        {purchaseOrder.poDate &&
+                          format(new Date(purchaseOrder.poDate), 'dd/MM/yyyy')}
                       </p>
                     </div>
                   </>
@@ -432,24 +491,37 @@ const CreateInvoicePage: React.FC = () => {
                 {grn && (
                   <>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">GRN Number</label>
-                      <p className="text-sm text-gray-900">{grn.grnNumber}</p>
+                      <label className='block text-sm font-medium text-gray-700 mb-2'>
+                        GRN Number
+                      </label>
+                      <p className='text-sm text-gray-900'>{grn.grnNumber}</p>
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Receipt Date</label>
-                      <p className="text-sm text-gray-900">
-                        {grn.receivedDate && format(new Date(grn.receivedDate), 'dd/MM/yyyy')}
+                      <label className='block text-sm font-medium text-gray-700 mb-2'>
+                        Receipt Date
+                      </label>
+                      <p className='text-sm text-gray-900'>
+                        {grn.receivedDate &&
+                          format(new Date(grn.receivedDate), 'dd/MM/yyyy')}
                       </p>
                     </div>
                   </>
                 )}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Supplier</label>
-                  <p className="text-sm text-gray-900">{formData.supplierName}</p>
+                  <label className='block text-sm font-medium text-gray-700 mb-2'>
+                    Supplier
+                  </label>
+                  <p className='text-sm text-gray-900'>
+                    {formData.supplierName}
+                  </p>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Payment Terms</label>
-                  <p className="text-sm text-gray-900">{formData.paymentTerms || '-'}</p>
+                  <label className='block text-sm font-medium text-gray-700 mb-2'>
+                    Payment Terms
+                  </label>
+                  <p className='text-sm text-gray-900'>
+                    {formData.paymentTerms || '-'}
+                  </p>
                 </div>
               </div>
             </div>
@@ -457,129 +529,171 @@ const CreateInvoicePage: React.FC = () => {
         )}
 
         {/* Invoice Items */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-          <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
-            <h2 className="text-lg font-semibold text-gray-900">Invoice Items</h2>
+        <div className='bg-white rounded-lg shadow-sm border border-gray-200'>
+          <div className='px-6 py-4 border-b border-gray-200 flex justify-between items-center'>
+            <h2 className='text-lg font-semibold text-gray-900'>
+              Invoice Items
+            </h2>
             {!poId && !grnId && (
               <button
-                type="button"
+                type='button'
                 onClick={addItem}
-                className="flex items-center px-3 py-1 bg-primary-600 text-white text-sm rounded-lg hover:bg-primary-700 transition-colors"
+                className='flex items-center px-3 py-1 bg-primary-600 text-white text-sm rounded-lg hover:bg-primary-700 transition-colors'
               >
-                <Plus className="w-4 h-4 mr-1" />
+                <Plus className='w-4 h-4 mr-1' />
                 Add Item
               </button>
             )}
           </div>
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-gray-50 border-b border-gray-200">
+          <div className='overflow-x-auto'>
+            <table className='w-full'>
+              <thead className='bg-gray-50 border-b border-gray-200'>
                 <tr>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Item</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Qty</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Rate</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Amount</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">CGST</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">SGST</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Total</th>
+                  <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase'>
+                    Item
+                  </th>
+                  <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase'>
+                    Qty
+                  </th>
+                  <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase'>
+                    Rate
+                  </th>
+                  <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase'>
+                    Amount
+                  </th>
+                  <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase'>
+                    CGST
+                  </th>
+                  <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase'>
+                    SGST
+                  </th>
+                  <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase'>
+                    Total
+                  </th>
                   {!poId && !grnId && (
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Action</th>
+                    <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase'>
+                      Action
+                    </th>
                   )}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-200">
+              <tbody className='divide-y divide-gray-200'>
                 {formData.items?.map((item, index) => (
                   <tr key={index}>
-                    <td className="px-4 py-3">
+                    <td className='px-4 py-3'>
                       <div>
                         {poId || grnId ? (
                           <>
-                            <p className="text-sm font-medium text-gray-900">{item.itemName}</p>
-                            <p className="text-xs text-gray-500">{item.itemCode}</p>
+                            <p className='text-sm font-medium text-gray-900'>
+                              {item.itemName}
+                            </p>
+                            <p className='text-xs text-gray-500'>
+                              {item.itemCode}
+                            </p>
                           </>
                         ) : (
                           <input
-                            type="text"
+                            type='text'
                             value={item.itemName}
-                            onChange={(e) => handleItemChange(index, 'itemName', e.target.value)}
-                            className="w-full px-2 py-1 border border-gray-300 rounded focus:ring-1 focus:ring-primary-500"
-                            placeholder="Item name"
+                            onChange={e =>
+                              handleItemChange(
+                                index,
+                                'itemName',
+                                e.target.value
+                              )
+                            }
+                            className='w-full px-2 py-1 border border-gray-300 rounded focus:ring-1 focus:ring-primary-500'
+                            placeholder='Item name'
                             required
                           />
                         )}
                       </div>
                     </td>
-                    <td className="px-4 py-3">
+                    <td className='px-4 py-3'>
                       <input
-                        type="number"
+                        type='number'
                         value={item.invoiceQuantity}
-                        onChange={(e) => handleItemChange(index, 'invoiceQuantity', e.target.value)}
-                        className="w-20 px-2 py-1 border border-gray-300 rounded focus:ring-1 focus:ring-primary-500"
-                        min="1"
+                        onChange={e =>
+                          handleItemChange(
+                            index,
+                            'invoiceQuantity',
+                            e.target.value
+                          )
+                        }
+                        className='w-20 px-2 py-1 border border-gray-300 rounded focus:ring-1 focus:ring-primary-500'
+                        min='1'
                         required
                       />
                     </td>
-                    <td className="px-4 py-3">
+                    <td className='px-4 py-3'>
                       <input
-                        type="number"
+                        type='number'
                         value={item.unitPrice}
-                        onChange={(e) => handleItemChange(index, 'unitPrice', e.target.value)}
-                        className="w-24 px-2 py-1 border border-gray-300 rounded focus:ring-1 focus:ring-primary-500"
-                        min="0"
-                        step="0.01"
+                        onChange={e =>
+                          handleItemChange(index, 'unitPrice', e.target.value)
+                        }
+                        className='w-24 px-2 py-1 border border-gray-300 rounded focus:ring-1 focus:ring-primary-500'
+                        min='0'
+                        step='0.01'
                         required
                       />
                     </td>
-                    <td className="px-4 py-3">
-                      <p className="text-sm text-gray-900">₹ {(item.baseAmount || 0).toLocaleString('en-IN')}</p>
+                    <td className='px-4 py-3'>
+                      <p className='text-sm text-gray-900'>
+                        ₹ {(item.baseAmount || 0).toLocaleString('en-IN')}
+                      </p>
                     </td>
-                    <td className="px-4 py-3">
-                      <div className="flex items-center space-x-1">
+                    <td className='px-4 py-3'>
+                      <div className='flex items-center space-x-1'>
                         <input
-                          type="number"
+                          type='number'
                           value={item.cgstRate || 0}
-                          onChange={(e) => handleItemChange(index, 'cgstRate', e.target.value)}
-                          className="w-12 px-1 py-1 border border-gray-300 rounded focus:ring-1 focus:ring-primary-500 text-xs"
-                          min="0"
-                          max="100"
-                          step="0.5"
+                          onChange={e =>
+                            handleItemChange(index, 'cgstRate', e.target.value)
+                          }
+                          className='w-12 px-1 py-1 border border-gray-300 rounded focus:ring-1 focus:ring-primary-500 text-xs'
+                          min='0'
+                          max='100'
+                          step='0.5'
                         />
-                        <span className="text-xs">%</span>
+                        <span className='text-xs'>%</span>
                       </div>
-                      <p className="text-xs text-gray-500 mt-1">
+                      <p className='text-xs text-gray-500 mt-1'>
                         ₹ {(item.cgstAmount || 0).toLocaleString('en-IN')}
                       </p>
                     </td>
-                    <td className="px-4 py-3">
-                      <div className="flex items-center space-x-1">
+                    <td className='px-4 py-3'>
+                      <div className='flex items-center space-x-1'>
                         <input
-                          type="number"
+                          type='number'
                           value={item.sgstRate || 0}
-                          onChange={(e) => handleItemChange(index, 'sgstRate', e.target.value)}
-                          className="w-12 px-1 py-1 border border-gray-300 rounded focus:ring-1 focus:ring-primary-500 text-xs"
-                          min="0"
-                          max="100"
-                          step="0.5"
+                          onChange={e =>
+                            handleItemChange(index, 'sgstRate', e.target.value)
+                          }
+                          className='w-12 px-1 py-1 border border-gray-300 rounded focus:ring-1 focus:ring-primary-500 text-xs'
+                          min='0'
+                          max='100'
+                          step='0.5'
                         />
-                        <span className="text-xs">%</span>
+                        <span className='text-xs'>%</span>
                       </div>
-                      <p className="text-xs text-gray-500 mt-1">
+                      <p className='text-xs text-gray-500 mt-1'>
                         ₹ {(item.sgstAmount || 0).toLocaleString('en-IN')}
                       </p>
                     </td>
-                    <td className="px-4 py-3">
-                      <p className="text-sm font-semibold text-gray-900">
+                    <td className='px-4 py-3'>
+                      <p className='text-sm font-semibold text-gray-900'>
                         ₹ {(item.totalAmount || 0).toLocaleString('en-IN')}
                       </p>
                     </td>
                     {!poId && !grnId && (
-                      <td className="px-4 py-3">
+                      <td className='px-4 py-3'>
                         <button
-                          type="button"
+                          type='button'
                           onClick={() => removeItem(index)}
-                          className="text-red-600 hover:text-red-800"
+                          className='text-red-600 hover:text-red-800'
                         >
-                          <Trash2 className="w-4 h-4" />
+                          <Trash2 className='w-4 h-4' />
                         </button>
                       </td>
                     )}
@@ -588,32 +702,34 @@ const CreateInvoicePage: React.FC = () => {
               </tbody>
             </table>
           </div>
-          <div className="px-6 py-4 border-t border-gray-200 bg-gray-50">
-            <div className="flex justify-end">
-              <div className="w-64">
-                <div className="flex justify-between py-1">
-                  <span className="text-sm text-gray-600">Subtotal:</span>
-                  <span className="text-sm font-medium text-gray-900">
+          <div className='px-6 py-4 border-t border-gray-200 bg-gray-50'>
+            <div className='flex justify-end'>
+              <div className='w-64'>
+                <div className='flex justify-between py-1'>
+                  <span className='text-sm text-gray-600'>Subtotal:</span>
+                  <span className='text-sm font-medium text-gray-900'>
                     ₹ {(formData.subTotal || 0).toLocaleString('en-IN')}
                   </span>
                 </div>
-                <div className="flex justify-between py-1">
-                  <span className="text-sm text-gray-600">Tax Amount:</span>
-                  <span className="text-sm font-medium text-gray-900">
+                <div className='flex justify-between py-1'>
+                  <span className='text-sm text-gray-600'>Tax Amount:</span>
+                  <span className='text-sm font-medium text-gray-900'>
                     ₹ {(formData.taxAmount || 0).toLocaleString('en-IN')}
                   </span>
                 </div>
                 {formData.discountAmount && formData.discountAmount > 0 && (
-                  <div className="flex justify-between py-1">
-                    <span className="text-sm text-gray-600">Discount:</span>
-                    <span className="text-sm font-medium text-red-600">
+                  <div className='flex justify-between py-1'>
+                    <span className='text-sm text-gray-600'>Discount:</span>
+                    <span className='text-sm font-medium text-red-600'>
                       - ₹ {formData.discountAmount.toLocaleString('en-IN')}
                     </span>
                   </div>
                 )}
-                <div className="flex justify-between py-2 border-t border-gray-300 mt-2">
-                  <span className="text-base font-semibold text-gray-900">Grand Total:</span>
-                  <span className="text-lg font-bold text-primary-600">
+                <div className='flex justify-between py-2 border-t border-gray-300 mt-2'>
+                  <span className='text-base font-semibold text-gray-900'>
+                    Grand Total:
+                  </span>
+                  <span className='text-lg font-bold text-primary-600'>
                     ₹ {(formData.grandTotal || 0).toLocaleString('en-IN')}
                   </span>
                 </div>
@@ -623,18 +739,18 @@ const CreateInvoicePage: React.FC = () => {
         </div>
 
         {/* Remarks */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <h2 className="text-lg font-semibold text-gray-900">Remarks</h2>
+        <div className='bg-white rounded-lg shadow-sm border border-gray-200'>
+          <div className='px-6 py-4 border-b border-gray-200'>
+            <h2 className='text-lg font-semibold text-gray-900'>Remarks</h2>
           </div>
-          <div className="p-6">
+          <div className='p-6'>
             <textarea
-              name="remarks"
+              name='remarks'
               value={formData.remarks || ''}
               onChange={handleInputChange}
               rows={3}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-              placeholder="Enter any remarks or notes..."
+              className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent'
+              placeholder='Enter any remarks or notes...'
             />
           </div>
         </div>

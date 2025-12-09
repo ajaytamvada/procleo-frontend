@@ -24,7 +24,7 @@ export const downloadExcelTemplate = () => {
     'UOM',
     'Description',
     'Quantity *',
-    'Unit Price'
+    'Unit Price',
   ];
 
   // Create sample data row to show format
@@ -36,7 +36,7 @@ export const downloadExcelTemplate = () => {
     'Piece',
     'Dell Latitude 5420 14" FHD i5-1145G7 8GB 256GB SSD',
     '10',
-    '45000.00'
+    '45000.00',
   ];
 
   // Instructions row
@@ -48,7 +48,7 @@ export const downloadExcelTemplate = () => {
     'Will be auto-filled if model is found',
     'Optional description or specifications',
     'Number of units required',
-    'Price per unit'
+    'Price per unit',
   ];
 
   // Create worksheet data
@@ -95,8 +95,12 @@ export const downloadExcelTemplate = () => {
     [],
     ['How to use this template:'],
     ['1. Fill in the required fields marked with * (asterisk)'],
-    ['2. Model field is mandatory - this will be used to search for the item in the system'],
-    ['3. If the model is found in the system, Make, Category, Sub Category, and UOM will be auto-filled'],
+    [
+      '2. Model field is mandatory - this will be used to search for the item in the system',
+    ],
+    [
+      '3. If the model is found in the system, Make, Category, Sub Category, and UOM will be auto-filled',
+    ],
     ['4. If the model is not found, you need to manually enter all fields'],
     ['5. Quantity is mandatory numeric field'],
     ['6. Unit Price is optional and can be left blank or set to 0'],
@@ -131,7 +135,7 @@ export const parseExcelFile = (file: File): Promise<ExcelLineItem[]> => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
 
-    reader.onload = (e) => {
+    reader.onload = e => {
       try {
         const data = e.target?.result;
         if (!data) {
@@ -164,13 +168,15 @@ export const parseExcelFile = (file: File): Promise<ExcelLineItem[]> => {
 
         // Filter out empty rows and map to ExcelLineItem
         const lineItems: ExcelLineItem[] = jsonData
-          .filter((row) => {
+          .filter(row => {
             // Skip if model is empty or is the header text
-            return row.model &&
-                   row.model.trim() !== '' &&
-                   !row.model.toString().toLowerCase().includes('model');
+            return (
+              row.model &&
+              row.model.trim() !== '' &&
+              !row.model.toString().toLowerCase().includes('model')
+            );
           })
-          .map((row) => ({
+          .map(row => ({
             model: String(row.model || '').trim(),
             make: String(row.make || '').trim(),
             category: String(row.category || '').trim(),
@@ -198,9 +204,11 @@ export const parseExcelFile = (file: File): Promise<ExcelLineItem[]> => {
 /**
  * Validates parsed line items
  */
-export const validateLineItems = (items: ExcelLineItem[]): {
+export const validateLineItems = (
+  items: ExcelLineItem[]
+): {
   valid: boolean;
-  errors: string[]
+  errors: string[];
 } => {
   const errors: string[] = [];
 

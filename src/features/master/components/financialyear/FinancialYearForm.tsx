@@ -126,85 +126,99 @@ const FinancialYearForm: React.FC<FinancialYearFormProps> = ({
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6 max-w-4xl">
-      <div className="mb-6">
-        <h2 className="text-2xl font-bold text-gray-900">
+    <div className='bg-white rounded-lg shadow-md p-6 max-w-4xl'>
+      <div className='mb-6'>
+        <h2 className='text-2xl font-bold text-gray-900'>
           {mode === 'create' ? 'Create Financial Year' : 'Edit Financial Year'}
         </h2>
-        <p className="text-sm text-gray-600 mt-1">
-          {mode === 'create' ? 'Add a new financial year to the system' : 'Update financial year information'}
+        <p className='text-sm text-gray-600 mt-1'>
+          {mode === 'create'
+            ? 'Add a new financial year to the system'
+            : 'Update financial year information'}
         </p>
       </div>
 
-      <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
+      <form onSubmit={handleSubmit(handleFormSubmit)} className='space-y-6'>
         {/* Financial Year Period */}
-        <div className="border-b pb-4">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4">Financial Year Period</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className='border-b pb-4'>
+          <h3 className='text-lg font-semibold text-gray-800 mb-4'>
+            Financial Year Period
+          </h3>
+          <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Start Date <span className="text-red-500">*</span>
+              <label className='block text-sm font-medium text-gray-700 mb-2'>
+                Start Date <span className='text-red-500'>*</span>
               </label>
               <input
-                type="date"
+                type='date'
                 {...register('startDate')}
                 className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
                   errors.startDate ? 'border-red-300' : 'border-gray-300'
                 }`}
               />
               {errors.startDate && (
-                <p className="mt-1 text-sm text-red-600">{errors.startDate.message}</p>
+                <p className='mt-1 text-sm text-red-600'>
+                  {errors.startDate.message}
+                </p>
               )}
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                End Date <span className="text-red-500">*</span>
+              <label className='block text-sm font-medium text-gray-700 mb-2'>
+                End Date <span className='text-red-500'>*</span>
               </label>
               <input
-                type="date"
+                type='date'
                 {...register('endDate')}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className='w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent'
                 readOnly
               />
               {errors.endDate && (
-                <p className="mt-1 text-sm text-red-600">{errors.endDate.message}</p>
+                <p className='mt-1 text-sm text-red-600'>
+                  {errors.endDate.message}
+                </p>
               )}
             </div>
           </div>
         </div>
 
         {/* First Half Year */}
-        <div className="border-b pb-4">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4">First Half Year</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className='border-b pb-4'>
+          <h3 className='text-lg font-semibold text-gray-800 mb-4'>
+            First Half Year
+          </h3>
+          <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Start Date <span className="text-red-500">*</span>
+              <label className='block text-sm font-medium text-gray-700 mb-2'>
+                Start Date <span className='text-red-500'>*</span>
               </label>
               <input
-                type="date"
+                type='date'
                 {...register('firstHalfStartDate')}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className='w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent'
                 readOnly
               />
               {errors.firstHalfStartDate && (
-                <p className="mt-1 text-sm text-red-600">{errors.firstHalfStartDate.message}</p>
+                <p className='mt-1 text-sm text-red-600'>
+                  {errors.firstHalfStartDate.message}
+                </p>
               )}
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                End Date <span className="text-red-500">*</span>
+              <label className='block text-sm font-medium text-gray-700 mb-2'>
+                End Date <span className='text-red-500'>*</span>
               </label>
               <input
-                type="date"
+                type='date'
                 {...register('firstHalfEndDate')}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className='w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent'
                 readOnly
               />
               {errors.firstHalfEndDate && (
-                <p className="mt-1 text-sm text-red-600">{errors.firstHalfEndDate.message}</p>
+                <p className='mt-1 text-sm text-red-600'>
+                  {errors.firstHalfEndDate.message}
+                </p>
               )}
             </div>
           </div>
@@ -212,66 +226,76 @@ const FinancialYearForm: React.FC<FinancialYearFormProps> = ({
 
         {/* Second Half Year */}
         <div>
-          <h3 className="text-lg font-semibold text-gray-800 mb-4">Second Half Year</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <h3 className='text-lg font-semibold text-gray-800 mb-4'>
+            Second Half Year
+          </h3>
+          <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Start Date <span className="text-red-500">*</span>
+              <label className='block text-sm font-medium text-gray-700 mb-2'>
+                Start Date <span className='text-red-500'>*</span>
               </label>
               <input
-                type="date"
+                type='date'
                 {...register('secondHalfStartDate')}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className='w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent'
                 readOnly
               />
               {errors.secondHalfStartDate && (
-                <p className="mt-1 text-sm text-red-600">{errors.secondHalfStartDate.message}</p>
+                <p className='mt-1 text-sm text-red-600'>
+                  {errors.secondHalfStartDate.message}
+                </p>
               )}
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                End Date <span className="text-red-500">*</span>
+              <label className='block text-sm font-medium text-gray-700 mb-2'>
+                End Date <span className='text-red-500'>*</span>
               </label>
               <input
-                type="date"
+                type='date'
                 {...register('secondHalfEndDate')}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className='w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent'
                 readOnly
               />
               {errors.secondHalfEndDate && (
-                <p className="mt-1 text-sm text-red-600">{errors.secondHalfEndDate.message}</p>
+                <p className='mt-1 text-sm text-red-600'>
+                  {errors.secondHalfEndDate.message}
+                </p>
               )}
             </div>
           </div>
         </div>
 
         {/* Form Actions */}
-        <div className="border-t pt-6 flex justify-end space-x-4">
+        <div className='border-t pt-6 flex justify-end space-x-4'>
           <button
-            type="button"
+            type='button'
             onClick={handleReset}
-            className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500"
+            className='px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500'
             disabled={isLoading}
           >
             Reset
           </button>
 
           <button
-            type="button"
+            type='button'
             onClick={onCancel}
-            className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500"
+            className='px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500'
             disabled={isLoading}
           >
             Cancel
           </button>
 
           <button
-            type="submit"
-            className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+            type='submit'
+            className='px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed'
             disabled={isLoading || !isValid}
           >
-            {isLoading ? 'Saving...' : mode === 'create' ? 'Create Financial Year' : 'Update Financial Year'}
+            {isLoading
+              ? 'Saving...'
+              : mode === 'create'
+                ? 'Create Financial Year'
+                : 'Update Financial Year'}
           </button>
         </div>
       </form>

@@ -74,80 +74,85 @@ export interface DialogContentProps
 const DialogContent = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Content>,
   DialogContentProps
->(({ 
-  className, 
-  children, 
-  size,
-  animate = true,
-  showCloseButton = true,
-  onEscapeKeyDown,
-  onPointerDownOutside,
-  ...props 
-}, ref) => {
-  const contentRef = React.useRef<HTMLDivElement>(null);
+>(
+  (
+    {
+      className,
+      children,
+      size,
+      animate = true,
+      showCloseButton = true,
+      onEscapeKeyDown,
+      onPointerDownOutside,
+      ...props
+    },
+    ref
+  ) => {
+    const contentRef = React.useRef<HTMLDivElement>(null);
 
-  React.useEffect(() => {
-    if (!contentRef.current) return;
-    
-    // Focus management
-    const cleanup = focusManager.trapFocus(contentRef.current);
-    return cleanup;
-  }, []);
+    React.useEffect(() => {
+      if (!contentRef.current) return;
 
-  const content = (
-    <DialogPrimitive.Content
-      ref={(node) => {
-        if (typeof ref === 'function') ref(node);
-        else if (ref) ref.current = node;
-        contentRef.current = node;
-      }}
-      className={cn(contentVariants({ size }), className)}
-      onEscapeKeyDown={onEscapeKeyDown}
-      onPointerDownOutside={onPointerDownOutside}
-      {...props}
-    >
-      {children}
-      {showCloseButton && (
-        <DialogPrimitive.Close className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground">
-          <X className="h-4 w-4" />
-          <span className="sr-only">Close</span>
-        </DialogPrimitive.Close>
-      )}
-    </DialogPrimitive.Content>
-  );
+      // Focus management
+      const cleanup = focusManager.trapFocus(contentRef.current);
+      return cleanup;
+    }, []);
 
-  if (!animate) {
+    const content = (
+      <DialogPrimitive.Content
+        ref={node => {
+          if (typeof ref === 'function') ref(node);
+          else if (ref) ref.current = node;
+          contentRef.current = node;
+        }}
+        className={cn(contentVariants({ size }), className)}
+        onEscapeKeyDown={onEscapeKeyDown}
+        onPointerDownOutside={onPointerDownOutside}
+        {...props}
+      >
+        {children}
+        {showCloseButton && (
+          <DialogPrimitive.Close className='absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground'>
+            <X className='h-4 w-4' />
+            <span className='sr-only'>Close</span>
+          </DialogPrimitive.Close>
+        )}
+      </DialogPrimitive.Content>
+    );
+
+    if (!animate) {
+      return (
+        <DialogPortal>
+          <DialogOverlay animate={false} />
+          {content}
+        </DialogPortal>
+      );
+    }
+
     return (
       <DialogPortal>
-        <DialogOverlay animate={false} />
-        {content}
+        <DialogOverlay />
+        <DialogPrimitive.Content ref={ref} asChild {...props}>
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+            className={cn(contentVariants({ size }), className)}
+          >
+            {children}
+            {showCloseButton && (
+              <DialogPrimitive.Close className='absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground'>
+                <X className='h-4 w-4' />
+                <span className='sr-only'>Close</span>
+              </DialogPrimitive.Close>
+            )}
+          </motion.div>
+        </DialogPrimitive.Content>
       </DialogPortal>
     );
   }
-
-  return (
-    <DialogPortal>
-      <DialogOverlay />
-      <DialogPrimitive.Content ref={ref} asChild {...props}>
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0, scale: 0.95 }}
-          transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-          className={cn(contentVariants({ size }), className)}
-        >
-          {children}
-          {showCloseButton && (
-            <DialogPrimitive.Close className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground">
-              <X className="h-4 w-4" />
-              <span className="sr-only">Close</span>
-            </DialogPrimitive.Close>
-          )}
-        </motion.div>
-      </DialogPrimitive.Content>
-    </DialogPortal>
-  );
-});
+);
 DialogContent.displayName = DialogPrimitive.Content.displayName;
 
 const DialogHeader = ({
@@ -235,24 +240,22 @@ const AlertDialog: React.FC<AlertDialogProps> = ({
 }) => {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent animate={animate} size="sm">
+      <DialogContent animate={animate} size='sm'>
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
-          {description && (
-            <DialogDescription>{description}</DialogDescription>
-          )}
+          {description && <DialogDescription>{description}</DialogDescription>}
         </DialogHeader>
         <DialogFooter>
           <button
-            type="button"
+            type='button'
             onClick={onCancel}
-            className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+            className='px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors'
             disabled={loading}
           >
             {cancelText}
           </button>
           <button
-            type="button"
+            type='button'
             onClick={onConfirm}
             disabled={loading}
             className={cn(
@@ -264,7 +267,7 @@ const AlertDialog: React.FC<AlertDialogProps> = ({
             )}
           >
             {loading && (
-              <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent inline-block" />
+              <div className='mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent inline-block' />
             )}
             {confirmText}
           </button>

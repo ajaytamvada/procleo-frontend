@@ -9,7 +9,9 @@ const searchItems = async (query: string): Promise<ItemDto[]> => {
     return [];
   }
 
-  const response = await apiClient.get(`/master/items/search?query=${encodeURIComponent(query)}`);
+  const response = await apiClient.get(
+    `/master/items/search?query=${encodeURIComponent(query)}`
+  );
   return response.data;
 };
 

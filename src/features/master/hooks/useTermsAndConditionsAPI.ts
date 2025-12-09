@@ -13,27 +13,42 @@ const termsAndConditionsAPI = {
 
     if (content) params.append('content', content);
 
-    const response = await apiClient.get<PagedResponse<TermsAndConditions>>(`/master/terms-and-conditions?${params}`);
+    const response = await apiClient.get<PagedResponse<TermsAndConditions>>(
+      `/master/terms-and-conditions?${params}`
+    );
     return response.data;
   },
 
   getAllList: async () => {
-    const response = await apiClient.get<TermsAndConditions[]>(`/master/terms-and-conditions/all`);
+    const response = await apiClient.get<TermsAndConditions[]>(
+      `/master/terms-and-conditions/all`
+    );
     return response.data;
   },
 
   getById: async (id: number) => {
-    const response = await apiClient.get<TermsAndConditions>(`/master/terms-and-conditions/${id}`);
+    const response = await apiClient.get<TermsAndConditions>(
+      `/master/terms-and-conditions/${id}`
+    );
     return response.data;
   },
 
   create: async (termsAndConditions: Omit<TermsAndConditions, 'id'>) => {
-    const response = await apiClient.post<TermsAndConditions>(`/master/terms-and-conditions`, termsAndConditions);
+    const response = await apiClient.post<TermsAndConditions>(
+      `/master/terms-and-conditions`,
+      termsAndConditions
+    );
     return response.data;
   },
 
-  update: async (id: number, termsAndConditions: Partial<TermsAndConditions>) => {
-    const response = await apiClient.put<TermsAndConditions>(`/master/terms-and-conditions/${id}`, termsAndConditions);
+  update: async (
+    id: number,
+    termsAndConditions: Partial<TermsAndConditions>
+  ) => {
+    const response = await apiClient.put<TermsAndConditions>(
+      `/master/terms-and-conditions/${id}`,
+      termsAndConditions
+    );
     return response.data;
   },
 
@@ -43,11 +58,15 @@ const termsAndConditionsAPI = {
 };
 
 // React Query hooks
-export const useTermsAndConditions = (page = 0, size = 20, content?: string) => {
+export const useTermsAndConditions = (
+  page = 0,
+  size = 20,
+  content?: string
+) => {
   return useQuery({
     queryKey: ['terms-and-conditions', page, size, content],
     queryFn: () => termsAndConditionsAPI.getAll(page, size, content),
-    placeholderData: (previousData) => previousData,
+    placeholderData: previousData => previousData,
   });
 };
 
@@ -76,7 +95,9 @@ export const useCreateTermsAndConditions = () => {
       toast.success('Terms and conditions created successfully');
     },
     onError: (error: any) => {
-      const message = error.response?.data?.message || 'Failed to create terms and conditions';
+      const message =
+        error.response?.data?.message ||
+        'Failed to create terms and conditions';
       toast.error(message);
     },
   });
@@ -86,14 +107,21 @@ export const useUpdateTermsAndConditions = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, termsAndConditions }: { id: number; termsAndConditions: Partial<TermsAndConditions> }) =>
-      termsAndConditionsAPI.update(id, termsAndConditions),
+    mutationFn: ({
+      id,
+      termsAndConditions,
+    }: {
+      id: number;
+      termsAndConditions: Partial<TermsAndConditions>;
+    }) => termsAndConditionsAPI.update(id, termsAndConditions),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['terms-and-conditions'] });
       toast.success('Terms and conditions updated successfully');
     },
     onError: (error: any) => {
-      const message = error.response?.data?.message || 'Failed to update terms and conditions';
+      const message =
+        error.response?.data?.message ||
+        'Failed to update terms and conditions';
       toast.error(message);
     },
   });
@@ -109,7 +137,9 @@ export const useDeleteTermsAndConditions = () => {
       toast.success('Terms and conditions deleted successfully');
     },
     onError: (error: any) => {
-      const message = error.response?.data?.message || 'Failed to delete terms and conditions';
+      const message =
+        error.response?.data?.message ||
+        'Failed to delete terms and conditions';
       toast.error(message);
     },
   });

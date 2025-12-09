@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git push:*)",
+      "Bash(zip -r autovitica-p2p-frontend.zip . -x \"node_modules/*\" \"dist/*\" \"build/*\" \".git/*\" \"coverage/*\" \"*.log\")",
+      "Bash(tar:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

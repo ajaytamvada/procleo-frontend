@@ -4,21 +4,18 @@ import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '@/lib/utils';
 import { ChevronUp, ChevronDown, ChevronsUpDown, Search } from 'lucide-react';
 
-const tableVariants = cva(
-  'w-full caption-bottom text-sm',
-  {
-    variants: {
-      variant: {
-        default: '',
-        striped: '[&_tbody_tr:nth-child(even)]:bg-muted/50',
-        bordered: 'border border-border',
-      },
+const tableVariants = cva('w-full caption-bottom text-sm', {
+  variants: {
+    variant: {
+      default: '',
+      striped: '[&_tbody_tr:nth-child(even)]:bg-muted/50',
+      bordered: 'border border-border',
     },
-    defaultVariants: {
-      variant: 'default',
-    },
-  }
-);
+  },
+  defaultVariants: {
+    variant: 'default',
+  },
+});
 
 export interface TableProps
   extends React.HTMLAttributes<HTMLTableElement>,
@@ -31,7 +28,7 @@ const Table = React.forwardRef<HTMLTableElement, TableProps>(
     const commonClassName = cn(tableVariants({ variant }), className);
 
     return (
-      <div className="relative w-full overflow-auto">
+      <div className='relative w-full overflow-auto'>
         {animate ? (
           <motion.table
             ref={ref}
@@ -43,11 +40,7 @@ const Table = React.forwardRef<HTMLTableElement, TableProps>(
             {...(props as any)}
           />
         ) : (
-          <table
-            ref={ref}
-            className={commonClassName}
-            {...props}
-          />
+          <table ref={ref} className={commonClassName} {...props} />
         )}
       </div>
     );
@@ -125,36 +118,43 @@ const TableRow = React.forwardRef<
     hoverable?: boolean;
     clickable?: boolean;
   }
->(({ className, animate = false, hoverable = false, clickable = false, ...props }, ref) => {
-  const commonClassName = cn(
-    'border-b transition-colors',
-    hoverable && 'hover:bg-muted/50',
-    clickable && 'cursor-pointer',
-    'data-[state=selected]:bg-muted',
-    className
-  );
-
-  if (animate) {
-    return (
-      <motion.tr
-        ref={ref}
-        className={commonClassName}
-        whileHover={hoverable ? { backgroundColor: 'rgba(0, 0, 0, 0.02)' } : undefined}
-        whileTap={clickable ? { scale: 0.995 } : undefined}
-        transition={{ duration: 0.15 }}
-        {...(props as any)}
-      />
+>(
+  (
+    {
+      className,
+      animate = false,
+      hoverable = false,
+      clickable = false,
+      ...props
+    },
+    ref
+  ) => {
+    const commonClassName = cn(
+      'border-b transition-colors',
+      hoverable && 'hover:bg-muted/50',
+      clickable && 'cursor-pointer',
+      'data-[state=selected]:bg-muted',
+      className
     );
-  }
 
-  return (
-    <tr
-      ref={ref}
-      className={commonClassName}
-      {...props}
-    />
-  );
-});
+    if (animate) {
+      return (
+        <motion.tr
+          ref={ref}
+          className={commonClassName}
+          whileHover={
+            hoverable ? { backgroundColor: 'rgba(0, 0, 0, 0.02)' } : undefined
+          }
+          whileTap={clickable ? { scale: 0.995 } : undefined}
+          transition={{ duration: 0.15 }}
+          {...(props as any)}
+        />
+      );
+    }
+
+    return <tr ref={ref} className={commonClassName} {...props} />;
+  }
+);
 TableRow.displayName = 'TableRow';
 
 export interface TableHeadProps
@@ -165,7 +165,10 @@ export interface TableHeadProps
 }
 
 const TableHead = React.forwardRef<HTMLTableCellElement, TableHeadProps>(
-  ({ className, sortable = false, sortDirection, onSort, children, ...props }, ref) => {
+  (
+    { className, sortable = false, sortDirection, onSort, children, ...props },
+    ref
+  ) => {
     return (
       <th
         ref={ref}
@@ -177,13 +180,13 @@ const TableHead = React.forwardRef<HTMLTableCellElement, TableHeadProps>(
         onClick={sortable ? onSort : undefined}
         {...props}
       >
-        <div className="flex items-center space-x-1">
+        <div className='flex items-center space-x-1'>
           <span>{children}</span>
           {sortable && (
-            <div className="flex flex-col">
-              {sortDirection === null && <ChevronsUpDown className="h-3 w-3" />}
-              {sortDirection === 'asc' && <ChevronUp className="h-3 w-3" />}
-              {sortDirection === 'desc' && <ChevronDown className="h-3 w-3" />}
+            <div className='flex flex-col'>
+              {sortDirection === null && <ChevronsUpDown className='h-3 w-3' />}
+              {sortDirection === 'asc' && <ChevronUp className='h-3 w-3' />}
+              {sortDirection === 'desc' && <ChevronDown className='h-3 w-3' />}
             </div>
           )}
         </div>
@@ -263,13 +266,15 @@ function DataTable<T extends Record<string, any>>({
 }: DataTableProps<T>) {
   const [searchTerm, setSearchTerm] = React.useState('');
   const [sortColumn, setSortColumn] = React.useState<keyof T | null>(null);
-  const [sortDirection, setSortDirection] = React.useState<'asc' | 'desc' | null>(null);
+  const [sortDirection, setSortDirection] = React.useState<
+    'asc' | 'desc' | null
+  >(null);
   const [currentPage, setCurrentPage] = React.useState(1);
 
   // Filter data based on search term
   const filteredData = React.useMemo(() => {
     if (!searchTerm) return data;
-    
+
     return data.filter(row =>
       Object.values(row).some(value =>
         String(value).toLowerCase().includes(searchTerm.toLowerCase())
@@ -284,7 +289,7 @@ function DataTable<T extends Record<string, any>>({
     return [...filteredData].sort((a, b) => {
       const aVal = a[sortColumn];
       const bVal = b[sortColumn];
-      
+
       if (aVal < bVal) return sortDirection === 'asc' ? -1 : 1;
       if (aVal > bVal) return sortDirection === 'asc' ? 1 : -1;
       return 0;
@@ -294,7 +299,7 @@ function DataTable<T extends Record<string, any>>({
   // Paginate data
   const paginatedData = React.useMemo(() => {
     if (!pagination) return sortedData;
-    
+
     const startIndex = (currentPage - 1) * pageSize;
     return sortedData.slice(startIndex, startIndex + pageSize);
   }, [sortedData, currentPage, pageSize, pagination]);
@@ -303,7 +308,7 @@ function DataTable<T extends Record<string, any>>({
 
   const handleSort = (column: keyof T) => {
     if (!sortable) return;
-    
+
     if (sortColumn === column) {
       if (sortDirection === 'asc') {
         setSortDirection('desc');
@@ -323,27 +328,27 @@ function DataTable<T extends Record<string, any>>({
   };
 
   return (
-    <div className="space-y-4">
+    <div className='space-y-4'>
       {searchable && (
-        <div className="flex items-center space-x-2">
-          <div className="relative flex-1 max-w-sm">
-            <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+        <div className='flex items-center space-x-2'>
+          <div className='relative flex-1 max-w-sm'>
+            <Search className='absolute left-2 top-2.5 h-4 w-4 text-muted-foreground' />
             <input
-              type="text"
+              type='text'
               placeholder={searchPlaceholder}
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-8 input"
+              onChange={e => setSearchTerm(e.target.value)}
+              className='pl-8 input'
             />
           </div>
         </div>
       )}
 
-      <div className="rounded-md border">
+      <div className='rounded-md border'>
         <Table variant={variant} animate={animate} className={className}>
           <TableHeader>
             <TableRow>
-              {columns.map((column) => (
+              {columns.map(column => (
                 <TableHead
                   key={String(column.key)}
                   sortable={sortable && column.sortable !== false}
@@ -363,16 +368,22 @@ function DataTable<T extends Record<string, any>>({
           <TableBody animate={animate}>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={columns.length} className="text-center py-8">
-                  <div className="flex items-center justify-center space-x-2">
-                    <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                <TableCell
+                  colSpan={columns.length}
+                  className='text-center py-8'
+                >
+                  <div className='flex items-center justify-center space-x-2'>
+                    <div className='h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent' />
                     <span>Loading...</span>
                   </div>
                 </TableCell>
               </TableRow>
             ) : paginatedData.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={columns.length} className="text-center py-8 text-muted-foreground">
+                <TableCell
+                  colSpan={columns.length}
+                  className='text-center py-8 text-muted-foreground'
+                >
                   {emptyMessage}
                 </TableCell>
               </TableRow>
@@ -384,7 +395,7 @@ function DataTable<T extends Record<string, any>>({
                   hoverable={!!onRowClick}
                   onClick={() => onRowClick?.(row, index)}
                 >
-                  {columns.map((column) => (
+                  {columns.map(column => (
                     <TableCell
                       key={String(column.key)}
                       className={cn(
@@ -392,10 +403,9 @@ function DataTable<T extends Record<string, any>>({
                         column.align === 'right' && 'text-right'
                       )}
                     >
-                      {column.render 
+                      {column.render
                         ? column.render(row[column.key], row, index)
-                        : String(row[column.key])
-                      }
+                        : String(row[column.key])}
                     </TableCell>
                   ))}
                 </TableRow>
@@ -406,25 +416,29 @@ function DataTable<T extends Record<string, any>>({
       </div>
 
       {pagination && totalPages > 1 && (
-        <div className="flex items-center justify-between">
-          <div className="text-sm text-muted-foreground">
-            Showing {((currentPage - 1) * pageSize) + 1} to {Math.min(currentPage * pageSize, sortedData.length)} of {sortedData.length} results
+        <div className='flex items-center justify-between'>
+          <div className='text-sm text-muted-foreground'>
+            Showing {(currentPage - 1) * pageSize + 1} to{' '}
+            {Math.min(currentPage * pageSize, sortedData.length)} of{' '}
+            {sortedData.length} results
           </div>
-          <div className="flex items-center space-x-2">
+          <div className='flex items-center space-x-2'>
             <button
               onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
               disabled={currentPage === 1}
-              className="btn btn-outline btn-sm"
+              className='btn btn-outline btn-sm'
             >
               Previous
             </button>
-            <span className="text-sm">
+            <span className='text-sm'>
               Page {currentPage} of {totalPages}
             </span>
             <button
-              onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+              onClick={() =>
+                setCurrentPage(prev => Math.min(totalPages, prev + 1))
+              }
               disabled={currentPage === totalPages}
-              className="btn btn-outline btn-sm"
+              className='btn btn-outline btn-sm'
             >
               Next
             </button>

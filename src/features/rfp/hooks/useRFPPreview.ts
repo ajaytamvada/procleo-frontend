@@ -25,7 +25,7 @@ export const useCompanyInfo = () => {
     queryKey: ['companies', 'active'],
     queryFn: () => companyApi.getAllActiveCompanies(),
     staleTime: 60 * 60 * 1000, // 1 hour - company info doesn't change often
-    select: (data) => data && data.length > 0 ? data[0] : null, // Get first active company
+    select: data => (data && data.length > 0 ? data[0] : null), // Get first active company
   });
 };
 

@@ -2,13 +2,17 @@ import React, { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import CurrencyForm from './CurrencyForm';
 import CurrencyList from './CurrencyList';
+import ExcelImportDialog from '@/components/ExcelImportDialog';
 import { useCurrencies } from '../../hooks/useCurrencyAPI';
 import type { Currency, MasterEntityFilters } from '../../types';
 import { apiClient } from '@/lib/api';
 
 const CurrencyPage: React.FC = () => {
   const [showForm, setShowForm] = useState(false);
-  const [selectedCurrency, setSelectedCurrency] = useState<Currency | undefined>(undefined);
+  const [showImportDialog, setShowImportDialog] = useState(false);
+  const [selectedCurrency, setSelectedCurrency] = useState<
+    Currency | undefined
+  >(undefined);
   const [page, setPage] = useState(0);
   const [filters, setFilters] = useState<MasterEntityFilters>({});
   const queryClient = useQueryClient();
@@ -29,7 +33,10 @@ const CurrencyPage: React.FC = () => {
         );
         return response.data;
       } else {
-        const response = await apiClient.post<Currency>('/master/currencies', data);
+        const response = await apiClient.post<Currency>(
+          '/master/currencies',
+          data
+        );
         return response.data;
       }
     },
@@ -38,10 +45,15 @@ const CurrencyPage: React.FC = () => {
       refetch();
       setShowForm(false);
       setSelectedCurrency(undefined);
-      alert(selectedCurrency?.id ? 'Currency updated successfully!' : 'Currency created successfully!');
+      alert(
+        selectedCurrency?.id
+          ? 'Currency updated successfully!'
+          : 'Currency created successfully!'
+      );
     },
     onError: (error: any) => {
-      const message = error.response?.data?.message || 'Failed to save currency';
+      const message =
+        error.response?.data?.message || 'Failed to save currency';
       alert(message);
     },
   });
@@ -57,7 +69,8 @@ const CurrencyPage: React.FC = () => {
       alert('Currency deleted successfully!');
     },
     onError: (error: any) => {
-      const message = error.response?.data?.message || 'Failed to delete currency';
+      const message =
+        error.response?.data?.message || 'Failed to delete currency';
       alert(message);
     },
   });
@@ -89,7 +102,7 @@ const CurrencyPage: React.FC = () => {
 
   if (showForm) {
     return (
-      <div className="container mx-auto p-6">
+      <div className='container mx-auto p-6'>
         <CurrencyForm
           currency={selectedCurrency}
           onSubmit={handleSubmit}
@@ -102,7 +115,7 @@ const CurrencyPage: React.FC = () => {
   }
 
   return (
-    <div className="container mx-auto p-6">
+    <div className='container mx-auto p-6'>
       <CurrencyList
         currencies={currencies}
         isLoading={isLoading}
@@ -110,11 +123,20 @@ const CurrencyPage: React.FC = () => {
         onEdit={handleEdit}
         onDelete={handleDelete}
         onCreate={handleCreate}
+        onImport={() => setShowImportDialog(true)}
         currentPage={page}
         totalPages={totalPages}
         totalElements={totalElements}
         onPageChange={setPage}
         onFiltersChange={setFilters}
+      />
+      <ExcelImportDialog
+        isOpen={showImportDialog}
+        onClose={() => setShowImportDialog(false)}
+        entityName='Currency'
+        importEndpoint='/master/currencies/import'
+        templateEndpoint='/master/currencies/template'
+        onImportSuccess={() => setPage(0)}
       />
     </div>
   );

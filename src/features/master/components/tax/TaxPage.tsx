@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { toast } from 'react-hot-toast';
 import TaxList from './TaxList';
 import TaxForm from './TaxForm';
+import ExcelImportDialog from '@/components/ExcelImportDialog';
 import {
   useTaxes,
   useCreateTax,
@@ -12,6 +13,7 @@ import {
 
 const TaxPage: React.FC = () => {
   const [showForm, setShowForm] = useState(false);
+  const [showImportDialog, setShowImportDialog] = useState(false);
   const [selectedTax, setSelectedTax] = useState<Tax | undefined>();
 
   const { data: taxes = [], isLoading, error } = useTaxes();
@@ -74,8 +76,8 @@ const TaxPage: React.FC = () => {
 
   if (error) {
     return (
-      <div className="p-6">
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+      <div className='p-6'>
+        <div className='bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded'>
           Error loading taxes: {(error as Error).message}
         </div>
       </div>
@@ -94,13 +96,24 @@ const TaxPage: React.FC = () => {
   }
 
   return (
-    <TaxList
-      taxes={taxes}
-      onEdit={handleEdit}
-      onCreate={handleCreate}
-      onDelete={handleDelete}
-      isLoading={isLoading}
-    />
+    <>
+      <TaxList
+        taxes={taxes}
+        onEdit={handleEdit}
+        onCreate={handleCreate}
+        onDelete={handleDelete}
+        onImport={() => setShowImportDialog(true)}
+        isLoading={isLoading}
+      />
+      <ExcelImportDialog
+        isOpen={showImportDialog}
+        onClose={() => setShowImportDialog(false)}
+        entityName='Tax'
+        importEndpoint='/master/taxes/import'
+        templateEndpoint='/master/taxes/template'
+        onImportSuccess={() => {}}
+      />
+    </>
   );
 };
 

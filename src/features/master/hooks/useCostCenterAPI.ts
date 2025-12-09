@@ -32,7 +32,11 @@ const costCenterAPI = {
     return response.data;
   },
 
-  getPaged: async (page = 0, size = 15, filters: CostCenterFilters = {}): Promise<PagedResponse<CostCenter>> => {
+  getPaged: async (
+    page = 0,
+    size = 15,
+    filters: CostCenterFilters = {}
+  ): Promise<PagedResponse<CostCenter>> => {
     const params = new URLSearchParams({
       page: page.toString(),
       size: size.toString(),
@@ -40,7 +44,8 @@ const costCenterAPI = {
 
     if (filters.name) params.append('name', filters.name);
     if (filters.code) params.append('code', filters.code);
-    if (filters.departmentName) params.append('departmentName', filters.departmentName);
+    if (filters.departmentName)
+      params.append('departmentName', filters.departmentName);
 
     const response = await apiClient.get<PagedResponse<CostCenter>>(
       `/master/cost-centers?${params}`
@@ -54,7 +59,9 @@ const costCenterAPI = {
   },
 
   getByDepartment: async (departmentId: number): Promise<CostCenter[]> => {
-    const response = await apiClient.get(`/master/cost-centers/by-department/${departmentId}`);
+    const response = await apiClient.get(
+      `/master/cost-centers/by-department/${departmentId}`
+    );
     return response.data;
   },
 
@@ -63,8 +70,14 @@ const costCenterAPI = {
     return response.data;
   },
 
-  update: async (id: number, costCenter: Omit<CostCenter, 'id'>): Promise<CostCenter> => {
-    const response = await apiClient.put(`/master/cost-centers/${id}`, costCenter);
+  update: async (
+    id: number,
+    costCenter: Omit<CostCenter, 'id'>
+  ): Promise<CostCenter> => {
+    const response = await apiClient.put(
+      `/master/cost-centers/${id}`,
+      costCenter
+    );
     return response.data;
   },
 
@@ -76,11 +89,15 @@ const costCenterAPI = {
     const params = new URLSearchParams();
     if (filters.name) params.append('name', filters.name);
     if (filters.code) params.append('code', filters.code);
-    if (filters.departmentName) params.append('departmentName', filters.departmentName);
+    if (filters.departmentName)
+      params.append('departmentName', filters.departmentName);
 
-    const response = await apiClient.get(`/master/cost-centers/export?${params}`, {
-      responseType: 'blob',
-    });
+    const response = await apiClient.get(
+      `/master/cost-centers/export?${params}`,
+      {
+        responseType: 'blob',
+      }
+    );
     return response.data;
   },
 };
@@ -93,7 +110,11 @@ export const useCostCenters = () => {
   });
 };
 
-export const useCostCentersPaged = (page = 0, size = 15, filters: CostCenterFilters = {}) => {
+export const useCostCentersPaged = (
+  page = 0,
+  size = 15,
+  filters: CostCenterFilters = {}
+) => {
   return useQuery({
     queryKey: [...COST_CENTER_QUERY_KEY, 'paged', page, size, filters],
     queryFn: () => costCenterAPI.getPaged(page, size, filters),

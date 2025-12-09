@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { toast } from 'react-hot-toast';
 import CategoryList from './CategoryList';
 import CategoryForm from './CategoryForm';
+import ExcelImportDialog from '@/components/ExcelImportDialog';
 import {
   useCategoriesPaged,
   useCreateCategory,
@@ -13,7 +14,10 @@ import {
 
 const CategoryPage: React.FC = () => {
   const [showForm, setShowForm] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState<Category | undefined>();
+  const [showImportDialog, setShowImportDialog] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<
+    Category | undefined
+  >();
   const [page, setPage] = useState(0);
   const [filters, setFilters] = useState<CategoryFilters>({});
 
@@ -78,8 +82,8 @@ const CategoryPage: React.FC = () => {
 
   if (error) {
     return (
-      <div className="p-6">
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+      <div className='p-6'>
+        <div className='bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded'>
           Error loading categories: {(error as Error).message}
         </div>
       </div>
@@ -97,19 +101,37 @@ const CategoryPage: React.FC = () => {
     );
   }
 
+  const handleImportSuccess = () => {
+    // Refetch data after successful import
+    setPage(0); // Reset to first page
+    // The React Query cache will automatically refetch
+  };
+
   return (
-    <CategoryList
-      categories={categories}
-      onEdit={handleEdit}
-      onCreate={handleCreate}
-      onDelete={handleDelete}
-      isLoading={isLoading}
-      page={page}
-      totalPages={totalPages}
-      totalElements={totalElements}
-      onPageChange={setPage}
-      onFiltersChange={setFilters}
-    />
+    <>
+      <CategoryList
+        categories={categories}
+        onEdit={handleEdit}
+        onCreate={handleCreate}
+        onDelete={handleDelete}
+        onImport={() => setShowImportDialog(true)}
+        isLoading={isLoading}
+        page={page}
+        totalPages={totalPages}
+        totalElements={totalElements}
+        onPageChange={setPage}
+        onFiltersChange={setFilters}
+      />
+
+      <ExcelImportDialog
+        isOpen={showImportDialog}
+        onClose={() => setShowImportDialog(false)}
+        entityName='Category'
+        importEndpoint='/master/categories/import'
+        templateEndpoint='/master/categories/template'
+        onImportSuccess={handleImportSuccess}
+      />
+    </>
   );
 };
 

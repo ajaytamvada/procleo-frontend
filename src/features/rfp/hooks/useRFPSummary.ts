@@ -13,8 +13,10 @@ export const useRFPsForSummary = () => {
     queryKey: ['rfps', 'for-summary'],
     queryFn: async () => {
       // Fetch RFPs that have quotations (any status that has moved past quotation stage)
-      const response = await rfpApi.getRFPsByStatus('QUOTATION_RECEIVED');
-      return response.filter((rfp) => rfp.quotations && rfp.quotations.length > 0);
+      const response = await rfpApi.getRFPsByStatus('FLOATED,NEGOTIATION,UNDER_EVALUATION,APPROVED');
+      return response.filter(
+        rfp => rfp.quotations && rfp.quotations.length > 0
+      );
     },
   });
 };

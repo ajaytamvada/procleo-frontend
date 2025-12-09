@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import BudgetForm from './BudgetForm';
 import BudgetList from './BudgetList';
+import ExcelImportDialog from '@/components/ExcelImportDialog';
 import {
   useBudgets,
   useCreateBudget,
@@ -11,12 +12,21 @@ import type { Budget } from '../../types';
 
 const BudgetPage: React.FC = () => {
   const [showForm, setShowForm] = useState(false);
-  const [selectedBudget, setSelectedBudget] = useState<Budget | undefined>(undefined);
+  const [showImportDialog, setShowImportDialog] = useState(false);
+  const [selectedBudget, setSelectedBudget] = useState<Budget | undefined>(
+    undefined
+  );
   const [page, setPage] = useState(0);
-  const [financialYearFilter, setFinancialYearFilter] = useState<number | undefined>(undefined);
+  const [financialYearFilter, setFinancialYearFilter] = useState<
+    number | undefined
+  >(undefined);
 
   // Fetch budgets with pagination
-  const { data, isLoading, error, refetch } = useBudgets(page, 20, financialYearFilter);
+  const { data, isLoading, error, refetch } = useBudgets(
+    page,
+    20,
+    financialYearFilter
+  );
   const budgets = data?.content || [];
   const totalPages = data?.totalPages || 0;
   const totalElements = data?.totalElements || 0;
@@ -81,7 +91,7 @@ const BudgetPage: React.FC = () => {
 
   if (showForm) {
     return (
-      <div className="container mx-auto p-6">
+      <div className='container mx-auto p-6'>
         <BudgetForm
           budget={selectedBudget}
           onSubmit={handleSubmit}
@@ -94,7 +104,7 @@ const BudgetPage: React.FC = () => {
   }
 
   return (
-    <div className="container mx-auto p-6">
+    <div className='container mx-auto p-6'>
       <BudgetList
         budgets={budgets}
         isLoading={isLoading}
@@ -102,11 +112,20 @@ const BudgetPage: React.FC = () => {
         onEdit={handleEdit}
         onDelete={handleDelete}
         onCreate={handleCreate}
+        onImport={() => setShowImportDialog(true)}
         currentPage={page}
         totalPages={totalPages}
         totalElements={totalElements}
         onPageChange={setPage}
         onFilterChange={handleFilterChange}
+      />
+      <ExcelImportDialog
+        isOpen={showImportDialog}
+        onClose={() => setShowImportDialog(false)}
+        entityName='Budget'
+        importEndpoint='/master/budget/import'
+        templateEndpoint='/master/budget/import/template'
+        onImportSuccess={() => setPage(0)}
       />
     </div>
   );

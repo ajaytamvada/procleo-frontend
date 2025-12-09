@@ -43,7 +43,11 @@ const assignmentGroupAPI = {
     return data;
   },
 
-  getPaged: async (page: number, size: number, filters: AssignmentGroupFilters): Promise<PagedResponse> => {
+  getPaged: async (
+    page: number,
+    size: number,
+    filters: AssignmentGroupFilters
+  ): Promise<PagedResponse> => {
     const { data } = await apiClient.get(`${API_BASE_URL}/paged`, {
       params: { page, size, ...filters },
     });
@@ -60,7 +64,10 @@ const assignmentGroupAPI = {
     return data;
   },
 
-  update: async (id: number, group: AssignmentGroup): Promise<AssignmentGroup> => {
+  update: async (
+    id: number,
+    group: AssignmentGroup
+  ): Promise<AssignmentGroup> => {
     const { data } = await apiClient.put(`${API_BASE_URL}/${id}`, group);
     return data;
   },
@@ -99,7 +106,11 @@ export const useAssignmentGroupsList = () => {
   });
 };
 
-export const useAssignmentGroupsPaged = (page = 0, size = 15, filters: AssignmentGroupFilters = {}) => {
+export const useAssignmentGroupsPaged = (
+  page = 0,
+  size = 15,
+  filters: AssignmentGroupFilters = {}
+) => {
   return useQuery({
     queryKey: [...ASSIGNMENT_GROUP_QUERY_KEY, 'paged', page, size, filters],
     queryFn: () => assignmentGroupAPI.getPaged(page, size, filters),
@@ -161,8 +172,13 @@ export const useAddGroupMember = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ groupId, employeeId }: { groupId: number; employeeId: number }) =>
-      assignmentGroupAPI.addMember(groupId, employeeId),
+    mutationFn: ({
+      groupId,
+      employeeId,
+    }: {
+      groupId: number;
+      employeeId: number;
+    }) => assignmentGroupAPI.addMember(groupId, employeeId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ASSIGNMENT_GROUP_QUERY_KEY });
     },
@@ -173,8 +189,13 @@ export const useRemoveGroupMember = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ groupId, employeeId }: { groupId: number; employeeId: number }) =>
-      assignmentGroupAPI.removeMember(groupId, employeeId),
+    mutationFn: ({
+      groupId,
+      employeeId,
+    }: {
+      groupId: number;
+      employeeId: number;
+    }) => assignmentGroupAPI.removeMember(groupId, employeeId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ASSIGNMENT_GROUP_QUERY_KEY });
     },

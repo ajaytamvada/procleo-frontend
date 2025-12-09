@@ -15,12 +15,12 @@ export const useSubmittedQuotations = () => {
   return useQuery({
     queryKey: ['rfps', 'submitted-quotations'],
     queryFn: async () => {
-      // Get all FLOATED RFPs
-      const rfps = await rfpApi.getRFPsByStatus('FLOATED');
+      // Get all FLOATED and NEGOTIATION RFPs
+      const rfps = await rfpApi.getRFPsByStatus('FLOATED,NEGOTIATION');
 
       // Filter to only RFPs with submitted quotations
-      const rfpsWithQuotations = rfps.filter(rfp =>
-        rfp.quotations && rfp.quotations.length > 0
+      const rfpsWithQuotations = rfps.filter(
+        rfp => rfp.quotations && rfp.quotations.length > 0
       );
 
       return rfpsWithQuotations;
@@ -61,24 +61,31 @@ export const useUpdateQuotation = () => {
     mutationFn: ({
       rfpId,
       quotationId,
-      quotation
+      quotation,
     }: {
       rfpId: number;
       quotationId: number;
-      quotation: RFPQuotation
+      quotation: RFPQuotation;
     }) => rfpApi.updateQuotation(rfpId, quotationId, quotation),
     onSuccess: (data, variables) => {
-      const quotationNumber = data.quotations?.find(q => q.id === variables.quotationId)?.quotationNumber;
+      const quotationNumber = data.quotations?.find(
+        q => q.id === variables.quotationId
+      )?.quotationNumber;
       toast.success(`Quotation ${quotationNumber} updated successfully!`);
 
       // Invalidate relevant queries
       queryClient.invalidateQueries({ queryKey: ['rfp', data.id] });
       queryClient.invalidateQueries({ queryKey: ['rfps'] });
-      queryClient.invalidateQueries({ queryKey: ['rfps', 'submitted-quotations'] });
-      queryClient.invalidateQueries({ queryKey: ['rfp', 'quotation', variables.rfpId, variables.quotationId] });
+      queryClient.invalidateQueries({
+        queryKey: ['rfps', 'submitted-quotations'],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ['rfp', 'quotation', variables.rfpId, variables.quotationId],
+      });
     },
     onError: (error: any) => {
-      const errorMessage = error?.response?.data?.message || 'Failed to update quotation';
+      const errorMessage =
+        error?.response?.data?.message || 'Failed to update quotation';
       toast.error(errorMessage);
     },
   });

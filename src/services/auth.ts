@@ -1,18 +1,22 @@
 import { api, TokenManager, type ApiResponse, apiClient } from '@/lib/api';
+import type { UserModulePermission } from '@/types/permissions';
 
 // Auth types
 export interface User {
   id: number;
-  loginName: string;  // Changed from username to match backend
+  loginName: string; // Changed from username to match backend
   email: string;
   employeeId?: string;
   employeeName?: string;
+  firstName?: string; // Added for frontend compatibility
+  lastName?: string; // Added for frontend compatibility
   departmentName?: string;
   locationName?: string;
   companyName?: string;
   userTypeId?: number;
   userTypeName?: string;
-  permissions: string[];  // Now required, matches backend
+  permissions: string[]; // Deprecated: keeping for backward compatibility
+  modules: UserModulePermission[]; // New: module-based permissions
   lastLoginAt?: string;
   // Legacy support for backward compatibility
   username?: string;
@@ -20,7 +24,7 @@ export interface User {
 }
 
 export interface LoginCredentials {
-  username: string;  // Can be username or email
+  username: string; // Can be username or email
   password: string;
   rememberMe?: boolean;
 }
@@ -78,13 +82,16 @@ export class AuthService {
   static async login(credentials: LoginCredentials): Promise<LoginResponse> {
     // Transform credentials to match LoginProvision backend expectation
     const loginData = {
-      loginName: credentials.username,  // Changed to loginName
+      loginName: credentials.username, // Changed to loginName
       password: credentials.password,
-      rememberMe: credentials.rememberMe || false
+      rememberMe: credentials.rememberMe || false,
     };
 
     // Use direct axios call to new LoginProvision endpoint
-    const response = await apiClient.post('/master/login-provision/authenticate', loginData);
+    const response = await apiClient.post(
+      '/master/login-provision/authenticate',
+      loginData
+    );
     const loginResponse: LoginResponse = response.data;
 
     // Store tokens
@@ -95,6 +102,11 @@ export class AuthService {
 
     // Store user data
     localStorage.setItem('user_data', JSON.stringify(loginResponse.userInfo));
+
+    // Store user's module permissions in permission store
+    const { usePermissionStore } = await import('@/store/permissionStore');
+    const modules = loginResponse.userInfo.modules || [];
+    usePermissionStore.getState().setModules(modules);
 
     return loginResponse;
   }
@@ -110,11 +122,15 @@ export class AuthService {
       const accessToken = TokenManager.getAccessToken();
       if (accessToken) {
         // Call new LoginProvision logout endpoint with token in Authorization header
-        await apiClient.post('/master/login-provision/logout', {}, {
-          headers: {
-            'Authorization': `Bearer ${accessToken}`
+        await apiClient.post(
+          '/master/login-provision/logout',
+          {},
+          {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+            },
           }
-        });
+        );
       }
     } catch (error) {
       // Continue with local logout even if server call fails
@@ -125,6 +141,10 @@ export class AuthService {
 
       // Clear any cached user data
       localStorage.removeItem('user_data');
+
+      // Clear permission store
+      const { usePermissionStore } = await import('@/store/permissionStore');
+      usePermissionStore.getState().clearModules();
     }
   }
 
@@ -153,10 +173,10 @@ export class AuthService {
   // Get current user profile
   static async getCurrentUser(): Promise<User> {
     const response = await api.get<User>('/auth/me');
-    
+
     // Update stored user data
     localStorage.setItem('user_data', JSON.stringify(response.data));
-    
+
     return response.data;
   }
 
@@ -175,10 +195,10 @@ export class AuthService {
     }
 
     const response = await api.put<User>('/auth/profile', requestData);
-    
+
     // Update stored user data
     localStorage.setItem('user_data', JSON.stringify(response.data));
-    
+
     return response.data;
   }
 
@@ -193,7 +213,10 @@ export class AuthService {
   }
 
   // Reset password with token
-  static async resetPassword(token: string, newPassword: string): Promise<void> {
+  static async resetPassword(
+    token: string,
+    newPassword: string
+  ): Promise<void> {
     await api.post('/auth/reset-password', {
       token,
       password: newPassword,
@@ -252,12 +275,20 @@ export class AuthService {
     const user = this.getStoredUser();
     if (!user) return '';
     // Use employeeName from backend, fallback to firstName + lastName, then loginName
-    return user.employeeName || `${(user as any).firstName || ''} ${(user as any).lastName || ''}`.trim() || user.loginName || user.username || '';
+    return (
+      user.employeeName ||
+      `${(user as any).firstName || ''} ${(user as any).lastName || ''}`.trim() ||
+      user.loginName ||
+      user.username ||
+      ''
+    );
   }
 
   // Enable/Disable two-factor authentication
   static async enableTwoFactor(): Promise<{ qrCode: string; secret: string }> {
-    const response = await api.post<{ qrCode: string; secret: string }>('/auth/2fa/enable');
+    const response = await api.post<{ qrCode: string; secret: string }>(
+      '/auth/2fa/enable'
+    );
     return response.data;
   }
 
@@ -270,20 +301,24 @@ export class AuthService {
   }
 
   // Get user sessions
-  static async getUserSessions(): Promise<Array<{
-    id: string;
-    device: string;
-    location: string;
-    lastActive: string;
-    current: boolean;
-  }>> {
-    const response = await api.get<Array<{
+  static async getUserSessions(): Promise<
+    Array<{
       id: string;
       device: string;
       location: string;
       lastActive: string;
       current: boolean;
-    }>>('/auth/sessions');
+    }>
+  > {
+    const response = await api.get<
+      Array<{
+        id: string;
+        device: string;
+        location: string;
+        lastActive: string;
+        current: boolean;
+      }>
+    >('/auth/sessions');
     return response.data;
   }
 

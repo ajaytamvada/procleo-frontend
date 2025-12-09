@@ -24,8 +24,11 @@ export const useApproveRejectRFP = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (request: { rfpId: number; action: string; remarks?: string }) =>
-      rfpApi.approveOrRejectRFP(request),
+    mutationFn: (request: {
+      rfpId: number;
+      action: string;
+      remarks?: string;
+    }) => rfpApi.approveOrRejectRFP(request),
     onSuccess: (data, variables) => {
       const action = variables.action.toLowerCase();
       toast.success(`RFP ${action}d successfully!`);
@@ -34,7 +37,9 @@ export const useApproveRejectRFP = () => {
       queryClient.invalidateQueries({ queryKey: ['rfp', data.id] });
     },
     onError: (error: any) => {
-      toast.error(error.response?.data?.message || 'Failed to process RFP approval');
+      toast.error(
+        error.response?.data?.message || 'Failed to process RFP approval'
+      );
     },
   });
 };

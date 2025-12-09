@@ -9,12 +9,7 @@ import type { BaseEntity } from './index';
 // User Role Types
 // ========================================
 
-export type UserRole = 
-  | 'SUPER_USER'
-  | 'VENDOR'
-  | 'MANAGER'
-  | 'HEAD'
-  | 'BUYER';
+export type UserRole = 'SUPER_USER' | 'VENDOR' | 'MANAGER' | 'HEAD' | 'BUYER';
 
 export interface RolePermissions {
   role: UserRole;
@@ -30,7 +25,7 @@ export type Permission =
   | 'UPDATE_USER'
   | 'DELETE_USER'
   | 'MANAGE_ROLES'
-  
+
   // Purchase Management
   | 'CREATE_PURCHASE_ORDER'
   | 'READ_PURCHASE_ORDER'
@@ -38,32 +33,32 @@ export type Permission =
   | 'DELETE_PURCHASE_ORDER'
   | 'APPROVE_PURCHASE_ORDER'
   | 'REJECT_PURCHASE_ORDER'
-  
+
   // Vendor Management
   | 'CREATE_VENDOR'
   | 'READ_VENDOR'
   | 'UPDATE_VENDOR'
   | 'DELETE_VENDOR'
   | 'APPROVE_VENDOR'
-  
+
   // Asset Management
   | 'CREATE_ASSET'
   | 'READ_ASSET'
   | 'UPDATE_ASSET'
   | 'DELETE_ASSET'
   | 'TRANSFER_ASSET'
-  
+
   // Inventory Management
   | 'CREATE_INVENTORY'
   | 'READ_INVENTORY'
   | 'UPDATE_INVENTORY'
   | 'DELETE_INVENTORY'
-  
+
   // Reports & Analytics
   | 'VIEW_REPORTS'
   | 'EXPORT_REPORTS'
   | 'VIEW_ANALYTICS'
-  
+
   // System Administration
   | 'SYSTEM_CONFIG'
   | 'AUDIT_LOGS'
@@ -186,63 +181,154 @@ export const ROLE_PERMISSIONS: Record<UserRole, RolePermissions> = {
     role: 'SUPER_USER',
     description: 'Full system access with all permissions',
     permissions: [
-      'CREATE_USER', 'READ_USER', 'UPDATE_USER', 'DELETE_USER', 'MANAGE_ROLES',
-      'CREATE_PURCHASE_ORDER', 'READ_PURCHASE_ORDER', 'UPDATE_PURCHASE_ORDER', 'DELETE_PURCHASE_ORDER', 'APPROVE_PURCHASE_ORDER', 'REJECT_PURCHASE_ORDER',
-      'CREATE_VENDOR', 'READ_VENDOR', 'UPDATE_VENDOR', 'DELETE_VENDOR', 'APPROVE_VENDOR',
-      'CREATE_ASSET', 'READ_ASSET', 'UPDATE_ASSET', 'DELETE_ASSET', 'TRANSFER_ASSET',
-      'CREATE_INVENTORY', 'READ_INVENTORY', 'UPDATE_INVENTORY', 'DELETE_INVENTORY',
-      'VIEW_REPORTS', 'EXPORT_REPORTS', 'VIEW_ANALYTICS',
-      'SYSTEM_CONFIG', 'AUDIT_LOGS', 'BACKUP_RESTORE', 'USER_ACTIVITY_LOGS'
+      'CREATE_USER',
+      'READ_USER',
+      'UPDATE_USER',
+      'DELETE_USER',
+      'MANAGE_ROLES',
+      'CREATE_PURCHASE_ORDER',
+      'READ_PURCHASE_ORDER',
+      'UPDATE_PURCHASE_ORDER',
+      'DELETE_PURCHASE_ORDER',
+      'APPROVE_PURCHASE_ORDER',
+      'REJECT_PURCHASE_ORDER',
+      'CREATE_VENDOR',
+      'READ_VENDOR',
+      'UPDATE_VENDOR',
+      'DELETE_VENDOR',
+      'APPROVE_VENDOR',
+      'CREATE_ASSET',
+      'READ_ASSET',
+      'UPDATE_ASSET',
+      'DELETE_ASSET',
+      'TRANSFER_ASSET',
+      'CREATE_INVENTORY',
+      'READ_INVENTORY',
+      'UPDATE_INVENTORY',
+      'DELETE_INVENTORY',
+      'VIEW_REPORTS',
+      'EXPORT_REPORTS',
+      'VIEW_ANALYTICS',
+      'SYSTEM_CONFIG',
+      'AUDIT_LOGS',
+      'BACKUP_RESTORE',
+      'USER_ACTIVITY_LOGS',
     ],
-    screens: ['dashboard', 'users', 'purchases', 'vendors', 'assets', 'inventory', 'reports', 'settings', 'audit']
+    screens: [
+      'dashboard',
+      'users',
+      'purchases',
+      'vendors',
+      'assets',
+      'inventory',
+      'reports',
+      'settings',
+      'audit',
+    ],
   },
   VENDOR: {
     role: 'VENDOR',
     description: 'External vendor access with limited permissions',
     permissions: [
-      'READ_PURCHASE_ORDER', 'UPDATE_PURCHASE_ORDER',
-      'READ_VENDOR', 'UPDATE_VENDOR'
+      'READ_PURCHASE_ORDER',
+      'UPDATE_PURCHASE_ORDER',
+      'READ_VENDOR',
+      'UPDATE_VENDOR',
     ],
-    screens: ['vendor-dashboard', 'purchase-orders', 'vendor-profile']
+    screens: ['vendor-dashboard', 'purchase-orders', 'vendor-profile'],
   },
   MANAGER: {
     role: 'MANAGER',
     description: 'Department manager with approval permissions',
     permissions: [
-      'READ_USER', 'UPDATE_USER',
-      'CREATE_PURCHASE_ORDER', 'READ_PURCHASE_ORDER', 'UPDATE_PURCHASE_ORDER', 'APPROVE_PURCHASE_ORDER', 'REJECT_PURCHASE_ORDER',
-      'READ_VENDOR', 'UPDATE_VENDOR', 'APPROVE_VENDOR',
-      'READ_ASSET', 'UPDATE_ASSET', 'TRANSFER_ASSET',
-      'READ_INVENTORY', 'UPDATE_INVENTORY',
-      'VIEW_REPORTS', 'EXPORT_REPORTS'
+      'READ_USER',
+      'UPDATE_USER',
+      'CREATE_PURCHASE_ORDER',
+      'READ_PURCHASE_ORDER',
+      'UPDATE_PURCHASE_ORDER',
+      'APPROVE_PURCHASE_ORDER',
+      'REJECT_PURCHASE_ORDER',
+      'READ_VENDOR',
+      'UPDATE_VENDOR',
+      'APPROVE_VENDOR',
+      'READ_ASSET',
+      'UPDATE_ASSET',
+      'TRANSFER_ASSET',
+      'READ_INVENTORY',
+      'UPDATE_INVENTORY',
+      'VIEW_REPORTS',
+      'EXPORT_REPORTS',
     ],
-    screens: ['dashboard', 'purchases', 'vendors', 'assets', 'inventory', 'reports']
+    screens: [
+      'dashboard',
+      'purchases',
+      'vendors',
+      'assets',
+      'inventory',
+      'reports',
+    ],
   },
   HEAD: {
     role: 'HEAD',
     description: 'Department head with extended permissions',
     permissions: [
-      'CREATE_USER', 'READ_USER', 'UPDATE_USER',
-      'CREATE_PURCHASE_ORDER', 'READ_PURCHASE_ORDER', 'UPDATE_PURCHASE_ORDER', 'APPROVE_PURCHASE_ORDER', 'REJECT_PURCHASE_ORDER',
-      'CREATE_VENDOR', 'READ_VENDOR', 'UPDATE_VENDOR', 'APPROVE_VENDOR',
-      'CREATE_ASSET', 'READ_ASSET', 'UPDATE_ASSET', 'TRANSFER_ASSET',
-      'CREATE_INVENTORY', 'READ_INVENTORY', 'UPDATE_INVENTORY',
-      'VIEW_REPORTS', 'EXPORT_REPORTS', 'VIEW_ANALYTICS'
+      'CREATE_USER',
+      'READ_USER',
+      'UPDATE_USER',
+      'CREATE_PURCHASE_ORDER',
+      'READ_PURCHASE_ORDER',
+      'UPDATE_PURCHASE_ORDER',
+      'APPROVE_PURCHASE_ORDER',
+      'REJECT_PURCHASE_ORDER',
+      'CREATE_VENDOR',
+      'READ_VENDOR',
+      'UPDATE_VENDOR',
+      'APPROVE_VENDOR',
+      'CREATE_ASSET',
+      'READ_ASSET',
+      'UPDATE_ASSET',
+      'TRANSFER_ASSET',
+      'CREATE_INVENTORY',
+      'READ_INVENTORY',
+      'UPDATE_INVENTORY',
+      'VIEW_REPORTS',
+      'EXPORT_REPORTS',
+      'VIEW_ANALYTICS',
     ],
-    screens: ['dashboard', 'users', 'purchases', 'vendors', 'assets', 'inventory', 'reports']
+    screens: [
+      'dashboard',
+      'users',
+      'purchases',
+      'vendors',
+      'assets',
+      'inventory',
+      'reports',
+    ],
   },
   BUYER: {
     role: 'BUYER',
     description: 'Procurement buyer with purchase creation permissions',
     permissions: [
-      'CREATE_PURCHASE_ORDER', 'READ_PURCHASE_ORDER', 'UPDATE_PURCHASE_ORDER',
-      'READ_VENDOR', 'UPDATE_VENDOR',
-      'READ_ASSET', 'UPDATE_ASSET',
-      'READ_INVENTORY', 'UPDATE_INVENTORY',
-      'VIEW_REPORTS'
+      'CREATE_PURCHASE_ORDER',
+      'READ_PURCHASE_ORDER',
+      'UPDATE_PURCHASE_ORDER',
+      'READ_VENDOR',
+      'UPDATE_VENDOR',
+      'READ_ASSET',
+      'UPDATE_ASSET',
+      'READ_INVENTORY',
+      'UPDATE_INVENTORY',
+      'VIEW_REPORTS',
     ],
-    screens: ['dashboard', 'purchases', 'vendors', 'assets', 'inventory', 'reports']
-  }
+    screens: [
+      'dashboard',
+      'purchases',
+      'vendors',
+      'assets',
+      'inventory',
+      'reports',
+    ],
+  },
 };
 
 // ========================================

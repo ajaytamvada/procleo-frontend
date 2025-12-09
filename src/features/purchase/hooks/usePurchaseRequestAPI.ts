@@ -1,6 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api';
-import type { PurchaseRequest, PurchaseRequestFilters, PagedResponse, PRStatus } from '../types';
+import type {
+  PurchaseRequest,
+  PurchaseRequestFilters,
+  PagedResponse,
+  PRStatus,
+} from '../types';
 
 const purchaseRequestAPI = {
   getAll: async (): Promise<PurchaseRequest[]> => {
@@ -18,9 +23,11 @@ const purchaseRequestAPI = {
       size: size.toString(),
     });
 
-    if (filters.requestNumber) params.append('requestNumber', filters.requestNumber);
+    if (filters.requestNumber)
+      params.append('requestNumber', filters.requestNumber);
     if (filters.requestedBy) params.append('requestedBy', filters.requestedBy);
-    if (filters.departmentId) params.append('departmentId', filters.departmentId.toString());
+    if (filters.departmentId)
+      params.append('departmentId', filters.departmentId.toString());
     if (filters.status) params.append('status', filters.status);
     if (filters.fromDate) params.append('fromDate', filters.fromDate);
     if (filters.toDate) params.append('toDate', filters.toDate);
@@ -73,22 +80,31 @@ const purchaseRequestAPI = {
 
   getPRStatus: async (search?: string): Promise<PRStatus[]> => {
     const params = search ? new URLSearchParams({ search }) : '';
-    const response = await apiClient.get(`/purchase/requests/status${params ? `?${params}` : ''}`);
+    const response = await apiClient.get(
+      `/purchase/requests/status${params ? `?${params}` : ''}`
+    );
     return response.data;
   },
 
-  exportToExcel: async (filters: PurchaseRequestFilters = {}): Promise<Blob> => {
+  exportToExcel: async (
+    filters: PurchaseRequestFilters = {}
+  ): Promise<Blob> => {
     const params = new URLSearchParams();
-    if (filters.requestNumber) params.append('requestNumber', filters.requestNumber);
+    if (filters.requestNumber)
+      params.append('requestNumber', filters.requestNumber);
     if (filters.requestedBy) params.append('requestedBy', filters.requestedBy);
-    if (filters.departmentId) params.append('departmentId', filters.departmentId.toString());
+    if (filters.departmentId)
+      params.append('departmentId', filters.departmentId.toString());
     if (filters.status) params.append('status', filters.status);
     if (filters.fromDate) params.append('fromDate', filters.fromDate);
     if (filters.toDate) params.append('toDate', filters.toDate);
 
-    const response = await apiClient.get(`/purchase/requests/export?${params}`, {
-      responseType: 'blob',
-    });
+    const response = await apiClient.get(
+      `/purchase/requests/export?${params}`,
+      {
+        responseType: 'blob',
+      }
+    );
     return response.data;
   },
 };
@@ -137,8 +153,13 @@ export const useCreatePurchaseRequest = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ data, sendForApproval }: { data: Omit<PurchaseRequest, 'id'>; sendForApproval: boolean }) =>
-      purchaseRequestAPI.create(data, sendForApproval),
+    mutationFn: ({
+      data,
+      sendForApproval,
+    }: {
+      data: Omit<PurchaseRequest, 'id'>;
+      sendForApproval: boolean;
+    }) => purchaseRequestAPI.create(data, sendForApproval),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['purchaseRequests'] });
     },

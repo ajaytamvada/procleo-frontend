@@ -1,6 +1,6 @@
 import React from 'react';
 import type { Permission, UserRole } from '@/types/user';
-import { usePermissions } from '@/hooks/usePermissions';
+import { useAuth } from '@/hooks/useAuth';
 
 interface PermissionGateProps {
   children: React.ReactNode;
@@ -9,9 +9,21 @@ interface PermissionGateProps {
   requireAll?: boolean;
   allowedRoles?: UserRole[];
   fallback?: React.ReactNode;
-  userRole: UserRole; // In real app, this would come from auth context
 }
 
+/**
+ * Permission Gate Component
+ *
+ * Controls visibility of UI elements based on user permissions.
+ * Uses legacy permission system for backward compatibility.
+ *
+ * @example
+ * ```tsx
+ * <PermissionGate requiredPermission="CREATE_PURCHASE_ORDER">
+ *   <CreateButton />
+ * </PermissionGate>
+ * ```
+ */
 const PermissionGate: React.FC<PermissionGateProps> = ({
   children,
   requiredPermission,
@@ -19,12 +31,11 @@ const PermissionGate: React.FC<PermissionGateProps> = ({
   requireAll = false,
   allowedRoles = [],
   fallback = null,
-  userRole
 }) => {
-  const { hasPermission, hasAnyPermission, hasAllPermissions } = usePermissions({ userRole });
+  const { hasPermission, hasRole } = useAuth();
 
   // Check role-based access
-  if (allowedRoles.length > 0 && !allowedRoles.includes(userRole)) {
+  if (allowedRoles.length > 0 && !allowedRoles.some(role => hasRole(role))) {
     return <>{fallback}</>;
   }
 
@@ -35,10 +46,10 @@ const PermissionGate: React.FC<PermissionGateProps> = ({
 
   // Check multiple permissions
   if (requiredPermissions.length > 0) {
-    const hasAccess = requireAll 
-      ? hasAllPermissions(requiredPermissions)
-      : hasAnyPermission(requiredPermissions);
-    
+    const hasAccess = requireAll
+      ? requiredPermissions.every(permission => hasPermission(permission))
+      : requiredPermissions.some(permission => hasPermission(permission));
+
     if (!hasAccess) {
       return <>{fallback}</>;
     }

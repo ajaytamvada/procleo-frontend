@@ -35,14 +35,17 @@ export interface SpinnerProps
 }
 
 const Spinner = React.forwardRef<HTMLDivElement, SpinnerProps>(
-  ({ 
-    className, 
-    size, 
-    variant,
-    animate = false,
-    label = 'Loading...',
-    ...props 
-  }, ref) => {
+  (
+    {
+      className,
+      size,
+      variant,
+      animate = false,
+      label = 'Loading...',
+      ...props
+    },
+    ref
+  ) => {
     const commonClassName = cn(spinnerVariants({ size, variant }), className);
 
     if (animate) {
@@ -50,7 +53,7 @@ const Spinner = React.forwardRef<HTMLDivElement, SpinnerProps>(
         <motion.div
           className={commonClassName}
           ref={ref}
-          role="status"
+          role='status'
           aria-label={label}
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -58,7 +61,7 @@ const Spinner = React.forwardRef<HTMLDivElement, SpinnerProps>(
           transition={{ duration: 0.2 }}
           {...(props as any)}
         >
-          <span className="sr-only">{label}</span>
+          <span className='sr-only'>{label}</span>
         </motion.div>
       );
     }
@@ -67,11 +70,11 @@ const Spinner = React.forwardRef<HTMLDivElement, SpinnerProps>(
       <div
         className={commonClassName}
         ref={ref}
-        role="status"
+        role='status'
         aria-label={label}
         {...props}
       >
-        <span className="sr-only">{label}</span>
+        <span className='sr-only'>{label}</span>
       </div>
     );
   }
@@ -79,23 +82,20 @@ const Spinner = React.forwardRef<HTMLDivElement, SpinnerProps>(
 Spinner.displayName = 'Spinner';
 
 // Skeleton loader component
-const skeletonVariants = cva(
-  'animate-pulse rounded-md bg-muted',
-  {
-    variants: {
-      variant: {
-        default: 'bg-muted',
-        text: 'bg-muted h-4 w-full',
-        avatar: 'bg-muted rounded-full',
-        button: 'bg-muted h-10 w-24',
-        card: 'bg-muted h-32 w-full',
-      },
+const skeletonVariants = cva('animate-pulse rounded-md bg-muted', {
+  variants: {
+    variant: {
+      default: 'bg-muted',
+      text: 'bg-muted h-4 w-full',
+      avatar: 'bg-muted rounded-full',
+      button: 'bg-muted h-10 w-24',
+      card: 'bg-muted h-32 w-full',
     },
-    defaultVariants: {
-      variant: 'default',
-    },
-  }
-);
+  },
+  defaultVariants: {
+    variant: 'default',
+  },
+});
 
 export interface SkeletonProps
   extends React.HTMLAttributes<HTMLDivElement>,
@@ -104,12 +104,7 @@ export interface SkeletonProps
 }
 
 const Skeleton = React.forwardRef<HTMLDivElement, SkeletonProps>(
-  ({ 
-    className, 
-    variant,
-    animate = false,
-    ...props 
-  }, ref) => {
+  ({ className, variant, animate = false, ...props }, ref) => {
     const commonClassName = cn(skeletonVariants({ variant }), className);
 
     if (animate) {
@@ -126,13 +121,7 @@ const Skeleton = React.forwardRef<HTMLDivElement, SkeletonProps>(
       );
     }
 
-    return (
-      <div
-        className={commonClassName}
-        ref={ref}
-        {...props}
-      />
-    );
+    return <div className={commonClassName} ref={ref} {...props} />;
   }
 );
 Skeleton.displayName = 'Skeleton';
@@ -165,22 +154,25 @@ export interface ProgressProps
 }
 
 const Progress = React.forwardRef<HTMLDivElement, ProgressProps>(
-  ({ 
-    className, 
-    size,
-    value = 0,
-    max = 100,
-    animate = true,
-    showLabel = false,
-    label,
-    ...props 
-  }, ref) => {
+  (
+    {
+      className,
+      size,
+      value = 0,
+      max = 100,
+      animate = true,
+      showLabel = false,
+      label,
+      ...props
+    },
+    ref
+  ) => {
     const percentage = Math.min(Math.max((value / max) * 100, 0), 100);
-    
+
     return (
-      <div className="w-full space-y-2">
+      <div className='w-full space-y-2'>
         {(showLabel || label) && (
-          <div className="flex justify-between text-sm">
+          <div className='flex justify-between text-sm'>
             <span>{label || 'Progress'}</span>
             <span>{Math.round(percentage)}%</span>
           </div>
@@ -188,13 +180,13 @@ const Progress = React.forwardRef<HTMLDivElement, ProgressProps>(
         <div
           className={cn(progressVariants({ size }), className)}
           ref={ref}
-          role="progressbar"
+          role='progressbar'
           aria-valuenow={value}
           aria-valuemax={max}
           {...props}
         >
           <motion.div
-            className="h-full w-full flex-1 bg-primary transition-all"
+            className='h-full w-full flex-1 bg-primary transition-all'
             initial={animate ? { width: 0 } : { width: `${percentage}%` }}
             animate={{ width: `${percentage}%` }}
             transition={{ duration: 0.5, ease: 'easeInOut' }}
@@ -206,4 +198,11 @@ const Progress = React.forwardRef<HTMLDivElement, ProgressProps>(
 );
 Progress.displayName = 'Progress';
 
-export { Spinner, Skeleton, Progress, spinnerVariants, skeletonVariants, progressVariants };
+export {
+  Spinner,
+  Skeleton,
+  Progress,
+  spinnerVariants,
+  skeletonVariants,
+  progressVariants,
+};

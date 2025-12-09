@@ -40,26 +40,27 @@ export class CacheManager {
       strategies: [
         {
           name: 'api-data',
-          shouldCache: (key) => key.startsWith('/api/'),
+          shouldCache: key => key.startsWith('/api/'),
           ttl: 5 * 60 * 1000, // 5 minutes
           priority: 'medium',
         },
         {
           name: 'user-data',
-          shouldCache: (key) => key.includes('user') || key.includes('profile'),
+          shouldCache: key => key.includes('user') || key.includes('profile'),
           ttl: 30 * 60 * 1000, // 30 minutes
           priority: 'high',
         },
         {
           name: 'static-content',
-          shouldCache: (key) => key.includes('assets') || key.includes('images'),
+          shouldCache: key => key.includes('assets') || key.includes('images'),
           ttl: 24 * 60 * 60 * 1000, // 24 hours
           priority: 'low',
           maxSize: 50 * 1024 * 1024, // 50MB
         },
         {
           name: 'dashboard-metrics',
-          shouldCache: (key) => key.includes('dashboard') || key.includes('metrics'),
+          shouldCache: key =>
+            key.includes('dashboard') || key.includes('metrics'),
           ttl: 2 * 60 * 1000, // 2 minutes
           priority: 'high',
         },
@@ -87,7 +88,10 @@ export class CacheManager {
 
   private async initializeMetrics(): Promise<void> {
     try {
-      const stored = await dbManager.get<CacheMetrics>('userPreferences', 'cache-metrics');
+      const stored = await dbManager.get<CacheMetrics>(
+        'userPreferences',
+        'cache-metrics'
+      );
       if (stored) {
         this.metrics = { ...this.metrics, ...stored };
       }
@@ -114,7 +118,11 @@ export class CacheManager {
   }
 
   private getStrategy(key: string): CacheStrategy | null {
-    return this.config.strategies.find(strategy => strategy.shouldCache(key, null)) || null;
+    return (
+      this.config.strategies.find(strategy =>
+        strategy.shouldCache(key, null)
+      ) || null
+    );
   }
 
   private async compressData(data: any): Promise<string> {
@@ -152,10 +160,10 @@ export class CacheManager {
     const stream = new CompressionStream('gzip');
     const writer = stream.writable.getWriter();
     const reader = stream.readable.getReader();
-    
+
     const encoder = new TextEncoder();
     const chunks: Uint8Array[] = [];
-    
+
     // Start reading
     const readPromise = (async () => {
       while (true) {
@@ -164,13 +172,13 @@ export class CacheManager {
         chunks.push(value);
       }
     })();
-    
+
     // Write data
     await writer.write(encoder.encode(data));
     await writer.close();
-    
+
     await readPromise;
-    
+
     // Combine chunks and convert to base64
     const totalLength = chunks.reduce((sum, chunk) => sum + chunk.length, 0);
     const combined = new Uint8Array(totalLength);
@@ -179,21 +187,23 @@ export class CacheManager {
       combined.set(chunk, offset);
       offset += chunk.length;
     }
-    
+
     return btoa(String.fromCharCode(...combined));
   }
 
   private async decompress(compressedData: string): Promise<string> {
     // Decode base64 and decompress
-    const compressed = Uint8Array.from(atob(compressedData), c => c.charCodeAt(0));
-    
+    const compressed = Uint8Array.from(atob(compressedData), c =>
+      c.charCodeAt(0)
+    );
+
     const stream = new DecompressionStream('gzip');
     const writer = stream.writable.getWriter();
     const reader = stream.readable.getReader();
-    
+
     const decoder = new TextDecoder();
     const chunks: string[] = [];
-    
+
     // Start reading
     const readPromise = (async () => {
       while (true) {
@@ -202,18 +212,22 @@ export class CacheManager {
         chunks.push(decoder.decode(value, { stream: true }));
       }
     })();
-    
+
     // Write compressed data
     await writer.write(compressed);
     await writer.close();
-    
+
     await readPromise;
-    
+
     return chunks.join('');
   }
 
   // Public API
-  async set<T>(key: string, data: T, options: { ttl?: number; priority?: 'low' | 'medium' | 'high' } = {}): Promise<boolean> {
+  async set<T>(
+    key: string,
+    data: T,
+    options: { ttl?: number; priority?: 'low' | 'medium' | 'high' } = {}
+  ): Promise<boolean> {
     try {
       const strategy = this.getStrategy(key);
       if (!strategy && !options.ttl) {
@@ -222,10 +236,10 @@ export class CacheManager {
 
       const ttl = options.ttl || strategy?.ttl || 5 * 60 * 1000;
       const priority = options.priority || strategy?.priority || 'medium';
-      
+
       const compressedData = await this.compressData(data);
       const size = new Blob([compressedData]).size;
-      
+
       // Check size limits
       if (strategy?.maxSize && size > strategy.maxSize) {
         console.warn(`Data too large for cache strategy: ${strategy.name}`);
@@ -241,7 +255,7 @@ export class CacheManager {
 
       // Update cache size metric
       this.metrics.cacheSize += size;
-      
+
       return true;
     } catch (error) {
       console.error('Cache set failed:', error);
@@ -252,9 +266,9 @@ export class CacheManager {
   async get<T>(key: string): Promise<T | null> {
     try {
       this.metrics.totalRequests++;
-      
+
       const cached = await dbManager.getCache<string>(key);
-      
+
       if (cached === null) {
         this.metrics.totalMisses++;
         this.updateHitRate();
@@ -263,7 +277,7 @@ export class CacheManager {
 
       this.metrics.totalHits++;
       this.updateHitRate();
-      
+
       const data = await this.decompressData(cached);
       return data as T;
     } catch (error) {
@@ -277,10 +291,10 @@ export class CacheManager {
   async invalidate(pattern: string): Promise<void> {
     try {
       await dbManager.invalidateCache(pattern);
-      
+
       // Also invalidate React Query cache
       this.queryClient.invalidateQueries({
-        predicate: (query) => {
+        predicate: query => {
           const queryKey = query.queryKey.join('/');
           return queryKey.includes(pattern);
         },
@@ -304,24 +318,28 @@ export class CacheManager {
     try {
       // Clean expired cache
       const expiredCount = await dbManager.cleanExpiredCache();
-      
+
       // Clean old files
-      const oldFileCount = await dbManager.cleanOldFiles(7 * 24 * 60 * 60 * 1000); // 7 days
-      
+      const oldFileCount = await dbManager.cleanOldFiles(
+        7 * 24 * 60 * 60 * 1000
+      ); // 7 days
+
       // Check total cache size and evict if necessary
       const dbSize = await dbManager.getDatabaseSize();
       const totalSize = dbSize.reduce((sum, store) => sum + store.size, 0);
-      
+
       if (totalSize > this.config.maxTotalSize) {
         await this.performEviction(totalSize - this.config.maxTotalSize);
       }
-      
+
       this.metrics.lastCleanup = Date.now();
       this.metrics.cacheSize = totalSize;
-      
+
       await this.saveMetrics();
-      
-      console.log(`Cache cleanup: removed ${expiredCount} expired items, ${oldFileCount} old files`);
+
+      console.log(
+        `Cache cleanup: removed ${expiredCount} expired items, ${oldFileCount} old files`
+      );
     } catch (error) {
       console.error('Cache cleanup failed:', error);
     }
@@ -332,11 +350,16 @@ export class CacheManager {
     const allCacheItems = await dbManager.getAll<any>('cache');
 
     // Sort by priority (low first) then by timestamp (oldest first)
-    const priorityOrder: Record<string, number> = { low: 1, medium: 2, high: 3 };
+    const priorityOrder: Record<string, number> = {
+      low: 1,
+      medium: 2,
+      high: 3,
+    };
     const sortedItems = allCacheItems.sort((a: any, b: any) => {
       const aPriority = a.metadata?.priority || 'medium';
       const bPriority = b.metadata?.priority || 'medium';
-      const priorityDiff = (priorityOrder[aPriority] || 2) - (priorityOrder[bPriority] || 2);
+      const priorityDiff =
+        (priorityOrder[aPriority] || 2) - (priorityOrder[bPriority] || 2);
       if (priorityDiff !== 0) return priorityDiff;
       return (a.timestamp || 0) - (b.timestamp || 0);
     });
@@ -353,16 +376,17 @@ export class CacheManager {
   }
 
   private updateHitRate(): void {
-    this.metrics.hitRate = this.metrics.totalRequests > 0 
-      ? this.metrics.totalHits / this.metrics.totalRequests 
-      : 0;
+    this.metrics.hitRate =
+      this.metrics.totalRequests > 0
+        ? this.metrics.totalHits / this.metrics.totalRequests
+        : 0;
     this.metrics.missRate = 1 - this.metrics.hitRate;
   }
 
   // Advanced caching strategies
   async warmCache(keys: string[]): Promise<void> {
     // Pre-populate cache with likely-to-be-requested data
-    const promises = keys.map(async (key) => {
+    const promises = keys.map(async key => {
       try {
         // Check if data exists in React Query cache
         const data = this.queryClient.getQueryData<unknown>([key]);
@@ -381,7 +405,7 @@ export class CacheManager {
     // Check if data is already cached
     const cached = await this.get(key);
     if (cached) return;
-    
+
     try {
       const data = await fetcher();
       await this.set(key, data);
@@ -421,7 +445,7 @@ export class CacheManager {
   // Update configuration
   updateConfig(newConfig: Partial<CacheConfig>): void {
     this.config = { ...this.config, ...newConfig };
-    
+
     // Restart cleanup interval if changed
     if (newConfig.cleanupInterval && this.cleanupInterval) {
       clearInterval(this.cleanupInterval);

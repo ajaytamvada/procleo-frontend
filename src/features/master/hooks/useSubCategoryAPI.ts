@@ -30,7 +30,11 @@ const subCategoryAPI = {
     return response.data;
   },
 
-  getPaged: async (page = 0, size = 15, filters: SubCategoryFilters = {}): Promise<PagedResponse<SubCategory>> => {
+  getPaged: async (
+    page = 0,
+    size = 15,
+    filters: SubCategoryFilters = {}
+  ): Promise<PagedResponse<SubCategory>> => {
     const params = new URLSearchParams({
       page: page.toString(),
       size: size.toString(),
@@ -38,7 +42,8 @@ const subCategoryAPI = {
 
     if (filters.name) params.append('name', filters.name);
     if (filters.code) params.append('code', filters.code);
-    if (filters.categoryName) params.append('categoryName', filters.categoryName);
+    if (filters.categoryName)
+      params.append('categoryName', filters.categoryName);
 
     const response = await apiClient.get(`/master/subcategories?${params}`);
     return response.data;
@@ -50,17 +55,27 @@ const subCategoryAPI = {
   },
 
   getByCategoryId: async (categoryId: number): Promise<SubCategory[]> => {
-    const response = await apiClient.get(`/master/subcategories/category/${categoryId}`);
+    const response = await apiClient.get(
+      `/master/subcategories/category/${categoryId}`
+    );
     return response.data;
   },
 
-  create: async (subCategory: Omit<SubCategory, 'id' | 'categoryName'>): Promise<SubCategory> => {
+  create: async (
+    subCategory: Omit<SubCategory, 'id' | 'categoryName'>
+  ): Promise<SubCategory> => {
     const response = await apiClient.post('/master/subcategories', subCategory);
     return response.data;
   },
 
-  update: async (id: number, subCategory: Omit<SubCategory, 'id' | 'categoryName'>): Promise<SubCategory> => {
-    const response = await apiClient.put(`/master/subcategories/${id}`, subCategory);
+  update: async (
+    id: number,
+    subCategory: Omit<SubCategory, 'id' | 'categoryName'>
+  ): Promise<SubCategory> => {
+    const response = await apiClient.put(
+      `/master/subcategories/${id}`,
+      subCategory
+    );
     return response.data;
   },
 
@@ -72,11 +87,15 @@ const subCategoryAPI = {
     const params = new URLSearchParams();
     if (filters.name) params.append('name', filters.name);
     if (filters.code) params.append('code', filters.code);
-    if (filters.categoryName) params.append('categoryName', filters.categoryName);
+    if (filters.categoryName)
+      params.append('categoryName', filters.categoryName);
 
-    const response = await apiClient.get(`/master/subcategories/export?${params}`, {
-      responseType: 'blob',
-    });
+    const response = await apiClient.get(
+      `/master/subcategories/export?${params}`,
+      {
+        responseType: 'blob',
+      }
+    );
     return response.data;
   },
 };
@@ -88,7 +107,11 @@ export const useSubCategories = () => {
   });
 };
 
-export const useSubCategoriesPaged = (page: number, size: number, filters: SubCategoryFilters) => {
+export const useSubCategoriesPaged = (
+  page: number,
+  size: number,
+  filters: SubCategoryFilters
+) => {
   return useQuery<PagedResponse<SubCategory>>({
     queryKey: ['subcategories', 'paged', page, size, filters],
     queryFn: () => subCategoryAPI.getPaged(page, size, filters),
@@ -126,8 +149,13 @@ export const useUpdateSubCategory = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, data }: { id: number; data: Omit<SubCategory, 'id' | 'categoryName'> }) =>
-      subCategoryAPI.update(id, data),
+    mutationFn: ({
+      id,
+      data,
+    }: {
+      id: number;
+      data: Omit<SubCategory, 'id' | 'categoryName'>;
+    }) => subCategoryAPI.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['subcategories'] });
     },

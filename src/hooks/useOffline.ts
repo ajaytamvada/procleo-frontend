@@ -26,10 +26,11 @@ interface ServiceWorkerRegistration {
 
 export function useOfflineSupport() {
   const [isOnline, setIsOnline] = useState(navigator.onLine);
-  const [swRegistration, setSwRegistration] = useState<ServiceWorkerRegistration | null>(null);
+  const [swRegistration, setSwRegistration] =
+    useState<ServiceWorkerRegistration | null>(null);
   const [queuedMutations, setQueuedMutations] = useState<OfflineMutation[]>([]);
   const [isInstalling, setIsInstalling] = useState(false);
-  
+
   const queryClient = useQueryClient();
   const cacheManager = useCacheManager();
   const { setOnlineStatus, addNotification } = useAppActions();
@@ -39,7 +40,7 @@ export function useOfflineSupport() {
     if ('serviceWorker' in navigator) {
       registerServiceWorker();
     }
-    
+
     // Load existing queued mutations from IndexedDB
     dbManager.getMutationQueue().then(setQueuedMutations).catch(console.error);
   }, []);
@@ -50,12 +51,12 @@ export function useOfflineSupport() {
       setIsOnline(true);
       setOnlineStatus(true);
       toast.success('Back online! Syncing data...');
-      
+
       // Trigger background sync if available
       if (swRegistration?.sync) {
         swRegistration.sync.register('sync-mutations').catch(console.error);
       }
-      
+
       // Refetch stale queries
       queryClient.refetchQueries({
         stale: true,
@@ -88,7 +89,10 @@ export function useOfflineSupport() {
         const newWorker = registration.installing;
         if (newWorker) {
           newWorker.addEventListener('statechange', () => {
-            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+            if (
+              newWorker.state === 'installed' &&
+              navigator.serviceWorker.controller
+            ) {
               // New version available
               addNotification({
                 type: 'info',
@@ -111,7 +115,10 @@ export function useOfflineSupport() {
       });
 
       // Listen for messages from service worker
-      navigator.serviceWorker.addEventListener('message', handleServiceWorkerMessage);
+      navigator.serviceWorker.addEventListener(
+        'message',
+        handleServiceWorkerMessage
+      );
 
       console.log('Service Worker registered successfully');
     } catch (error) {
@@ -128,10 +135,10 @@ export function useOfflineSupport() {
       case 'MUTATION_SYNCED':
         // Remove synced mutation from queue
         setQueuedMutations(prev => prev.filter(m => m.id !== mutation.id));
-        
+
         // Invalidate related queries
         queryClient.invalidateQueries();
-        
+
         toast.success(`Synced: ${mutation.description}`);
         break;
 
@@ -141,45 +148,55 @@ export function useOfflineSupport() {
   };
 
   // Queue mutation for offline sync
-  const queueMutation = useCallback(async (
-    url: string,
-    options: RequestInit,
-    description: string,
-    priority: 'low' | 'medium' | 'high' = 'medium'
-  ): Promise<string> => {
-    const mutationId = await dbManager.queueMutation({
-      url,
-      method: options.method || 'GET',
-      headers: (options.headers as Record<string, string>) || {},
-      body: options.body as string,
-      description,
-      priority,
-    });
-
-    // Update local state
-    const mutations = await dbManager.getMutationQueue();
-    setQueuedMutations(mutations);
-
-    // Send to service worker
-    if (navigator.serviceWorker.controller) {
-      navigator.serviceWorker.controller.postMessage({
-        type: 'QUEUE_MUTATION',
-        data: { id: mutationId, url, method: options.method, headers: options.headers, body: options.body, description },
+  const queueMutation = useCallback(
+    async (
+      url: string,
+      options: RequestInit,
+      description: string,
+      priority: 'low' | 'medium' | 'high' = 'medium'
+    ): Promise<string> => {
+      const mutationId = await dbManager.queueMutation({
+        url,
+        method: options.method || 'GET',
+        headers: (options.headers as Record<string, string>) || {},
+        body: options.body as string,
+        description,
+        priority,
       });
-    }
 
-    // Register for background sync if available
-    if (swRegistration?.sync) {
-      try {
-        await swRegistration.sync.register('sync-mutations');
-      } catch (error) {
-        console.error('Background sync registration failed:', error);
+      // Update local state
+      const mutations = await dbManager.getMutationQueue();
+      setQueuedMutations(mutations);
+
+      // Send to service worker
+      if (navigator.serviceWorker.controller) {
+        navigator.serviceWorker.controller.postMessage({
+          type: 'QUEUE_MUTATION',
+          data: {
+            id: mutationId,
+            url,
+            method: options.method,
+            headers: options.headers,
+            body: options.body,
+            description,
+          },
+        });
       }
-    }
 
-    toast(`Queued for sync: ${description}`);
-    return mutationId;
-  }, [swRegistration]);
+      // Register for background sync if available
+      if (swRegistration?.sync) {
+        try {
+          await swRegistration.sync.register('sync-mutations');
+        } catch (error) {
+          console.error('Background sync registration failed:', error);
+        }
+      }
+
+      toast(`Queued for sync: ${description}`);
+      return mutationId;
+    },
+    [swRegistration]
+  );
 
   // Remove mutation from queue
   const removeMutationFromQueue = useCallback(async (id: string) => {
@@ -193,17 +210,17 @@ export function useOfflineSupport() {
     try {
       // Clear IndexedDB cache
       await cacheManager.clear();
-      
+
       // Clear service worker cache
       if (navigator.serviceWorker.controller) {
         navigator.serviceWorker.controller.postMessage({
           type: 'CLEAR_CACHE',
         });
       }
-      
+
       // Clear React Query cache
       queryClient.clear();
-      
+
       toast.success('All caches cleared successfully');
     } catch (error) {
       toast.error('Failed to clear caches');
@@ -229,37 +246,40 @@ export function useOfflineSupport() {
   }, [isOnline, swRegistration]);
 
   // Get offline-capable mutation function
-  const createOfflineMutation = useCallback((
-    mutationFn: (variables: any) => Promise<any>,
-    description: (variables: any) => string
-  ) => {
-    return async (variables: any) => {
-      if (isOnline) {
-        // Execute normally when online
-        return mutationFn(variables);
-      } else {
-        // Queue for later when offline
-        // This is a simplified example - in practice, you'd need to
-        // serialize the mutation details for the service worker
-        const mutationId = await queueMutation(
-          '/api/offline-mutation',
-          {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(variables),
-          },
-          description(variables)
-        );
+  const createOfflineMutation = useCallback(
+    (
+      mutationFn: (variables: any) => Promise<any>,
+      description: (variables: any) => string
+    ) => {
+      return async (variables: any) => {
+        if (isOnline) {
+          // Execute normally when online
+          return mutationFn(variables);
+        } else {
+          // Queue for later when offline
+          // This is a simplified example - in practice, you'd need to
+          // serialize the mutation details for the service worker
+          const mutationId = await queueMutation(
+            '/api/offline-mutation',
+            {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(variables),
+            },
+            description(variables)
+          );
 
-        // Return a promise that resolves with a temporary ID
-        return {
-          id: mutationId,
-          offline: true,
-          ...variables,
-        };
-      }
-    };
-  }, [isOnline, queueMutation]);
+          // Return a promise that resolves with a temporary ID
+          return {
+            id: mutationId,
+            offline: true,
+            ...variables,
+          };
+        }
+      };
+    },
+    [isOnline, queueMutation]
+  );
 
   return {
     isOnline,
@@ -284,13 +304,15 @@ export function useOfflineQuery<T>(
   } = {}
 ) {
   const { isOnline } = useOfflineSupport();
-  
+
   return {
     ...useQuery({
       queryKey,
       queryFn: async () => {
         if (!isOnline && !options.fallbackData) {
-          throw new Error(options.offlineMessage || 'Data not available offline');
+          throw new Error(
+            options.offlineMessage || 'Data not available offline'
+          );
         }
         return queryFn();
       },
@@ -320,25 +342,28 @@ export function useDataPersistence() {
     }
   }, []);
 
-  const restoreData = useCallback((key: string, maxAge: number = 24 * 60 * 60 * 1000) => {
-    try {
-      const stored = localStorage.getItem(`persist_${key}`);
-      if (!stored) return null;
+  const restoreData = useCallback(
+    (key: string, maxAge: number = 24 * 60 * 60 * 1000) => {
+      try {
+        const stored = localStorage.getItem(`persist_${key}`);
+        if (!stored) return null;
 
-      const item = JSON.parse(stored);
-      const age = Date.now() - item.timestamp;
+        const item = JSON.parse(stored);
+        const age = Date.now() - item.timestamp;
 
-      if (age > maxAge) {
-        localStorage.removeItem(`persist_${key}`);
+        if (age > maxAge) {
+          localStorage.removeItem(`persist_${key}`);
+          return null;
+        }
+
+        return item.data;
+      } catch (error) {
+        console.error('Failed to restore data:', error);
         return null;
       }
-
-      return item.data;
-    } catch (error) {
-      console.error('Failed to restore data:', error);
-      return null;
-    }
-  }, []);
+    },
+    []
+  );
 
   const clearPersistedData = useCallback((key?: string) => {
     if (key) {

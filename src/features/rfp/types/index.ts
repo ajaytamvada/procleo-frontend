@@ -121,7 +121,7 @@ export enum RFPStatus {
   APPROVED = 'APPROVED',
   REJECTED = 'REJECTED',
   CLOSED = 'CLOSED',
-  CANCELLED = 'CANCELLED'
+  CANCELLED = 'CANCELLED',
 }
 
 export enum SupplierStatus {
@@ -130,7 +130,7 @@ export enum SupplierStatus {
   SHORTLISTED = 'SHORTLISTED',
   SELECTED = 'SELECTED',
   REJECTED = 'REJECTED',
-  WITHDRAWN = 'WITHDRAWN'
+  WITHDRAWN = 'WITHDRAWN',
 }
 
 export enum QuotationStatus {
@@ -141,7 +141,7 @@ export enum QuotationStatus {
   SHORTLISTED = 'SHORTLISTED',
   SELECTED = 'SELECTED',
   REJECTED = 'REJECTED',
-  WITHDRAWN = 'WITHDRAWN'
+  WITHDRAWN = 'WITHDRAWN',
 }
 
 export interface RFPFormData {

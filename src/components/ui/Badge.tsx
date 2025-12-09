@@ -8,12 +8,17 @@ const badgeVariants = cva(
   {
     variants: {
       variant: {
-        default: 'border-transparent bg-primary text-primary-foreground shadow hover:bg-primary/80',
-        secondary: 'border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80',
-        destructive: 'border-transparent bg-destructive text-destructive-foreground shadow hover:bg-destructive/80',
+        default:
+          'border-transparent bg-primary text-primary-foreground shadow hover:bg-primary/80',
+        secondary:
+          'border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80',
+        destructive:
+          'border-transparent bg-destructive text-destructive-foreground shadow hover:bg-destructive/80',
         outline: 'text-foreground',
-        success: 'border-transparent bg-green-100 text-green-800 hover:bg-green-200 dark:bg-green-900 dark:text-green-300',
-        warning: 'border-transparent bg-yellow-100 text-yellow-800 hover:bg-yellow-200 dark:bg-yellow-900 dark:text-yellow-300',
+        success:
+          'border-transparent bg-green-100 text-green-800 hover:bg-green-200 dark:bg-green-900 dark:text-green-300',
+        warning:
+          'border-transparent bg-yellow-100 text-yellow-800 hover:bg-yellow-200 dark:bg-yellow-900 dark:text-yellow-300',
         info: 'border-transparent bg-blue-100 text-blue-800 hover:bg-blue-200 dark:bg-blue-900 dark:text-blue-300',
       },
       size: {
@@ -40,29 +45,42 @@ export interface BadgeProps
 }
 
 const Badge = React.forwardRef<HTMLDivElement, BadgeProps>(
-  ({ 
-    className, 
-    variant, 
-    size,
-    animate = false,
-    leftIcon,
-    rightIcon,
-    removable = false,
-    onRemove,
-    children,
-    ...props 
-  }, ref) => {
+  (
+    {
+      className,
+      variant,
+      size,
+      animate = false,
+      leftIcon,
+      rightIcon,
+      removable = false,
+      onRemove,
+      children,
+      ...props
+    },
+    ref
+  ) => {
     const Component = animate ? motion.div : 'div';
-    
-    const motionProps = animate ? {
-      initial: { scale: 0, opacity: 0 },
-      animate: { scale: 1, opacity: 1 },
-      exit: { scale: 0, opacity: 0 },
-      transition: { type: 'spring' as const, stiffness: 500, damping: 30 },
-    } : {};
+
+    const motionProps = animate
+      ? {
+          initial: { scale: 0, opacity: 0 },
+          animate: { scale: 1, opacity: 1 },
+          exit: { scale: 0, opacity: 0 },
+          transition: { type: 'spring' as const, stiffness: 500, damping: 30 },
+        }
+      : {};
 
     // Filter out motion-conflicting props when using motion.div
-    const { onDrag, onDragEnd, onDragStart, onAnimationStart, onAnimationEnd, onAnimationIteration, ...safeProps } = props;
+    const {
+      onDrag,
+      onDragEnd,
+      onDragStart,
+      onAnimationStart,
+      onAnimationEnd,
+      onAnimationIteration,
+      ...safeProps
+    } = props;
 
     return (
       <Component
@@ -72,35 +90,35 @@ const Badge = React.forwardRef<HTMLDivElement, BadgeProps>(
         {...safeProps}
       >
         {leftIcon && (
-          <span className="mr-1 flex items-center" aria-hidden="true">
+          <span className='mr-1 flex items-center' aria-hidden='true'>
             {leftIcon}
           </span>
         )}
         {children}
         {rightIcon && (
-          <span className="ml-1 flex items-center" aria-hidden="true">
+          <span className='ml-1 flex items-center' aria-hidden='true'>
             {rightIcon}
           </span>
         )}
         {removable && onRemove && (
           <button
-            type="button"
+            type='button'
             onClick={onRemove}
-            className="ml-1 flex h-3 w-3 items-center justify-center rounded-full hover:bg-black/10 focus:outline-none focus:ring-1 focus:ring-ring dark:hover:bg-white/10"
-            aria-label="Remove badge"
+            className='ml-1 flex h-3 w-3 items-center justify-center rounded-full hover:bg-black/10 focus:outline-none focus:ring-1 focus:ring-ring dark:hover:bg-white/10'
+            aria-label='Remove badge'
           >
             <svg
-              className="h-2 w-2"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
+              className='h-2 w-2'
+              fill='none'
+              stroke='currentColor'
+              viewBox='0 0 24 24'
+              xmlns='http://www.w3.org/2000/svg'
             >
               <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
+                strokeLinecap='round'
+                strokeLinejoin='round'
                 strokeWidth={2}
-                d="M6 18L18 6M6 6l12 12"
+                d='M6 18L18 6M6 6l12 12'
               />
             </svg>
           </button>

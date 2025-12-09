@@ -15,9 +15,12 @@ const companyAPI = {
 
     if (filters.name) params.append('name', filters.name);
     if (filters.code) params.append('code', filters.code);
-    if (filters.active !== undefined) params.append('active', filters.active.toString());
+    if (filters.active !== undefined)
+      params.append('active', filters.active.toString());
 
-    const response = await apiClient.get<PagedResponse<Company>>(`/master/companies?${params}`);
+    const response = await apiClient.get<PagedResponse<Company>>(
+      `/master/companies?${params}`
+    );
     return response.data;
   },
 
@@ -32,12 +35,18 @@ const companyAPI = {
   },
 
   create: async (company: Omit<Company, 'id'>) => {
-    const response = await apiClient.post<Company>(`/master/companies`, company);
+    const response = await apiClient.post<Company>(
+      `/master/companies`,
+      company
+    );
     return response.data;
   },
 
   update: async (id: number, company: Partial<Company>) => {
-    const response = await apiClient.put<Company>(`/master/companies/${id}`, company);
+    const response = await apiClient.put<Company>(
+      `/master/companies/${id}`,
+      company
+    );
     return response.data;
   },
 
@@ -51,11 +60,15 @@ const companyAPI = {
 };
 
 // React Query hooks
-export const useCompanies = (page = 0, size = 20, filters: MasterEntityFilters = {}) => {
+export const useCompanies = (
+  page = 0,
+  size = 20,
+  filters: MasterEntityFilters = {}
+) => {
   return useQuery({
     queryKey: ['companies', page, size, filters],
     queryFn: () => companyAPI.getAll(page, size, filters),
-    placeholderData: (previousData) => previousData,
+    placeholderData: previousData => previousData,
   });
 };
 
@@ -84,7 +97,8 @@ export const useCreateCompany = () => {
       toast.success('Company created successfully');
     },
     onError: (error: any) => {
-      const message = error.response?.data?.message || 'Failed to create company';
+      const message =
+        error.response?.data?.message || 'Failed to create company';
       toast.error(message);
     },
   });
@@ -102,7 +116,8 @@ export const useUpdateCompany = () => {
       toast.success('Company updated successfully');
     },
     onError: (error: any) => {
-      const message = error.response?.data?.message || 'Failed to update company';
+      const message =
+        error.response?.data?.message || 'Failed to update company';
       toast.error(message);
     },
   });
@@ -118,7 +133,8 @@ export const useDeleteCompany = () => {
       toast.success('Company deleted successfully');
     },
     onError: (error: any) => {
-      const message = error.response?.data?.message || 'Failed to delete company';
+      const message =
+        error.response?.data?.message || 'Failed to delete company';
       toast.error(message);
     },
   });
@@ -134,7 +150,8 @@ export const useToggleCompanyStatus = () => {
       toast.success('Company status updated successfully');
     },
     onError: (error: any) => {
-      const message = error.response?.data?.message || 'Failed to update company status';
+      const message =
+        error.response?.data?.message || 'Failed to update company status';
       toast.error(message);
     },
   });

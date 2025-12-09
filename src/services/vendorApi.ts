@@ -36,8 +36,14 @@ export const vendorApi = {
   /**
    * Update an existing vendor
    */
-  updateVendor: async (id: number, vendor: Partial<Vendor>): Promise<Vendor> => {
-    const response = await apiClient.put<Vendor>(`${VENDOR_BASE_URL}/${id}`, vendor);
+  updateVendor: async (
+    id: number,
+    vendor: Partial<Vendor>
+  ): Promise<Vendor> => {
+    const response = await apiClient.put<Vendor>(
+      `${VENDOR_BASE_URL}/${id}`,
+      vendor
+    );
     return response.data;
   },
 

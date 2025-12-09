@@ -32,7 +32,11 @@ const stateAPI = {
     return response.data;
   },
 
-  getPaged: async (page = 0, size = 15, filters: StateFilters = {}): Promise<PagedResponse<State>> => {
+  getPaged: async (
+    page = 0,
+    size = 15,
+    filters: StateFilters = {}
+  ): Promise<PagedResponse<State>> => {
     const params = new URLSearchParams({
       page: page.toString(),
       size: size.toString(),
@@ -91,7 +95,11 @@ export const useStates = () => {
   });
 };
 
-export const useStatesPaged = (page = 0, size = 15, filters: StateFilters = {}) => {
+export const useStatesPaged = (
+  page = 0,
+  size = 15,
+  filters: StateFilters = {}
+) => {
   return useQuery({
     queryKey: [...STATE_QUERY_KEY, 'paged', page, size, filters],
     queryFn: () => stateAPI.getPaged(page, size, filters),

@@ -10,9 +10,11 @@ const PURCHASE_ORDER_KEYS = {
   list: (status?: string) => [...PURCHASE_ORDER_KEYS.lists(), status] as const,
   details: () => [...PURCHASE_ORDER_KEYS.all, 'detail'] as const,
   detail: (id: number) => [...PURCHASE_ORDER_KEYS.details(), id] as const,
-  byNumber: (poNumber: string) => [...PURCHASE_ORDER_KEYS.all, 'number', poNumber] as const,
+  byNumber: (poNumber: string) =>
+    [...PURCHASE_ORDER_KEYS.all, 'number', poNumber] as const,
   approvedRFPs: () => [...PURCHASE_ORDER_KEYS.all, 'approved-rfps'] as const,
-  generateNumber: () => [...PURCHASE_ORDER_KEYS.all, 'generate-number'] as const,
+  generateNumber: () =>
+    [...PURCHASE_ORDER_KEYS.all, 'generate-number'] as const,
 };
 
 // Get all purchase orders
@@ -75,10 +77,14 @@ export const useSearchPurchaseOrders = (searchTerm: string) => {
 };
 
 // Get POs by date range
-export const usePurchaseOrdersByDateRange = (startDate: string, endDate: string) => {
+export const usePurchaseOrdersByDateRange = (
+  startDate: string,
+  endDate: string
+) => {
   return useQuery({
     queryKey: [...PURCHASE_ORDER_KEYS.all, 'dateRange', startDate, endDate],
-    queryFn: () => purchaseOrderApi.getPurchaseOrdersByDateRange(startDate, endDate),
+    queryFn: () =>
+      purchaseOrderApi.getPurchaseOrdersByDateRange(startDate, endDate),
     enabled: !!startDate && !!endDate,
     staleTime: 30000, // 30 seconds
   });
@@ -107,14 +113,16 @@ export const useCreatePurchaseOrder = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: Partial<PurchaseOrder>) => purchaseOrderApi.createPurchaseOrder(data),
+    mutationFn: (data: Partial<PurchaseOrder>) =>
+      purchaseOrderApi.createPurchaseOrder(data),
     onSuccess: () => {
       toast.success('Purchase Order created successfully');
       queryClient.invalidateQueries({ queryKey: PURCHASE_ORDER_KEYS.lists() });
     },
     onError: (error: any) => {
       const errorMessage =
-        error.response?.data?.message || 'Failed to create purchase order. Please try again.';
+        error.response?.data?.message ||
+        'Failed to create purchase order. Please try again.';
       toast.error(errorMessage);
     },
   });
@@ -125,16 +133,24 @@ export const useCreatePOFromRFP = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ rfpId, data }: { rfpId: number; data: Partial<PurchaseOrder> }) =>
-      purchaseOrderApi.createPOFromRFP(rfpId, data),
+    mutationFn: ({
+      rfpId,
+      data,
+    }: {
+      rfpId: number;
+      data: Partial<PurchaseOrder>;
+    }) => purchaseOrderApi.createPOFromRFP(rfpId, data),
     onSuccess: () => {
       toast.success('Purchase Order created from RFP successfully');
       queryClient.invalidateQueries({ queryKey: PURCHASE_ORDER_KEYS.lists() });
-      queryClient.invalidateQueries({ queryKey: PURCHASE_ORDER_KEYS.approvedRFPs() });
+      queryClient.invalidateQueries({
+        queryKey: PURCHASE_ORDER_KEYS.approvedRFPs(),
+      });
     },
     onError: (error: any) => {
       const errorMessage =
-        error.response?.data?.message || 'Failed to create PO from RFP. Please try again.';
+        error.response?.data?.message ||
+        'Failed to create PO from RFP. Please try again.';
       toast.error(errorMessage);
     },
   });
@@ -149,12 +165,15 @@ export const useUpdatePurchaseOrder = () => {
       purchaseOrderApi.updatePurchaseOrder(id, data),
     onSuccess: (_, variables) => {
       toast.success('Purchase Order updated successfully');
-      queryClient.invalidateQueries({ queryKey: PURCHASE_ORDER_KEYS.detail(variables.id) });
+      queryClient.invalidateQueries({
+        queryKey: PURCHASE_ORDER_KEYS.detail(variables.id),
+      });
       queryClient.invalidateQueries({ queryKey: PURCHASE_ORDER_KEYS.lists() });
     },
     onError: (error: any) => {
       const errorMessage =
-        error.response?.data?.message || 'Failed to update purchase order. Please try again.';
+        error.response?.data?.message ||
+        'Failed to update purchase order. Please try again.';
       toast.error(errorMessage);
     },
   });
@@ -172,7 +191,8 @@ export const useDeletePurchaseOrder = () => {
     },
     onError: (error: any) => {
       const errorMessage =
-        error.response?.data?.message || 'Failed to delete purchase order. Please try again.';
+        error.response?.data?.message ||
+        'Failed to delete purchase order. Please try again.';
       toast.error(errorMessage);
     },
   });
@@ -186,12 +206,15 @@ export const useSubmitPOForApproval = () => {
     mutationFn: (id: number) => purchaseOrderApi.submitForApproval(id),
     onSuccess: (_, id) => {
       toast.success('Purchase Order submitted for approval');
-      queryClient.invalidateQueries({ queryKey: PURCHASE_ORDER_KEYS.detail(id) });
+      queryClient.invalidateQueries({
+        queryKey: PURCHASE_ORDER_KEYS.detail(id),
+      });
       queryClient.invalidateQueries({ queryKey: PURCHASE_ORDER_KEYS.lists() });
     },
     onError: (error: any) => {
       const errorMessage =
-        error.response?.data?.message || 'Failed to submit PO for approval. Please try again.';
+        error.response?.data?.message ||
+        'Failed to submit PO for approval. Please try again.';
       toast.error(errorMessage);
     },
   });
@@ -206,12 +229,15 @@ export const useApprovePurchaseOrder = () => {
       purchaseOrderApi.approvePurchaseOrder(id, approvedBy),
     onSuccess: (_, variables) => {
       toast.success('Purchase Order approved successfully');
-      queryClient.invalidateQueries({ queryKey: PURCHASE_ORDER_KEYS.detail(variables.id) });
+      queryClient.invalidateQueries({
+        queryKey: PURCHASE_ORDER_KEYS.detail(variables.id),
+      });
       queryClient.invalidateQueries({ queryKey: PURCHASE_ORDER_KEYS.lists() });
     },
     onError: (error: any) => {
       const errorMessage =
-        error.response?.data?.message || 'Failed to approve purchase order. Please try again.';
+        error.response?.data?.message ||
+        'Failed to approve purchase order. Please try again.';
       toast.error(errorMessage);
     },
   });
@@ -226,12 +252,15 @@ export const useRejectPurchaseOrder = () => {
       purchaseOrderApi.rejectPurchaseOrder(id, reason),
     onSuccess: (_, variables) => {
       toast.success('Purchase Order rejected');
-      queryClient.invalidateQueries({ queryKey: PURCHASE_ORDER_KEYS.detail(variables.id) });
+      queryClient.invalidateQueries({
+        queryKey: PURCHASE_ORDER_KEYS.detail(variables.id),
+      });
       queryClient.invalidateQueries({ queryKey: PURCHASE_ORDER_KEYS.lists() });
     },
     onError: (error: any) => {
       const errorMessage =
-        error.response?.data?.message || 'Failed to reject purchase order. Please try again.';
+        error.response?.data?.message ||
+        'Failed to reject purchase order. Please try again.';
       toast.error(errorMessage);
     },
   });
@@ -246,12 +275,15 @@ export const useCancelPurchaseOrder = () => {
       purchaseOrderApi.cancelPurchaseOrder(id, reason),
     onSuccess: (_, variables) => {
       toast.success('Purchase Order cancelled');
-      queryClient.invalidateQueries({ queryKey: PURCHASE_ORDER_KEYS.detail(variables.id) });
+      queryClient.invalidateQueries({
+        queryKey: PURCHASE_ORDER_KEYS.detail(variables.id),
+      });
       queryClient.invalidateQueries({ queryKey: PURCHASE_ORDER_KEYS.lists() });
     },
     onError: (error: any) => {
       const errorMessage =
-        error.response?.data?.message || 'Failed to cancel purchase order. Please try again.';
+        error.response?.data?.message ||
+        'Failed to cancel purchase order. Please try again.';
       toast.error(errorMessage);
     },
   });
@@ -275,7 +307,8 @@ export const useExportPOToPdf = () => {
     },
     onError: (error: any) => {
       const errorMessage =
-        error.response?.data?.message || 'Failed to export PO to PDF. Please try again.';
+        error.response?.data?.message ||
+        'Failed to export PO to PDF. Please try again.';
       toast.error(errorMessage);
     },
   });

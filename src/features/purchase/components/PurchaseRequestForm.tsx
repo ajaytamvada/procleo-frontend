@@ -10,7 +10,12 @@ import { useItemSearch } from '../hooks/useItemSearch';
 import { useDepartmentsList } from '@/features/master/hooks/useDepartmentAPI';
 import { useFloors } from '@/features/master/hooks/useFloorAPI';
 import { AuthService } from '@/services/auth';
-import { downloadExcelTemplate, parseExcelFile, validateLineItems, type ExcelLineItem } from '../utils/excelUtils';
+import {
+  downloadExcelTemplate,
+  parseExcelFile,
+  validateLineItems,
+  type ExcelLineItem,
+} from '../utils/excelUtils';
 import { apiClient } from '@/lib/api';
 
 const purchaseRequestSchema = z.object({
@@ -18,23 +23,28 @@ const purchaseRequestSchema = z.object({
   requestedBy: z.string().min(1, 'Requestor is required'),
   departmentId: z.number().min(1, 'Department is required'),
   locationId: z.number().min(1, 'Location is required'),
+  purchaseType: z.string().optional(),
+  projectCode: z.string().optional(),
+  projectName: z.string().optional(),
   remarks: z.string().optional(),
-  items: z.array(
-    z.object({
-      itemId: z.number().min(1, 'Item is required'),
-      categoryId: z.number(),
-      categoryName: z.string().optional(),
-      subCategoryId: z.number(),
-      subCategoryName: z.string().optional(),
-      modelName: z.string().optional(),
-      make: z.string().optional(),
-      uomId: z.number().optional(),
-      uomName: z.string().optional(),
-      quantity: z.number().min(1, 'Quantity must be at least 1'),
-      unitPrice: z.number().optional(),
-      description: z.string().optional(),
-    })
-  ).min(1, 'At least one item is required'),
+  items: z
+    .array(
+      z.object({
+        itemId: z.number().min(0, 'Item ID must be valid'),
+        categoryId: z.number(),
+        categoryName: z.string().optional(),
+        subCategoryId: z.number(),
+        subCategoryName: z.string().optional(),
+        modelName: z.string().optional(),
+        make: z.string().optional(),
+        uomId: z.number().optional(),
+        uomName: z.string().optional(),
+        quantity: z.number().min(1, 'Quantity must be at least 1'),
+        unitPrice: z.number().optional(),
+        description: z.string().optional(),
+      })
+    )
+    .min(1, 'At least one item is required'),
 });
 
 type PurchaseRequestFormData = z.infer<typeof purchaseRequestSchema>;
@@ -52,12 +62,19 @@ const PurchaseRequestForm: React.FC<PurchaseRequestFormProps> = ({
   onCancel,
   isSubmitting = false,
 }) => {
-  const [searchQueries, setSearchQueries] = useState<Record<number, string>>({});
-  const [activeSearchIndex, setActiveSearchIndex] = useState<number | null>(null);
+  const [searchQueries, setSearchQueries] = useState<Record<number, string>>(
+    {}
+  );
+  const [activeSearchIndex, setActiveSearchIndex] = useState<number | null>(
+    null
+  );
   const [showDropdown, setShowDropdown] = useState<Record<number, boolean>>({});
   const dropdownRefs = useRef<Record<number, HTMLDivElement | null>>({});
   const [isUploadingExcel, setIsUploadingExcel] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState({ current: 0, total: 0 });
+  const [uploadProgress, setUploadProgress] = useState({
+    current: 0,
+    total: 0,
+  });
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [pendingSubmission, setPendingSubmission] = useState<boolean>(false);
@@ -65,7 +82,8 @@ const PurchaseRequestForm: React.FC<PurchaseRequestFormProps> = ({
   const { data: departments = [] } = useDepartmentsList();
   const { data: floors = [] } = useFloors();
 
-  const currentSearchQuery = activeSearchIndex !== null ? searchQueries[activeSearchIndex] || '' : '';
+  const currentSearchQuery =
+    activeSearchIndex !== null ? searchQueries[activeSearchIndex] || '' : '';
   const { data: searchResults = [] } = useItemSearch(
     currentSearchQuery,
     activeSearchIndex !== null && currentSearchQuery.length > 0
@@ -78,6 +96,7 @@ const PurchaseRequestForm: React.FC<PurchaseRequestFormProps> = ({
     formState: { errors },
     watch,
     setValue,
+    reset,
   } = useForm<PurchaseRequestFormData>({
     resolver: zodResolver(purchaseRequestSchema),
     defaultValues: purchaseRequest || {
@@ -85,6 +104,9 @@ const PurchaseRequestForm: React.FC<PurchaseRequestFormProps> = ({
       requestedBy: AuthService.getUserFullName(),
       departmentId: undefined,
       locationId: undefined,
+      purchaseType: '',
+      projectCode: '',
+      projectName: '',
       remarks: '',
       items: [
         {
@@ -107,6 +129,71 @@ const PurchaseRequestForm: React.FC<PurchaseRequestFormProps> = ({
     control,
     name: 'items',
   });
+
+  // Reset form when purchaseRequest prop changes
+  useEffect(() => {
+    if (purchaseRequest) {
+      // Debug logging to see what data we're receiving
+      console.log('=== PR Edit Data Received ===');
+      console.log('Full PR:', purchaseRequest);
+      console.log('Items:', purchaseRequest.items);
+      if (purchaseRequest.items && purchaseRequest.items.length > 0) {
+        console.log('First item fields:', purchaseRequest.items[0]);
+      }
+      console.log('=============================');
+
+      // Reset only header fields (not items)
+      const headerValues = {
+        requestDate: purchaseRequest.requestDate || new Date().toISOString().split('T')[0],
+        requestedBy: purchaseRequest.requestedBy || AuthService.getUserFullName(),
+        departmentId: purchaseRequest.departmentId,
+        locationId: purchaseRequest.locationId,
+        purchaseType: purchaseRequest.purchaseType || '',
+        projectCode: purchaseRequest.projectCode || '',
+        projectName: purchaseRequest.projectName || '',
+        remarks: purchaseRequest.remarks || '',
+      };
+
+      // Reset header values (excluding items to avoid conflict)
+      reset({
+        ...headerValues,
+        items: [], // Temporarily set empty, will be replaced below
+      });
+
+      // Replace items array separately with all required fields
+      if (purchaseRequest.items && purchaseRequest.items.length > 0) {
+        // Map items to ensure all fields are present
+        const mappedItems = purchaseRequest.items.map(item => ({
+          id: item.id,
+          itemId: item.itemId || 0,
+          categoryId: item.categoryId || 0,
+          categoryName: item.categoryName || '',
+          subCategoryId: item.subCategoryId || 0,
+          subCategoryName: item.subCategoryName || '',
+          modelName: item.modelName || '',
+          make: item.make || '',
+          uomId: item.uomId || 0,
+          uomName: item.uomName || '',
+          quantity: item.quantity || 1,
+          unitPrice: item.unitPrice || 0,
+          totalPrice: item.totalPrice || (item.quantity || 0) * (item.unitPrice || 0),
+          description: item.description || '',
+          rmApprovalStatus: item.rmApprovalStatus,
+          approvalRemarks: item.approvalRemarks,
+        }));
+
+        console.log('Mapped items for form:', mappedItems);
+        replace(mappedItems);
+
+        // Populate search queries with model names so they appear in the input fields
+        const newSearchQueries: Record<number, string> = {};
+        purchaseRequest.items.forEach((item, index) => {
+          newSearchQueries[index] = item.modelName || '';
+        });
+        setSearchQueries(newSearchQueries);
+      }
+    }
+  }, [purchaseRequest, reset, replace]);
 
   const items = watch('items');
 
@@ -193,7 +280,7 @@ const PurchaseRequestForm: React.FC<PurchaseRequestFormProps> = ({
       setShowConfirmDialog(true);
     } else {
       // No confirmation needed for draft
-      handleSubmit((data) => onSubmit(data, sendForApproval))();
+      handleSubmit(data => onSubmit(data, sendForApproval))();
     }
   };
 
@@ -202,7 +289,7 @@ const PurchaseRequestForm: React.FC<PurchaseRequestFormProps> = ({
     setShowConfirmDialog(false);
     // Then submit the form
     setTimeout(() => {
-      handleSubmit((data) => onSubmit(data, true))();
+      handleSubmit(data => onSubmit(data, true))();
     }, 100);
   };
 
@@ -223,7 +310,9 @@ const PurchaseRequestForm: React.FC<PurchaseRequestFormProps> = ({
   };
 
   // Handle Excel file upload
-  const handleExcelUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleExcelUpload = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
@@ -265,7 +354,9 @@ const PurchaseRequestForm: React.FC<PurchaseRequestFormProps> = ({
       });
       setSearchQueries(newSearchQueries);
 
-      toast.success(`Successfully imported ${mappedItems.length} line items from Excel!`);
+      toast.success(
+        `Successfully imported ${mappedItems.length} line items from Excel!`
+      );
     } catch (error) {
       console.error('Excel upload error:', error);
       toast.error(`Failed to process Excel file: ${error}`);
@@ -290,7 +381,7 @@ const PurchaseRequestForm: React.FC<PurchaseRequestFormProps> = ({
       const batch = excelItems.slice(i, i + BATCH_SIZE);
 
       // Process all items in this batch in parallel
-      const batchPromises = batch.map(async (excelItem) => {
+      const batchPromises = batch.map(async excelItem => {
         try {
           // Search for the item by model name
           const response = await apiClient.get(
@@ -304,7 +395,8 @@ const PurchaseRequestForm: React.FC<PurchaseRequestFormProps> = ({
             // Try to find exact match first (case-insensitive)
             matchedItem = searchResults.find(
               (item: any) =>
-                item.displayName?.toLowerCase() === excelItem.model.toLowerCase() ||
+                item.displayName?.toLowerCase() ===
+                excelItem.model.toLowerCase() ||
                 item.modelName?.toLowerCase() === excelItem.model.toLowerCase()
             );
 
@@ -372,45 +464,49 @@ const PurchaseRequestForm: React.FC<PurchaseRequestFormProps> = ({
       mappedItems.push(...batchResults);
 
       // Update progress
-      setUploadProgress({ current: mappedItems.length, total: excelItems.length });
+      setUploadProgress({
+        current: mappedItems.length,
+        total: excelItems.length,
+      });
     }
 
     return mappedItems;
   };
 
   const inputClass = (hasError: boolean) =>
-    `w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-      hasError ? 'border-red-500' : 'border-gray-300'
+    `w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${hasError ? 'border-red-500' : 'border-gray-300'
     }`;
 
   return (
-    <div className="bg-white rounded-lg shadow-md">
-      <div className="border-b border-gray-200 p-6">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
+    <div className='bg-white rounded-lg shadow-md'>
+      <div className='border-b border-gray-200 p-6'>
+        <div className='flex items-center justify-between'>
+          <div className='flex items-center gap-4'>
             <button
               onClick={onCancel}
-              className="text-gray-600 hover:text-gray-800 transition-colors"
+              className='text-gray-600 hover:text-gray-800 transition-colors'
               disabled={isSubmitting}
             >
               <ArrowLeft size={24} />
             </button>
-            <h2 className="text-2xl font-bold text-gray-800">Create Purchase Request</h2>
+            <h2 className='text-2xl font-bold text-gray-800'>
+              Create Purchase Request
+            </h2>
           </div>
-          <div className="flex gap-2">
+          <div className='flex gap-2'>
             <button
-              type="button"
+              type='button'
               onClick={() => handleFormSubmit(false)}
               disabled={isSubmitting}
-              className="px-6 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors disabled:bg-gray-400"
+              className='px-6 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors disabled:bg-gray-400'
             >
               Save as Draft
             </button>
             <button
-              type="button"
+              type='button'
               onClick={() => handleFormSubmit(true)}
               disabled={isSubmitting}
-              className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:bg-gray-400"
+              className='px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:bg-gray-400'
             >
               Submit
             </button>
@@ -418,55 +514,63 @@ const PurchaseRequestForm: React.FC<PurchaseRequestFormProps> = ({
         </div>
       </div>
 
-      <form className="p-6">
+      <form className='p-6' onSubmit={(e) => { e.preventDefault(); /* Form submission is handled by buttons */ }}>
         {/* Header Information */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        <div className='grid grid-cols-1 md:grid-cols-2 gap-6 mb-6'>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              <span className="text-red-500">*</span> Request Date
+            <label className='block text-sm font-medium text-gray-700 mb-2'>
+              <span className='text-red-500'>*</span> Request Date
             </label>
             <input
-              type="date"
+              type='date'
               {...register('requestDate')}
               className={inputClass(!!errors.requestDate)}
               disabled={isSubmitting}
             />
             {errors.requestDate && (
-              <p className="mt-1 text-sm text-red-600">{errors.requestDate.message}</p>
+              <p className='mt-1 text-sm text-red-600'>
+                {errors.requestDate.message}
+              </p>
             )}
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              <span className="text-red-500">*</span> Requestor
+            <label className='block text-sm font-medium text-gray-700 mb-2'>
+              <span className='text-red-500'>*</span> Requestor
             </label>
             <input
               {...register('requestedBy')}
               className={inputClass(!!errors.requestedBy)}
               disabled={isSubmitting}
-              placeholder="Enter requestor name"
+              placeholder='Enter requestor name'
             />
             {errors.requestedBy && (
-              <p className="mt-1 text-sm text-red-600">{errors.requestedBy.message}</p>
+              <p className='mt-1 text-sm text-red-600'>
+                {errors.requestedBy.message}
+              </p>
             )}
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              <span className="text-red-500">*</span> Location
+            <label className='block text-sm font-medium text-gray-700 mb-2'>
+              <span className='text-red-500'>*</span> Location
             </label>
             <Controller
-              name="locationId"
+              name='locationId'
               control={control}
               render={({ field }) => (
                 <select
                   {...field}
                   value={field.value || ''}
-                  onChange={e => field.onChange(e.target.value ? Number(e.target.value) : undefined)}
+                  onChange={e =>
+                    field.onChange(
+                      e.target.value ? Number(e.target.value) : undefined
+                    )
+                  }
                   className={inputClass(!!errors.locationId)}
                   disabled={isSubmitting}
                 >
-                  <option value="">Select Location</option>
+                  <option value=''>Select Location</option>
                   {floors.map(floor => (
                     <option key={floor.id} value={floor.id}>
                       {floor.name}
@@ -476,26 +580,32 @@ const PurchaseRequestForm: React.FC<PurchaseRequestFormProps> = ({
               )}
             />
             {errors.locationId && (
-              <p className="mt-1 text-sm text-red-600">{errors.locationId.message}</p>
+              <p className='mt-1 text-sm text-red-600'>
+                {errors.locationId.message}
+              </p>
             )}
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              <span className="text-red-500">*</span> Department
+            <label className='block text-sm font-medium text-gray-700 mb-2'>
+              <span className='text-red-500'>*</span> Department
             </label>
             <Controller
-              name="departmentId"
+              name='departmentId'
               control={control}
               render={({ field }) => (
                 <select
                   {...field}
                   value={field.value || ''}
-                  onChange={e => field.onChange(e.target.value ? Number(e.target.value) : undefined)}
+                  onChange={e =>
+                    field.onChange(
+                      e.target.value ? Number(e.target.value) : undefined
+                    )
+                  }
                   className={inputClass(!!errors.departmentId)}
                   disabled={isSubmitting}
                 >
-                  <option value="">Select</option>
+                  <option value=''>Select</option>
                   {departments.map(dept => (
                     <option key={dept.id} value={dept.id}>
                       {dept.name}
@@ -505,12 +615,52 @@ const PurchaseRequestForm: React.FC<PurchaseRequestFormProps> = ({
               )}
             />
             {errors.departmentId && (
-              <p className="mt-1 text-sm text-red-600">{errors.departmentId.message}</p>
+              <p className='mt-1 text-sm text-red-600'>
+                {errors.departmentId.message}
+              </p>
             )}
           </div>
 
-          <div className="md:col-span-2">
-            <label className="block text-sm font-medium text-gray-700 mb-2">Justification</label>
+          <div>
+            <label className='block text-sm font-medium text-gray-700 mb-2'>
+              Purchase Type
+            </label>
+            <input
+              {...register('purchaseType')}
+              className={inputClass(!!errors.purchaseType)}
+              disabled={isSubmitting}
+              placeholder='Enter purchase type'
+            />
+          </div>
+
+          <div>
+            <label className='block text-sm font-medium text-gray-700 mb-2'>
+              Project Code
+            </label>
+            <input
+              {...register('projectCode')}
+              className={inputClass(!!errors.projectCode)}
+              disabled={isSubmitting}
+              placeholder='Enter project code'
+            />
+          </div>
+
+          <div>
+            <label className='block text-sm font-medium text-gray-700 mb-2'>
+              Project Name
+            </label>
+            <input
+              {...register('projectName')}
+              className={inputClass(!!errors.projectName)}
+              disabled={isSubmitting}
+              placeholder='Enter project name'
+            />
+          </div>
+
+          <div className='md:col-span-2'>
+            <label className='block text-sm font-medium text-gray-700 mb-2'>
+              Justification
+            </label>
             <textarea
               {...register('remarks')}
               rows={3}
@@ -521,17 +671,19 @@ const PurchaseRequestForm: React.FC<PurchaseRequestFormProps> = ({
         </div>
 
         {/* Line Items */}
-        <div className="border-t border-gray-200 pt-6">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-800">Item Details</h3>
-            <div className="flex items-center gap-2">
+        <div className='border-t border-gray-200 pt-6'>
+          <div className='flex items-center justify-between mb-4'>
+            <h3 className='text-lg font-semibold text-gray-800'>
+              Item Details
+            </h3>
+            <div className='flex items-center gap-2'>
               {/* Download Template Button */}
               <button
-                type="button"
+                type='button'
                 onClick={handleDownloadTemplate}
                 disabled={isSubmitting}
-                className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:bg-gray-400"
-                title="Download Excel Template"
+                className='flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:bg-gray-400'
+                title='Download Excel Template'
               >
                 <Download size={18} />
                 Download Template
@@ -539,11 +691,11 @@ const PurchaseRequestForm: React.FC<PurchaseRequestFormProps> = ({
 
               {/* Upload Excel Button */}
               <button
-                type="button"
+                type='button'
                 onClick={() => fileInputRef.current?.click()}
                 disabled={isSubmitting || isUploadingExcel}
-                className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors disabled:bg-gray-400"
-                title="Upload Excel File"
+                className='flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors disabled:bg-gray-400'
+                title='Upload Excel File'
               >
                 <Upload size={18} />
                 {isUploadingExcel
@@ -554,15 +706,15 @@ const PurchaseRequestForm: React.FC<PurchaseRequestFormProps> = ({
               {/* Hidden File Input */}
               <input
                 ref={fileInputRef}
-                type="file"
-                accept=".xlsx,.xls"
+                type='file'
+                accept='.xlsx,.xls'
                 onChange={handleExcelUpload}
-                className="hidden"
+                className='hidden'
               />
 
               {/* Add Line Item Button */}
               <button
-                type="button"
+                type='button'
                 onClick={() =>
                   append({
                     itemId: 0,
@@ -578,7 +730,7 @@ const PurchaseRequestForm: React.FC<PurchaseRequestFormProps> = ({
                   })
                 }
                 disabled={isSubmitting}
-                className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:bg-gray-400"
+                className='flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:bg-gray-400'
               >
                 <Plus size={18} />
                 Add Line Item
@@ -586,162 +738,234 @@ const PurchaseRequestForm: React.FC<PurchaseRequestFormProps> = ({
             </div>
           </div>
 
-          <div className="overflow-x-auto">
-            <table className="w-full border-collapse">
+          <div className='overflow-x-auto'>
+            <table className='w-full border-collapse'>
               <thead>
-                <tr className="bg-gray-100">
-                  <th className="border border-gray-300 px-4 py-2 text-center text-sm font-semibold">S.No</th>
-                  <th className="border border-gray-300 px-4 py-2 text-left text-sm font-semibold">Model</th>
-                  <th className="border border-gray-300 px-4 py-2 text-left text-sm font-semibold">Make</th>
-                  <th className="border border-gray-300 px-4 py-2 text-left text-sm font-semibold">Category</th>
-                  <th className="border border-gray-300 px-4 py-2 text-left text-sm font-semibold">Sub Category</th>
-                  <th className="border border-gray-300 px-4 py-2 text-left text-sm font-semibold">UOM</th>
-                  <th className="border border-gray-300 px-4 py-2 text-left text-sm font-semibold">Description</th>
-                  <th className="border border-gray-300 px-4 py-2 text-left text-sm font-semibold">Quantity</th>
-                  <th className="border border-gray-300 px-4 py-2 text-left text-sm font-semibold">Unit Price</th>
-                  <th className="border border-gray-300 px-4 py-2 text-left text-sm font-semibold">Sub Total</th>
-                  <th className="border border-gray-300 px-4 py-2 text-center text-sm font-semibold">Action</th>
+                <tr className='bg-gray-100'>
+                  <th className='border border-gray-300 px-4 py-2 text-center text-sm font-semibold'>
+                    S.No
+                  </th>
+                  <th className='border border-gray-300 px-4 py-2 text-left text-sm font-semibold'>
+                    Model
+                  </th>
+                  <th className='border border-gray-300 px-4 py-2 text-left text-sm font-semibold'>
+                    Make
+                  </th>
+                  <th className='border border-gray-300 px-4 py-2 text-left text-sm font-semibold'>
+                    Category
+                  </th>
+                  <th className='border border-gray-300 px-4 py-2 text-left text-sm font-semibold'>
+                    Sub Category
+                  </th>
+                  <th className='border border-gray-300 px-4 py-2 text-left text-sm font-semibold'>
+                    UOM
+                  </th>
+                  <th className='border border-gray-300 px-4 py-2 text-left text-sm font-semibold'>
+                    Description
+                  </th>
+                  <th className='border border-gray-300 px-4 py-2 text-left text-sm font-semibold'>
+                    Quantity
+                  </th>
+                  <th className='border border-gray-300 px-4 py-2 text-left text-sm font-semibold'>
+                    Unit Price
+                  </th>
+                  <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24'>
+                    Total
+                  </th>
+                  <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32'>
+                    Status
+                  </th>
+                  <th className='px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-16'>
+                    Action
+                  </th>
                 </tr>
               </thead>
               <tbody>
-                {fields.map((field, index) => (
-                  <tr key={field.id}>
-                    <td className="border border-gray-300 px-4 py-2 text-center font-medium text-gray-700">
-                      {index + 1}
-                    </td>
-                    <td className="border border-gray-300 px-2 py-2 relative">
-                      <div ref={el => { dropdownRefs.current[index] = el; }}>
-                        <input
-                          type="text"
-                          value={searchQueries[index] || ''}
-                          onChange={e => handleSearchInput(index, e.target.value)}
-                          placeholder="Type to search..."
-                          className="w-full px-2 py-1 border rounded text-sm"
-                          disabled={isSubmitting}
-                        />
-                        {showDropdown[index] && searchResults.length > 0 && (
-                          <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
-                            {searchResults.map(item => (
-                              <div
-                                key={item.id}
-                                onClick={() => handleItemSelect(index, item)}
-                                className="px-3 py-2 hover:bg-blue-50 cursor-pointer text-sm"
-                              >
-                                <div className="font-medium">{item.displayName}</div>
-                                <div className="text-xs text-gray-500">
-                                  {item.categoryName} - {item.subCategoryName}
+                {fields.map((field, index) => {
+                  const isAccepted = purchaseRequest?.items?.[index]?.rmApprovalStatus === 'Accepted';
+                  return (
+                    <tr key={field.id} className={isAccepted ? 'bg-gray-100' : 'hover:bg-gray-50'}>
+                      <td className='border border-gray-300 px-4 py-2 text-center font-medium text-gray-700'>
+                        {index + 1}
+                      </td>
+                      <td className='border border-gray-300 px-2 py-2 relative'>
+                        <div
+                          ref={el => {
+                            dropdownRefs.current[index] = el;
+                          }}
+                        >
+                          <input
+                            type='text'
+                            value={searchQueries[index] || ''}
+                            onChange={e =>
+                              handleSearchInput(index, e.target.value)
+                            }
+                            placeholder='Type to search...'
+                            className='w-full px-2 py-1 border rounded text-sm'
+                            disabled={isSubmitting}
+                          />
+                          {showDropdown[index] && searchResults.length > 0 && (
+                            <div className='absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto'>
+                              {searchResults.map(item => (
+                                <div
+                                  key={item.id}
+                                  onClick={() => handleItemSelect(index, item)}
+                                  className='px-3 py-2 hover:bg-blue-50 cursor-pointer text-sm'
+                                >
+                                  <div className='font-medium'>
+                                    {item.displayName}
+                                  </div>
+                                  <div className='text-xs text-gray-500'>
+                                    {item.categoryName} - {item.subCategoryName}
+                                  </div>
                                 </div>
-                              </div>
-                            ))}
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </td>
+                      <td className='border border-gray-300 px-2 py-2'>
+                        <input
+                          {...register(`items.${index}.make`)}
+                          className='w-full px-2 py-1 border rounded text-sm bg-gray-50'
+                          disabled
+                        />
+                      </td>
+                      <td className='border border-gray-300 px-2 py-2 text-sm'>
+                        <Controller
+                          name={`items.${index}.categoryName`}
+                          control={control}
+                          render={({ field }) => (
+                            <span className='text-gray-700'>
+                              {field.value || '-'}
+                            </span>
+                          )}
+                        />
+                      </td>
+                      <td className='border border-gray-300 px-2 py-2 text-sm'>
+                        <Controller
+                          name={`items.${index}.subCategoryName`}
+                          control={control}
+                          render={({ field }) => (
+                            <span className='text-gray-700'>
+                              {field.value || '-'}
+                            </span>
+                          )}
+                        />
+                      </td>
+                      <td className='border border-gray-300 px-2 py-2 text-sm'>
+                        <Controller
+                          name={`items.${index}.uomName`}
+                          control={control}
+                          render={({ field }) => (
+                            <span className='text-gray-700'>
+                              {field.value || '-'}
+                            </span>
+                          )}
+                        />
+                      </td>
+                      <td className='border border-gray-300 px-2 py-2'>
+                        <input
+                          {...register(`items.${index}.description`)}
+                          className={`w-full px-2 py-1 border rounded text-sm ${isAccepted ? 'bg-gray-100' : ''}`}
+                          disabled={isSubmitting || isAccepted}
+                        />
+                      </td>
+                      <td className='border border-gray-300 px-2 py-2'>
+                        <Controller
+                          name={`items.${index}.quantity`}
+                          control={control}
+                          render={({ field }) => (
+                            <input
+                              {...field}
+                              type='number'
+                              min='1'
+                              onChange={e =>
+                                field.onChange(Number(e.target.value))
+                              }
+                              className={`w-20 px-2 py-1 border rounded text-sm ${isAccepted ? 'bg-gray-100' : ''}`}
+                              disabled={isSubmitting || isAccepted}
+                            />
+                          )}
+                        />
+                      </td>
+                      <td className='border border-gray-300 px-2 py-2'>
+                        <Controller
+                          name={`items.${index}.unitPrice`}
+                          control={control}
+                          render={({ field }) => (
+                            <input
+                              {...field}
+                              type='number'
+                              min='0'
+                              step='0.01'
+                              onChange={e =>
+                                field.onChange(Number(e.target.value))
+                              }
+                              className={`w-24 px-2 py-1 border rounded text-sm ${isAccepted ? 'bg-gray-100' : ''}`}
+                              disabled={isSubmitting || isAccepted}
+                            />
+                          )}
+                        />
+                      </td>
+                      <td className='px-4 py-2 whitespace-nowrap text-sm text-gray-900'>
+                        {calculateLineTotal(index)}
+                      </td>
+                      <td className='px-4 py-2 whitespace-nowrap text-sm'>
+                        {/* Display status if available (from existing PR) */}
+                        {purchaseRequest?.items?.[index]?.rmApprovalStatus && (
+                          <div className='flex flex-col'>
+                            <span
+                              className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${purchaseRequest.items[index].rmApprovalStatus === 'Accepted'
+                                ? 'bg-green-100 text-green-800'
+                                : purchaseRequest.items[index].rmApprovalStatus === 'Rejected'
+                                  ? 'bg-red-100 text-red-800'
+                                  : 'bg-yellow-100 text-yellow-800'
+                                }`}
+                            >
+                              {purchaseRequest.items[index].rmApprovalStatus}
+                            </span>
+                            {purchaseRequest.items[index].approvalRemarks && (
+                              <span className='text-xs text-red-600 mt-1'>
+                                {purchaseRequest.items[index].approvalRemarks}
+                              </span>
+                            )}
                           </div>
                         )}
-                      </div>
-                    </td>
-                    <td className="border border-gray-300 px-2 py-2">
-                      <input
-                        {...register(`items.${index}.make`)}
-                        className="w-full px-2 py-1 border rounded text-sm bg-gray-50"
-                        disabled
-                      />
-                    </td>
-                    <td className="border border-gray-300 px-2 py-2 text-sm">
-                      <Controller
-                        name={`items.${index}.categoryName`}
-                        control={control}
-                        render={({ field }) => (
-                          <span className="text-gray-700">{field.value || '-'}</span>
-                        )}
-                      />
-                    </td>
-                    <td className="border border-gray-300 px-2 py-2 text-sm">
-                      <Controller
-                        name={`items.${index}.subCategoryName`}
-                        control={control}
-                        render={({ field }) => (
-                          <span className="text-gray-700">{field.value || '-'}</span>
-                        )}
-                      />
-                    </td>
-                    <td className="border border-gray-300 px-2 py-2 text-sm">
-                      <Controller
-                        name={`items.${index}.uomName`}
-                        control={control}
-                        render={({ field }) => (
-                          <span className="text-gray-700">{field.value || '-'}</span>
-                        )}
-                      />
-                    </td>
-                    <td className="border border-gray-300 px-2 py-2">
-                      <input
-                        {...register(`items.${index}.description`)}
-                        className="w-full px-2 py-1 border rounded text-sm"
-                        disabled={isSubmitting}
-                      />
-                    </td>
-                    <td className="border border-gray-300 px-2 py-2">
-                      <Controller
-                        name={`items.${index}.quantity`}
-                        control={control}
-                        render={({ field }) => (
-                          <input
-                            {...field}
-                            type="number"
-                            min="1"
-                            onChange={e => field.onChange(Number(e.target.value))}
-                            className="w-20 px-2 py-1 border rounded text-sm"
-                            disabled={isSubmitting}
-                          />
-                        )}
-                      />
-                    </td>
-                    <td className="border border-gray-300 px-2 py-2">
-                      <Controller
-                        name={`items.${index}.unitPrice`}
-                        control={control}
-                        render={({ field }) => (
-                          <input
-                            {...field}
-                            type="number"
-                            min="0"
-                            step="0.01"
-                            onChange={e => field.onChange(Number(e.target.value))}
-                            className="w-24 px-2 py-1 border rounded text-sm"
-                            disabled={isSubmitting}
-                          />
-                        )}
-                      />
-                    </td>
-                    <td className="border border-gray-300 px-2 py-2 text-right text-sm font-medium">
-                      {calculateLineTotal(index)}
-                    </td>
-                    <td className="border border-gray-300 px-2 py-2 text-center">
-                      <button
-                        type="button"
-                        onClick={() => handleDeleteItem(index)}
-                        disabled={isSubmitting || fields.length === 1}
-                        className="text-red-600 hover:text-red-800 disabled:text-gray-400"
-                      >
-                        <Trash2 size={18} />
-                      </button>
-                    </td>
-                  </tr>
-                ))}
+                      </td>
+                      <td className='px-4 py-2 whitespace-nowrap text-center'>
+                        <button
+                          type='button'
+                          onClick={() => handleDeleteItem(index)}
+                          className='text-red-600 hover:text-red-800 disabled:text-gray-400 disabled:cursor-not-allowed'
+                          disabled={isSubmitting || isAccepted}
+                          title={isAccepted ? 'Cannot delete accepted items' : 'Delete item'}
+                        >
+                          <Trash2 size={18} />
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
               <tfoot>
-                <tr className="bg-gray-100">
-                  <td colSpan={8} className="border border-gray-300 px-4 py-2 text-right font-semibold">
+                <tr className='bg-gray-100'>
+                  <td
+                    colSpan={8}
+                    className='border border-gray-300 px-4 py-2 text-right font-semibold'
+                  >
                     Grand Total
                   </td>
-                  <td className="border border-gray-300 px-4 py-2 text-right font-bold text-lg">
+                  <td className='border border-gray-300 px-4 py-2 text-right font-bold text-lg'>
                     ₹{grandTotal.toFixed(2)}
                   </td>
-                  <td className="border border-gray-300"></td>
+                  <td className='border border-gray-300'></td>
                 </tr>
               </tfoot>
             </table>
           </div>
           {errors.items && (
-            <p className="mt-2 text-sm text-red-600">{errors.items.message}</p>
+            <p className='mt-2 text-sm text-red-600'>{errors.items.message}</p>
           )}
         </div>
       </form>
@@ -750,10 +974,10 @@ const PurchaseRequestForm: React.FC<PurchaseRequestFormProps> = ({
       <AlertDialog
         open={showConfirmDialog}
         onOpenChange={handleDialogOpenChange}
-        title="Confirm Submission"
-        description="Are you sure you want to submit this Purchase Requisition?"
-        confirmText="Yes, Submit"
-        cancelText="Cancel"
+        title='Confirm Submission'
+        description='Are you sure you want to submit this Purchase Requisition?'
+        confirmText='Yes, Submit'
+        cancelText='Cancel'
         onConfirm={handleConfirmSubmit}
         onCancel={handleCancelSubmit}
         loading={isSubmitting}

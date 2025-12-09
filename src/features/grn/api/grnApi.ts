@@ -1,143 +1,239 @@
-import axios from 'axios';
-import type { GRN } from '../../purchaseorder/types';
-import { GRNStatus } from '../../purchaseorder/types';
+import { apiClient } from '@/lib/api';
+import type {
+  GRN,
+  CreateGRNRequest,
+  UpdateGRNRequest,
+  ApproveGRNRequest,
+  InvoiceForGRN,
+  POForGRN,
+} from '../types';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api';
+// ========== GRN CRUD ENDPOINTS ==========
+
+export const createGRN = async (request: CreateGRNRequest): Promise<GRN> => {
+  const response = await apiClient.post<GRN>('/grn', request);
+  return response.data;
+};
+
+export const updateGRN = async (
+  id: number,
+  request: UpdateGRNRequest
+): Promise<GRN> => {
+  const response = await apiClient.put<GRN>(`/grn/${id}`, request);
+  return response.data;
+};
+
+export const getGRNById = async (id: number): Promise<GRN> => {
+  const response = await apiClient.get<GRN>(`/grn/${id}`);
+  return response.data;
+};
+
+export const getGRNByNumber = async (grnNumber: string): Promise<GRN> => {
+  const response = await apiClient.get<GRN>(`/grn/number/${grnNumber}`);
+  return response.data;
+};
+
+export const getAllGRNs = async (paginated?: boolean): Promise<GRN[]> => {
+  const response = await apiClient.get<GRN[]>('/grn', {
+    params: { paginated: paginated || false },
+  });
+  return Array.isArray(response.data) ? response.data : [];
+};
+
+export const getGRNsPaginated = async (page: number = 0, size: number = 10) => {
+  const response = await apiClient.get('/grn', {
+    params: { paginated: true, page, size },
+  });
+  return response.data;
+};
+
+export const getGRNsByPoId = async (poId: number): Promise<GRN[]> => {
+  const response = await apiClient.get<GRN[]>(`/grn/po/${poId}`);
+  return Array.isArray(response.data) ? response.data : [];
+};
+
+export const getGRNsByPoNumber = async (poNumber: string): Promise<GRN[]> => {
+  const response = await apiClient.get<GRN[]>(`/grn/po/number/${poNumber}`);
+  return Array.isArray(response.data) ? response.data : [];
+};
+
+export const getGRNsBySupplierId = async (
+  supplierId: number
+): Promise<GRN[]> => {
+  const response = await apiClient.get<GRN[]>(`/grn/supplier/${supplierId}`);
+  return Array.isArray(response.data) ? response.data : [];
+};
+
+export const getGRNsByStatus = async (status: string): Promise<GRN[]> => {
+  const response = await apiClient.get<GRN[]>(`/grn/status/${status}`);
+  return Array.isArray(response.data) ? response.data : [];
+};
+
+export const getDraftGRNs = async (): Promise<GRN[]> => {
+  const response = await apiClient.get<GRN[]>('/grn/drafts');
+  return Array.isArray(response.data) ? response.data : [];
+};
+
+export const getPendingApprovalGRNs = async (): Promise<GRN[]> => {
+  const response = await apiClient.get<GRN[]>('/grn/pending-approval');
+  return Array.isArray(response.data) ? response.data : [];
+};
+
+export const getApprovedGRNs = async (): Promise<GRN[]> => {
+  const response = await apiClient.get<GRN[]>('/grn/approved');
+  return Array.isArray(response.data) ? response.data : [];
+};
+
+export const getRejectedGRNs = async (): Promise<GRN[]> => {
+  const response = await apiClient.get<GRN[]>('/grn/rejected');
+  return Array.isArray(response.data) ? response.data : [];
+};
+
+export const getGRNsByDateRange = async (
+  startDate: string,
+  endDate: string
+): Promise<GRN[]> => {
+  const response = await apiClient.get<GRN[]>('/grn/date-range', {
+    params: { startDate, endDate },
+  });
+  return Array.isArray(response.data) ? response.data : [];
+};
+
+export const searchGRNs = async (searchTerm: string): Promise<GRN[]> => {
+  const response = await apiClient.get<GRN[]>('/grn/search', {
+    params: { searchTerm },
+  });
+  return Array.isArray(response.data) ? response.data : [];
+};
+
+export const deleteGRN = async (id: number): Promise<{ message: string }> => {
+  const response = await apiClient.delete<{ message: string }>(`/grn/${id}`);
+  return response.data;
+};
+
+// ========== GRN WORKFLOW ENDPOINTS ==========
+
+export const submitGRN = async (id: number): Promise<GRN> => {
+  const response = await apiClient.post<GRN>(`/grn/${id}/submit`);
+  return response.data;
+};
+
+export const approveGRN = async (
+  id: number,
+  request: ApproveGRNRequest
+): Promise<GRN> => {
+  const response = await apiClient.post<GRN>(`/grn/${id}/approve`, request);
+  return response.data;
+};
+
+export const rejectGRN = async (
+  id: number,
+  request: ApproveGRNRequest
+): Promise<GRN> => {
+  const response = await apiClient.post<GRN>(`/grn/${id}/reject`, request);
+  return response.data;
+};
+
+// ========== INVOICE HELPERS FOR GRN ==========
+
+export const getInvoicesForGRN = async (): Promise<InvoiceForGRN[]> => {
+  const response = await apiClient.get<InvoiceForGRN[]>(
+    '/grn/invoices/available'
+  );
+  return Array.isArray(response.data) ? response.data : [];
+};
+
+export const getInvoiceDetailsForGRN = async (
+  invoiceId: number
+): Promise<InvoiceForGRN> => {
+  const response = await apiClient.get<InvoiceForGRN>(
+    `/grn/invoice/${invoiceId}/details`
+  );
+  return response.data;
+};
+
+export const getPODetailsForGRN = async (poId: number): Promise<POForGRN> => {
+  const response = await apiClient.get<POForGRN>(`/grn/po/${poId}/details`);
+  return response.data;
+};
+
+// ========== GRN NUMBER UTILITIES ==========
+
+export const checkGRNNumber = async (grnNumber: string): Promise<boolean> => {
+  const response = await apiClient.get<{ exists: boolean }>(
+    `/grn/check-number/${grnNumber}`
+  );
+  return response.data.exists;
+};
+
+export const generateGRNNumber = async (): Promise<string> => {
+  const response = await apiClient.get<{ grnNumber: string }>(
+    '/grn/generate-number'
+  );
+  return response.data.grnNumber;
+};
+
+// ========== ADDITIONAL GRN ENDPOINTS ==========
+
+export const getGRNsWithoutInvoice = async (): Promise<GRN[]> => {
+  const response = await apiClient.get<GRN[]>('/grn/without-invoice');
+  return Array.isArray(response.data) ? response.data : [];
+};
+
+export const getGRNsByInvoiceNumber = async (
+  invoiceNumber: string
+): Promise<GRN[]> => {
+  const response = await apiClient.get<GRN[]>(
+    `/grn/invoice/number/${invoiceNumber}`
+  );
+  return Array.isArray(response.data) ? response.data : [];
+};
+
+export const getGRNsByQualityCheckStatus = async (
+  status: string
+): Promise<GRN[]> => {
+  const response = await apiClient.get<GRN[]>(`/grn/quality-check/${status}`);
+  return Array.isArray(response.data) ? response.data : [];
+};
+
+// ========== EXPORT ALL AS OBJECT ==========
 
 export const grnApi = {
-  // Get all GRNs
-  getAllGRNs: async (params?: {
-    status?: GRNStatus;
-    supplierId?: number;
-    poId?: number;
-    search?: string;
-    page?: number;
-    size?: number;
-  }) => {
-    const response = await axios.get(`${API_BASE_URL}/grn`, { params });
-    return response.data;
-  },
+  // CRUD
+  createGRN,
+  updateGRN,
+  getGRNById,
+  getGRNByNumber,
+  getAllGRNs,
+  getGRNsPaginated,
+  getGRNsByPoId,
+  getGRNsByPoNumber,
+  getGRNsBySupplierId,
+  getGRNsByStatus,
+  getDraftGRNs,
+  getPendingApprovalGRNs,
+  getApprovedGRNs,
+  getRejectedGRNs,
+  getGRNsByDateRange,
+  searchGRNs,
+  deleteGRN,
 
-  // Get GRN by ID
-  getGRNById: async (id: number) => {
-    const response = await axios.get<GRN>(`${API_BASE_URL}/grn/${id}`);
-    return response.data;
-  },
+  // Workflow
+  submitGRN,
+  approveGRN,
+  rejectGRN,
 
-  // Create new GRN
-  createGRN: async (data: Partial<GRN>) => {
-    const response = await axios.post<GRN>(`${API_BASE_URL}/grn`, data);
-    return response.data;
-  },
+  // Invoice Helpers
+  getInvoicesForGRN,
+  getInvoiceDetailsForGRN,
+  getPODetailsForGRN,
 
-  // Update GRN
-  updateGRN: async (id: number, data: Partial<GRN>) => {
-    const response = await axios.put<GRN>(`${API_BASE_URL}/grn/${id}`, data);
-    return response.data;
-  },
+  // Utilities
+  checkGRNNumber,
+  generateGRNNumber,
 
-  // Delete GRN
-  deleteGRN: async (id: number) => {
-    const response = await axios.delete(`${API_BASE_URL}/grn/${id}`);
-    return response.data;
-  },
-
-  // Approve GRN
-  approveGRN: async (id: number, comments?: string) => {
-    const response = await axios.put<GRN>(
-      `${API_BASE_URL}/grn/${id}/approve`,
-      { comments }
-    );
-    return response.data;
-  },
-
-  // Reject GRN
-  rejectGRN: async (id: number, reason: string) => {
-    const response = await axios.put<GRN>(
-      `${API_BASE_URL}/grn/${id}/reject`,
-      { reason }
-    );
-    return response.data;
-  },
-
-  // Update quality check status
-  updateQualityCheck: async (id: number, data: {
-    status: string;
-    remarks?: string;
-    items?: Array<{
-      id: number;
-      qualityStatus: string;
-      qualityRemarks?: string;
-    }>;
-  }) => {
-    const response = await axios.put<GRN>(
-      `${API_BASE_URL}/grn/${id}/quality-check`,
-      data
-    );
-    return response.data;
-  },
-
-  // Get GRNs by PO ID
-  getGRNsByPurchaseOrderId: async (poId: number) => {
-    const response = await axios.get<GRN[]>(`${API_BASE_URL}/grn/purchase-order/${poId}`);
-    return response.data;
-  },
-
-  // Get pending GRNs for invoice creation
-  getPendingGRNsForInvoice: async (supplierId?: number) => {
-    const response = await axios.get<GRN[]>(`${API_BASE_URL}/grn/pending-invoice`, {
-      params: { supplierId }
-    });
-    return response.data;
-  },
-
-  // Create partial GRN
-  createPartialGRN: async (poId: number, data: Partial<GRN>) => {
-    const response = await axios.post<GRN>(
-      `${API_BASE_URL}/grn/partial/${poId}`,
-      data
-    );
-    return response.data;
-  },
-
-  // Download GRN as PDF
-  downloadGRN: async (id: number) => {
-    const response = await axios.get(
-      `${API_BASE_URL}/grn/${id}/download`,
-      { responseType: 'blob' }
-    );
-    return response.data;
-  },
-
-  // Get GRN statistics
-  getGRNStatistics: async () => {
-    const response = await axios.get(`${API_BASE_URL}/grn/statistics`);
-    return response.data;
-  },
-
-  // Get quality check summary
-  getQualityCheckSummary: async (params?: {
-    startDate?: string;
-    endDate?: string;
-    supplierId?: number;
-  }) => {
-    const response = await axios.get(`${API_BASE_URL}/grn/quality-summary`, { params });
-    return response.data;
-  },
-
-  // Return goods
-  createReturnGRN: async (originalGrnId: number, data: {
-    returnReason: string;
-    items: Array<{
-      id: number;
-      returnQuantity: number;
-      reason: string;
-    }>;
-  }) => {
-    const response = await axios.post<GRN>(
-      `${API_BASE_URL}/grn/${originalGrnId}/return`,
-      data
-    );
-    return response.data;
-  }
+  // Additional
+  getGRNsWithoutInvoice,
+  getGRNsByInvoiceNumber,
+  getGRNsByQualityCheckStatus,
 };

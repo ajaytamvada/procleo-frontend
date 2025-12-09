@@ -1,21 +1,19 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import {
   ShoppingCart,
   Package,
   Users,
-  DollarSign,
+  FileText,
   TrendingUp,
-  TrendingDown,
+  AlertCircle,
   Clock,
   CheckCircle,
+  FileCheck,
 } from 'lucide-react';
 import {
-  LineChart,
-  Line,
   AreaChart,
   Area,
-  BarChart,
-  Bar,
   PieChart,
   Pie,
   Cell,
@@ -26,401 +24,321 @@ import {
   Legend,
   ResponsiveContainer,
 } from 'recharts';
+import { useDashboardData } from '@/features/dashboard/hooks/useDashboard';
+import { useAuth } from '@/hooks/useAuth';
+import RecentActivityWidget from '@/components/dashboard/RecentActivityWidget';
+import StatusSummaryCard from '@/components/dashboard/StatusSummaryCard';
 
 const Dashboard: React.FC = () => {
-  const stats = [
+  const { data: dashboardData, isLoading } = useDashboardData();
+  const { user } = useAuth();
+
+  if (isLoading) {
+    return (
+      <div className='flex items-center justify-center h-screen'>
+        <div className='animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600'></div>
+      </div>
+    );
+  }
+
+  if (!dashboardData) {
+    return (
+      <div className='flex items-center justify-center h-screen'>
+        <div className='text-center'>
+          <AlertCircle className='w-12 h-12 text-red-500 mx-auto mb-4' />
+          <p className='text-gray-600'>Failed to load dashboard data</p>
+        </div>
+      </div>
+    );
+  }
+
+  const {
+    stats,
+    recentOrders,
+    monthlySpend,
+    categorySpend,
+  } = dashboardData;
+
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return 'Good Morning';
+    if (hour < 18) return 'Good Afternoon';
+    return 'Good Evening';
+  };
+
+  const statsList = [
     {
       name: 'Total Purchase Orders',
-      value: '1,234',
-      change: '+12%',
-      changeType: 'increase',
+      value: stats.totalPurchaseOrders.toString(),
+      change: `${stats.pendingPOs} pending`,
+      changeType: 'warning',
       icon: ShoppingCart,
+      href: '/purchase-orders',
+      color: 'bg-blue-500',
     },
     {
-      name: 'Active Assets',
-      value: '8,567',
-      change: '+5%',
-      changeType: 'increase',
-      icon: Package,
-    },
-    {
-      name: 'Registered Vendors',
-      value: '456',
-      change: '+8%',
+      name: 'Total Vendors',
+      value: stats.totalVendors.toString(),
+      change: 'Active',
       changeType: 'increase',
       icon: Users,
+      href: '/master/suppliers',
+      color: 'bg-green-500',
     },
     {
-      name: 'Total Spend',
-      value: '$2.1M',
-      change: '-3%',
+      name: 'Purchase Requests',
+      value: stats.totalPurchaseRequests.toString(),
+      change: `${stats.pendingPRs} pending`,
+      changeType: 'warning',
+      icon: FileText,
+      href: '/purchase-requisition/manage',
+      color: 'bg-yellow-500',
+    },
+    {
+      name: 'Total RFPs',
+      value: stats.totalRFPs.toString(),
+      change: `${stats.activeRFPs} active`,
+      changeType: 'increase',
+      icon: TrendingUp,
+      href: '/rfp/manage',
+      color: 'bg-purple-500',
+    },
+    {
+      name: 'Total GRNs',
+      value: stats.totalGRNs.toString(),
+      change: 'Received',
+      changeType: 'increase',
+      icon: Package,
+      href: '/grn/list',
+      color: 'bg-indigo-500',
+    },
+    {
+      name: 'Overdue POs',
+      value: stats.overduePOs.toString(),
+      change: 'Action Required',
       changeType: 'decrease',
-      icon: DollarSign,
+      icon: AlertCircle,
+      href: '/purchase-orders',
+      color: 'bg-red-500',
     },
-  ];
-
-  const recentOrders = [
-    {
-      id: 'PO-001',
-      vendor: 'TechCorp Solutions',
-      amount: '$12,500',
-      status: 'pending',
-      date: '2024-01-15',
-    },
-    {
-      id: 'PO-002',
-      vendor: 'Office Supplies Inc',
-      amount: '$850',
-      status: 'approved',
-      date: '2024-01-14',
-    },
-    {
-      id: 'PO-003',
-      vendor: 'Industrial Equipment Ltd',
-      amount: '$45,000',
-      status: 'completed',
-      date: '2024-01-13',
-    },
-  ];
-
-  // Dummy chart data
-  const monthlySpendData = [
-    { month: 'Jan', spend: 85000, budget: 90000, orders: 42 },
-    { month: 'Feb', spend: 92000, budget: 95000, orders: 47 },
-    { month: 'Mar', spend: 78000, budget: 85000, orders: 38 },
-    { month: 'Apr', spend: 105000, budget: 100000, orders: 52 },
-    { month: 'May', spend: 89000, budget: 95000, orders: 45 },
-    { month: 'Jun', spend: 96000, budget: 110000, orders: 49 },
-  ];
-
-  const categorySpendData = [
-    { name: 'IT Equipment', value: 450000, color: '#8884d8' },
-    { name: 'Office Supplies', value: 125000, color: '#82ca9d' },
-    { name: 'Facilities', value: 285000, color: '#ffc658' },
-    { name: 'Marketing', value: 95000, color: '#ff7300' },
-    { name: 'Operations', value: 340000, color: '#0088fe' },
-  ];
-
-  const vendorPerformanceData = [
-    { vendor: 'TechCorp', onTime: 95, quality: 92, cost: 88 },
-    { vendor: 'OfficeSupplies', onTime: 88, quality: 94, cost: 96 },
-    { vendor: 'Industrial', onTime: 92, quality: 89, cost: 85 },
-    { vendor: 'Marketing Co', onTime: 85, quality: 91, cost: 90 },
-    { vendor: 'Facilities Ltd', onTime: 90, quality: 87, cost: 93 },
-  ];
-
-  const orderStatusData = [
-    { status: 'Pending', count: 23, color: '#ffc658' },
-    { status: 'Approved', count: 45, color: '#8884d8' },
-    { status: 'In Progress', count: 32, color: '#82ca9d' },
-    { status: 'Completed', count: 156, color: '#0088fe' },
-    { status: 'Cancelled', count: 8, color: '#ff7300' },
-  ];
-
-  const savingsData = [
-    { month: 'Jan', target: 15000, achieved: 18500 },
-    { month: 'Feb', target: 12000, achieved: 14200 },
-    { month: 'Mar', target: 20000, achieved: 16800 },
-    { month: 'Apr', target: 18000, achieved: 22000 },
-    { month: 'May', target: 16000, achieved: 19500 },
-    { month: 'Jun', target: 22000, achieved: 25200 },
   ];
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'pending':
-        return 'badge-warning';
-      case 'approved':
-        return 'badge-primary';
-      case 'completed':
-        return 'badge-success';
+      case 'APPROVED':
+        return 'bg-green-100 text-green-800';
+      case 'PENDING_APPROVAL':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'REJECTED':
+        return 'bg-red-100 text-red-800';
       default:
-        return 'badge-secondary';
+        return 'bg-gray-100 text-gray-800';
     }
   };
 
   const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'pending':
-        return <Clock className="w-3 h-3" />;
-      case 'approved':
-        return <TrendingUp className="w-3 h-3" />;
-      case 'completed':
-        return <CheckCircle className="w-3 h-3" />;
-      default:
-        return <Clock className="w-3 h-3" />;
-    }
+    const statusLower = status.toLowerCase();
+    if (statusLower.includes('pending')) return <Clock className='w-3 h-3' />;
+    if (statusLower.includes('approved'))
+      return <CheckCircle className='w-3 h-3' />;
+    if (statusLower.includes('completed'))
+      return <CheckCircle className='w-3 h-3' />;
+    return <FileCheck className='w-3 h-3' />;
   };
 
   return (
-    <div style={{ padding: '24px', backgroundColor: 'transparent' }}>
+    <div className='space-y-6 p-6'>
       {/* Header */}
-      <div className="mb-6">
-        <h1 className="text-2xl font-semibold" style={{ color: '#1a0b2e' }}>Dashboard</h1>
-        <p className="text-sm mt-1" style={{ color: '#6b7280' }}>Welcome back! Here's what's happening with your procurement.</p>
+      <div>
+        <h1 className='text-2xl font-bold text-gray-900'>
+          {getGreeting()}, {user?.firstName || 'User'}
+        </h1>
+        <p className='text-sm text-gray-500 mt-1'>
+          Here's what's happening with your procurement today.
+        </p>
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-6">
-        {stats.map((stat) => (
-          <div key={stat.name} style={{
-            backgroundColor: 'white',
-            borderRadius: '12px',
-            padding: '20px',
-            boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)',
-            transition: 'all 0.3s ease'
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.transform = 'translateY(-2px)';
-            e.currentTarget.style.boxShadow = '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.transform = 'translateY(0)';
-            e.currentTarget.style.boxShadow = '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)';
-          }}>
-            <div className="flex justify-between items-start">
+      <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
+        {statsList.map(item => (
+          <Link
+            key={item.name}
+            to={item.href}
+            className='bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-shadow duration-200 group'
+          >
+            <div className='flex items-center justify-between'>
               <div>
-                <p className="text-sm font-medium" style={{ color: '#6b7280' }}>{stat.name}</p>
-                <p className="text-2xl font-bold mt-2" style={{ color: '#1a0b2e' }}>{stat.value}</p>
+                <p className='text-sm font-medium text-gray-500'>{item.name}</p>
+                <p className='text-2xl font-bold text-gray-900 mt-2'>
+                  {item.value}
+                </p>
               </div>
-              <div className="p-2 rounded-lg" style={{ background: 'linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%)' }}>
-                <stat.icon className="w-5 h-5" style={{ color: '#6366f1' }} />
+              <div className={`p-3 rounded-lg ${item.color} bg-opacity-10 group-hover:bg-opacity-20 transition-colors`}>
+                <item.icon className={`w-6 h-6 ${item.color.replace('bg-', 'text-')}`} />
               </div>
             </div>
-            <div className="flex items-center mt-2">
-              {stat.changeType === 'increase' ? (
-                <TrendingUp className="w-3 h-3 text-green-500" />
-              ) : (
-                <TrendingDown className="w-3 h-3 text-red-500" />
-              )}
+            <div className='mt-4 flex items-center'>
               <span
-                className={`ml-1 text-xs font-medium ${
-                  stat.changeType === 'increase' ? 'text-green-600' : 'text-red-600'
-                }`}
+                className={`text-sm font-medium ${item.changeType === 'increase'
+                  ? 'text-green-600'
+                  : item.changeType === 'decrease'
+                    ? 'text-red-600'
+                    : 'text-yellow-600'
+                  }`}
               >
-                {stat.change}
+                {item.change}
               </span>
-              <span className="ml-1 text-xs text-gray-500">from last month</span>
+              <span className='text-sm text-gray-400 ml-2'>vs last month</span>
             </div>
-          </div>
+          </Link>
         ))}
       </div>
 
+      {/* New Widgets Grid: Status Summary & Activity Log */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-[400px]">
+        <StatusSummaryCard stats={stats} />
+        <RecentActivityWidget />
+      </div>
+
       {/* Charts Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+      <div className='grid grid-cols-1 lg:grid-cols-2 gap-6'>
         {/* Monthly Spend Trend */}
-        <div style={{
-          backgroundColor: 'white',
-          borderRadius: '12px',
-          boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)',
-          padding: '20px'
-        }}>
-          <h3 className="text-lg font-semibold mb-4" style={{ color: '#1a0b2e' }}>Monthly Spend vs Budget</h3>
-          <ResponsiveContainer width="100%" height={300}>
-            <AreaChart data={monthlySpendData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-              <XAxis dataKey="month" stroke="#6b7280" />
-              <YAxis stroke="#6b7280" />
+        <div className='bg-white rounded-xl shadow-sm border border-gray-100 p-6'>
+          <h3 className='text-lg font-semibold text-gray-900 mb-4'>
+            Monthly Spend vs Budget
+          </h3>
+          <ResponsiveContainer width='100%' height={300}>
+            <AreaChart data={monthlySpend}>
+              <CartesianGrid strokeDasharray='3 3' stroke='#e5e7eb' />
+              <XAxis dataKey='month' stroke='#6b7280' />
+              <YAxis stroke='#6b7280' />
               <Tooltip
                 contentStyle={{
                   backgroundColor: 'white',
                   border: '1px solid #e5e7eb',
                   borderRadius: '8px',
-                  boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)'
+                  boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
                 }}
-                formatter={(value: number, name: string) => [`$${value.toLocaleString()}`, name === 'spend' ? 'Actual Spend' : 'Budget']}
+                formatter={(value: number, name: string) => [
+                  `₹${value.toLocaleString()}`,
+                  name === 'spend' ? 'Actual Spend' : 'Budget',
+                ]}
               />
               <Legend />
-              <Area type="monotone" dataKey="budget" stackId="1" stroke="#e5e7eb" fill="#f3f4f6" />
-              <Area type="monotone" dataKey="spend" stackId="2" stroke="#6366f1" fill="#8b5cf6" />
+              <Area
+                type='monotone'
+                dataKey='budget'
+                stackId='1'
+                stroke='#e5e7eb'
+                fill='#f3f4f6'
+              />
+              <Area
+                type='monotone'
+                dataKey='spend'
+                stackId='2'
+                stroke='#6366f1'
+                fill='#8b5cf6'
+              />
             </AreaChart>
           </ResponsiveContainer>
         </div>
 
         {/* Category Spend Distribution */}
-        <div style={{
-          backgroundColor: 'white',
-          borderRadius: '12px',
-          boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)',
-          padding: '20px'
-        }}>
-          <h3 className="text-lg font-semibold mb-4" style={{ color: '#1a0b2e' }}>Spend by Category</h3>
-          <ResponsiveContainer width="100%" height={300}>
+        <div className='bg-white rounded-xl shadow-sm border border-gray-100 p-6'>
+          <h3 className='text-lg font-semibold text-gray-900 mb-4'>
+            Spend by Category
+          </h3>
+          <ResponsiveContainer width='100%' height={300}>
             <PieChart>
               <Pie
-                data={categorySpendData}
-                cx="50%"
-                cy="50%"
+                data={categorySpend}
+                cx='50%'
+                cy='50%'
                 labelLine={false}
                 label={({ name, percent }: { name: string; percent?: number }) =>
                   `${name} ${((percent || 0) * 100).toFixed(0)}%`
                 }
                 outerRadius={80}
-                fill="#8884d8"
-                dataKey="value"
+                fill='#8884d8'
+                dataKey='value'
               >
-                {categorySpendData.map((entry, index) => (
+                {categorySpend.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={entry.color} />
                 ))}
               </Pie>
-              <Tooltip formatter={(value: number) => [`$${value.toLocaleString()}`, 'Amount']} />
-            </PieChart>
-          </ResponsiveContainer>
-        </div>
-      </div>
-
-      {/* Additional Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-        {/* Vendor Performance */}
-        <div style={{
-          backgroundColor: 'white',
-          borderRadius: '12px',
-          boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)',
-          padding: '20px'
-        }}>
-          <h3 className="text-lg font-semibold mb-4" style={{ color: '#1a0b2e' }}>Vendor Performance</h3>
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={vendorPerformanceData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-              <XAxis dataKey="vendor" stroke="#6b7280" />
-              <YAxis stroke="#6b7280" />
               <Tooltip
-                contentStyle={{
-                  backgroundColor: 'white',
-                  border: '1px solid #e5e7eb',
-                  borderRadius: '8px',
-                  boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)'
-                }}
-                formatter={(value: number) => [`${value}%`, '']}
+                formatter={(value: number) => [
+                  `₹${value.toLocaleString()}`,
+                  'Amount',
+                ]}
               />
-              <Legend />
-              <Bar dataKey="onTime" fill="#10b981" name="On-Time Delivery" />
-              <Bar dataKey="quality" fill="#3b82f6" name="Quality Score" />
-              <Bar dataKey="cost" fill="#f59e0b" name="Cost Efficiency" />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-
-        {/* Order Status */}
-        <div style={{
-          backgroundColor: 'white',
-          borderRadius: '12px',
-          boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)',
-          padding: '20px'
-        }}>
-          <h3 className="text-lg font-semibold mb-4" style={{ color: '#1a0b2e' }}>Order Status Distribution</h3>
-          <ResponsiveContainer width="100%" height={300}>
-            <PieChart>
-              <Pie
-                data={orderStatusData}
-                cx="50%"
-                cy="50%"
-                innerRadius={60}
-                outerRadius={100}
-                paddingAngle={5}
-                dataKey="count"
-              >
-                {orderStatusData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.color} />
-                ))}
-              </Pie>
-              <Tooltip formatter={(value: number) => [`${value}`, 'Orders']} />
-              <Legend />
             </PieChart>
-          </ResponsiveContainer>
-        </div>
-      </div>
-
-      {/* Savings Achievement Chart */}
-      <div className="mb-6">
-        <div style={{
-          backgroundColor: 'white',
-          borderRadius: '12px',
-          boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)',
-          padding: '20px'
-        }}>
-          <h3 className="text-lg font-semibold mb-4" style={{ color: '#1a0b2e' }}>Cost Savings Achievement</h3>
-          <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={savingsData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-              <XAxis dataKey="month" stroke="#6b7280" />
-              <YAxis stroke="#6b7280" />
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: 'white',
-                  border: '1px solid #e5e7eb',
-                  borderRadius: '8px',
-                  boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)'
-                }}
-                formatter={(value: number, name: string) => [`$${value.toLocaleString()}`, name === 'target' ? 'Target Savings' : 'Achieved Savings']}
-              />
-              <Legend />
-              <Line 
-                type="monotone" 
-                dataKey="target" 
-                stroke="#ef4444" 
-                strokeWidth={2}
-                dot={{ r: 6 }}
-                name="Target"
-              />
-              <Line 
-                type="monotone" 
-                dataKey="achieved" 
-                stroke="#10b981" 
-                strokeWidth={2}
-                dot={{ r: 6 }}
-                name="Achieved"
-              />
-            </LineChart>
           </ResponsiveContainer>
         </div>
       </div>
 
       {/* Recent Purchase Orders */}
-      <div style={{
-        backgroundColor: 'white',
-        borderRadius: '12px',
-        boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)'
-      }}>
-        <div className="p-5" style={{ borderBottom: '1px solid #e5e7eb' }}>
-          <h2 className="text-lg font-semibold" style={{ color: '#1a0b2e' }}>Recent Purchase Orders</h2>
+      <div className='bg-white rounded-xl shadow-sm border border-gray-100'>
+        <div className='p-6 border-b border-gray-100'>
+          <h2 className='text-lg font-semibold text-gray-900'>
+            Recent Purchase Orders
+          </h2>
         </div>
-        <div className="p-5 space-y-3">
-          {recentOrders.map((order) => (
-            <div
-              key={order.id}
-              className="flex justify-between items-center p-3 rounded-lg transition-all duration-200 hover:shadow-md"
-              style={{ backgroundColor: '#f9fafb', border: '1px solid #e5e7eb' }}
-            >
-              <div className="flex items-center space-x-3">
-                <div className="flex items-center justify-center w-8 h-8 rounded-lg" style={{ background: 'linear-gradient(135deg, #c7d2fe 0%, #e0e7ff 100%)' }}>
-                  <ShoppingCart className="w-4 h-4" style={{ color: '#6366f1' }} />
+        <div className='p-6 space-y-4'>
+          {recentOrders.length > 0 ? (
+            <>
+              {recentOrders.slice(0, 5).map(order => (
+                <div
+                  key={order.id}
+                  className='flex justify-between items-center p-4 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors border border-gray-100'
+                >
+                  <div className='flex items-center space-x-4'>
+                    <div className='flex items-center justify-center w-10 h-10 rounded-lg bg-indigo-100 text-indigo-600'>
+                      <ShoppingCart className='w-5 h-5' />
+                    </div>
+                    <div>
+                      <p className='text-sm font-medium text-gray-900'>
+                        {order.poNumber}
+                      </p>
+                      <p className='text-xs text-gray-500'>
+                        {order.supplierName}
+                      </p>
+                    </div>
+                  </div>
+                  <div className='flex items-center space-x-4'>
+                    <div className='text-right'>
+                      <p className='text-sm font-medium text-gray-900'>
+                        ₹{order.totalAmount.toLocaleString()}
+                      </p>
+                      <p className='text-xs text-gray-500'>{order.poDate}</p>
+                    </div>
+                    <div
+                      className={`px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1 ${getStatusColor(
+                        order.status
+                      )}`}
+                    >
+                      {getStatusIcon(order.status)}
+                      <span className='capitalize'>
+                        {order.status.replace('_', ' ')}
+                      </span>
+                    </div>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-sm font-medium text-gray-900">{order.id}</p>
-                  <p className="text-xs text-gray-500">{order.vendor}</p>
-                </div>
+              ))}
+              <div className='mt-4 text-center'>
+                <Link
+                  to='/purchase-orders'
+                  className='text-sm font-medium text-indigo-600 hover:text-indigo-700 transition-colors'
+                >
+                  View all purchase orders
+                </Link>
               </div>
-              <div className="flex items-center space-x-3">
-                <div className="text-right">
-                  <p className="text-sm font-medium text-gray-900">{order.amount}</p>
-                  <p className="text-xs text-gray-500">{order.date}</p>
-                </div>
-                <div className={`badge ${getStatusColor(order.status)} flex items-center`}>
-                  {getStatusIcon(order.status)}
-                  <span className="ml-1 capitalize">{order.status}</span>
-                </div>
-              </div>
+            </>
+          ) : (
+            <div className='text-center py-8 text-gray-500'>
+              <p>No recent purchase orders</p>
             </div>
-          ))}
-          <div className="mt-4 text-center">
-            <button className="text-sm font-medium transition-colors duration-200" 
-              style={{ color: '#6366f1' }}
-              onMouseEnter={(e) => { e.currentTarget.style.color = '#4f46e5'; }}
-              onMouseLeave={(e) => { e.currentTarget.style.color = '#6366f1'; }}>
-              View all purchase orders
-            </button>
-          </div>
+          )}
         </div>
       </div>
     </div>

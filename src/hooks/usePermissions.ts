@@ -1,45 +1,106 @@
-import { useMemo } from 'react';
-import type { UserRole, Permission } from '@/types/user';
-import { ROLE_PERMISSIONS } from '@/types/user';
+import { usePermissionStore } from '@/store/permissionStore';
+import type { PermissionAction } from '@/types/permissions';
+import { useCallback } from 'react';
 
-interface UsePermissionsProps {
-  userRole: UserRole;
-}
+/**
+ * Custom hook for checking permissions in components
+ *
+ * @example
+ * ```tsx
+ * const { hasModule, canPerform } = usePermissions();
+ *
+ * if (hasModule('PR_CREATE')) {
+ *   // Show create PR button
+ * }
+ *
+ * if (canPerform('PR_MANAGE', 'delete')) {
+ *   // Show delete button
+ * }
+ * ```
+ */
+export const usePermissions = () => {
+  const {
+    modules,
+    hasModule,
+    canPerform,
+    getModule,
+    getModulesByParent,
+    getAllowedRoutes,
+    canAccessRoute,
+    isLoaded,
+  } = usePermissionStore();
 
-interface UsePermissionsReturn {
-  hasPermission: (permission: Permission) => boolean;
-  hasAnyPermission: (permissions: Permission[]) => boolean;
-  hasAllPermissions: (permissions: Permission[]) => boolean;
-  permissions: Permission[];
-  allowedScreens: string[];
-  canAccessScreen: (screenName: string) => boolean;
-}
+  /**
+   * Check if user has any of the specified modules
+   */
+  const hasAnyModule = useCallback(
+    (moduleCodes: string[]) => {
+      return moduleCodes.some(code => hasModule(code));
+    },
+    [hasModule]
+  );
 
-export const usePermissions = ({ userRole }: UsePermissionsProps): UsePermissionsReturn => {
-  const roleConfig = useMemo(() => ROLE_PERMISSIONS[userRole], [userRole]);
+  /**
+   * Check if user has all of the specified modules
+   */
+  const hasAllModules = useCallback(
+    (moduleCodes: string[]) => {
+      return moduleCodes.every(code => hasModule(code));
+    },
+    [hasModule]
+  );
 
-  const hasPermission = (permission: Permission): boolean => {
-    return roleConfig.permissions.includes(permission);
-  };
+  /**
+   * Check if user can perform action on any of the specified modules
+   */
+  const canPerformOnAny = useCallback(
+    (moduleCodes: string[], action: PermissionAction) => {
+      return moduleCodes.some(code => canPerform(code, action));
+    },
+    [canPerform]
+  );
 
-  const hasAnyPermission = (permissions: Permission[]): boolean => {
-    return permissions.some(permission => hasPermission(permission));
-  };
+  /**
+   * Get action permissions for a module
+   */
+  const getModulePermissions = useCallback(
+    (moduleCode: string) => {
+      const module = getModule(moduleCode);
+      if (!module) {
+        return {
+          canView: false,
+          canCreate: false,
+          canEdit: false,
+          canDelete: false,
+          canApprove: false,
+          canExport: false,
+        };
+      }
 
-  const hasAllPermissions = (permissions: Permission[]): boolean => {
-    return permissions.every(permission => hasPermission(permission));
-  };
-
-  const canAccessScreen = (screenName: string): boolean => {
-    return roleConfig.screens.includes(screenName);
-  };
+      return {
+        canView: module.canView,
+        canCreate: module.canCreate,
+        canEdit: module.canEdit,
+        canDelete: module.canDelete,
+        canApprove: module.canApprove,
+        canExport: module.canExport,
+      };
+    },
+    [getModule]
+  );
 
   return {
-    hasPermission,
-    hasAnyPermission,
-    hasAllPermissions,
-    permissions: roleConfig.permissions,
-    allowedScreens: roleConfig.screens,
-    canAccessScreen,
+    modules,
+    isLoaded,
+    hasModule,
+    hasAnyModule,
+    hasAllModules,
+    canPerform,
+    canPerformOnAny,
+    getModule,
+    getModulePermissions,
+    getModulesByParent,
+    getAllowedRoutes,
+    canAccessRoute,
   };
 };

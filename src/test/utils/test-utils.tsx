@@ -1,6 +1,6 @@
 /**
  * Custom testing utilities that wrap React Testing Library
- * 
+ *
  * This module provides enhanced testing utilities with common providers
  * and mock setups for testing React components in the Autovitica P2P application.
  */
@@ -56,12 +56,13 @@ interface MockNotificationContextValue {
   clearNotifications: () => void;
 }
 
-const MockNotificationContext = React.createContext<MockNotificationContextValue>({
-  notifications: [],
-  addNotification: () => {},
-  removeNotification: () => {},
-  clearNotifications: () => {},
-});
+const MockNotificationContext =
+  React.createContext<MockNotificationContextValue>({
+    notifications: [],
+    addNotification: () => {},
+    removeNotification: () => {},
+    clearNotifications: () => {},
+  });
 
 // ========================================
 // Test Wrapper Components
@@ -83,17 +84,19 @@ const AllTheProviders: React.FC<AllTheProvidersProps> = ({
   initialRoute = '/',
 }) => {
   // Create a new QueryClient for each test to avoid test pollution
-  const testQueryClient = queryClient || new QueryClient({
-    defaultOptions: {
-      queries: {
-        retry: false,
-        gcTime: 0,
+  const testQueryClient =
+    queryClient ||
+    new QueryClient({
+      defaultOptions: {
+        queries: {
+          retry: false,
+          gcTime: 0,
+        },
+        mutations: {
+          retry: false,
+        },
       },
-      mutations: {
-        retry: false,
-      },
-    },
-  });
+    });
 
   const mockAuthValue: MockAuthContextValue = {
     user: initialUser,
@@ -149,10 +152,7 @@ interface CustomRenderOptions extends Omit<RenderOptions, 'wrapper'> {
   wrapper?: React.ComponentType<any>;
 }
 
-const customRender = (
-  ui: ReactElement,
-  options: CustomRenderOptions = {}
-) => {
+const customRender = (ui: ReactElement, options: CustomRenderOptions = {}) => {
   const {
     queryClient,
     initialUser,
@@ -165,7 +165,7 @@ const customRender = (
   const Wrapper = wrapper || AllTheProviders;
 
   return render(ui, {
-    wrapper: (props) => (
+    wrapper: props => (
       <Wrapper
         {...props}
         queryClient={queryClient}
@@ -183,7 +183,9 @@ const customRender = (
 // ========================================
 
 // Mock useAuth hook
-export const createMockUseAuth = (overrides: Partial<MockAuthContextValue> = {}) => {
+export const createMockUseAuth = (
+  overrides: Partial<MockAuthContextValue> = {}
+) => {
   return {
     user: null,
     isAuthenticated: false,
@@ -372,9 +374,11 @@ export const createMockFileEvent = (files: File[]) => ({
 // Async Helpers
 // ========================================
 
-export const waitForNextTick = () => new Promise(resolve => setTimeout(resolve, 0));
+export const waitForNextTick = () =>
+  new Promise(resolve => setTimeout(resolve, 0));
 
-export const waitForTimeout = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+export const waitForTimeout = (ms: number) =>
+  new Promise(resolve => setTimeout(resolve, ms));
 
 // ========================================
 // Query Client Helpers
@@ -403,11 +407,18 @@ export const expectToBeInDocument = (element: HTMLElement | null) => {
   expect(element).toBeInTheDocument();
 };
 
-export const expectToHaveClass = (element: HTMLElement | null, className: string) => {
+export const expectToHaveClass = (
+  element: HTMLElement | null,
+  className: string
+) => {
   expect(element).toHaveClass(className);
 };
 
-export const expectToHaveAttribute = (element: HTMLElement | null, attribute: string, value?: string) => {
+export const expectToHaveAttribute = (
+  element: HTMLElement | null,
+  attribute: string,
+  value?: string
+) => {
   if (value !== undefined) {
     expect(element).toHaveAttribute(attribute, value);
   } else {

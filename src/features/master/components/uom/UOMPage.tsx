@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { toast } from 'react-hot-toast';
 import UOMList from './UOMList';
 import UOMForm from './UOMForm';
+import ExcelImportDialog from '@/components/ExcelImportDialog';
 import {
   useUOMsPaged,
   useCreateUOM,
@@ -13,6 +14,7 @@ import {
 
 const UOMPage: React.FC = () => {
   const [showForm, setShowForm] = useState(false);
+  const [showImportDialog, setShowImportDialog] = useState(false);
   const [selectedUOM, setSelectedUOM] = useState<UOM | undefined>();
   const [page, setPage] = useState(0);
   const [filters, setFilters] = useState<UOMFilters>({});
@@ -80,8 +82,8 @@ const UOMPage: React.FC = () => {
 
   if (error) {
     return (
-      <div className="p-6">
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+      <div className='p-6'>
+        <div className='bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded'>
           Error loading UOMs: {(error as Error).message}
         </div>
       </div>
@@ -100,18 +102,29 @@ const UOMPage: React.FC = () => {
   }
 
   return (
-    <UOMList
-      uoms={uoms}
-      onEdit={handleEdit}
-      onCreate={handleCreate}
-      onDelete={handleDelete}
-      isLoading={isLoading}
-      page={page}
-      totalPages={totalPages}
-      totalElements={totalElements}
-      onPageChange={setPage}
-      onFiltersChange={setFilters}
-    />
+    <>
+      <UOMList
+        uoms={uoms}
+        onEdit={handleEdit}
+        onCreate={handleCreate}
+        onDelete={handleDelete}
+        onImport={() => setShowImportDialog(true)}
+        isLoading={isLoading}
+        page={page}
+        totalPages={totalPages}
+        totalElements={totalElements}
+        onPageChange={setPage}
+        onFiltersChange={setFilters}
+      />
+      <ExcelImportDialog
+        isOpen={showImportDialog}
+        onClose={() => setShowImportDialog(false)}
+        entityName='UOM'
+        importEndpoint='/master/uoms/import'
+        templateEndpoint='/master/uoms/template'
+        onImportSuccess={() => setPage(0)}
+      />
+    </>
   );
 };
 

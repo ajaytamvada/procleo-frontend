@@ -2,13 +2,17 @@ import React, { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import DepartmentForm from './DepartmentForm';
 import DepartmentList from './DepartmentList';
+import ExcelImportDialog from '@/components/ExcelImportDialog';
 import { useDepartments } from '../../hooks/useDepartmentAPI';
 import type { Department, MasterEntityFilters } from '../../types';
 import { apiClient } from '@/lib/api';
 
 const DepartmentPage: React.FC = () => {
   const [showForm, setShowForm] = useState(false);
-  const [selectedDepartment, setSelectedDepartment] = useState<Department | undefined>(undefined);
+  const [showImportDialog, setShowImportDialog] = useState(false);
+  const [selectedDepartment, setSelectedDepartment] = useState<
+    Department | undefined
+  >(undefined);
   const [page, setPage] = useState(0);
   const [filters, setFilters] = useState<MasterEntityFilters>({});
   const queryClient = useQueryClient();
@@ -29,7 +33,10 @@ const DepartmentPage: React.FC = () => {
         );
         return response.data;
       } else {
-        const response = await apiClient.post<Department>('/master/departments', data);
+        const response = await apiClient.post<Department>(
+          '/master/departments',
+          data
+        );
         return response.data;
       }
     },
@@ -38,10 +45,15 @@ const DepartmentPage: React.FC = () => {
       refetch();
       setShowForm(false);
       setSelectedDepartment(undefined);
-      alert(selectedDepartment?.id ? 'Department updated successfully!' : 'Department created successfully!');
+      alert(
+        selectedDepartment?.id
+          ? 'Department updated successfully!'
+          : 'Department created successfully!'
+      );
     },
     onError: (error: any) => {
-      const message = error.response?.data?.message || 'Failed to save department';
+      const message =
+        error.response?.data?.message || 'Failed to save department';
       alert(message);
     },
   });
@@ -57,7 +69,8 @@ const DepartmentPage: React.FC = () => {
       alert('Department deleted successfully!');
     },
     onError: (error: any) => {
-      const message = error.response?.data?.message || 'Failed to delete department';
+      const message =
+        error.response?.data?.message || 'Failed to delete department';
       alert(message);
     },
   });
@@ -100,19 +113,30 @@ const DepartmentPage: React.FC = () => {
   }
 
   return (
-    <DepartmentList
-      departments={departments}
-      isLoading={isLoading}
-      error={error}
-      onEdit={handleEdit}
-      onDelete={handleDelete}
-      onCreate={handleCreate}
-      currentPage={page}
-      totalPages={totalPages}
-      totalElements={totalElements}
-      onPageChange={setPage}
-      onFiltersChange={setFilters}
-    />
+    <>
+      <DepartmentList
+        departments={departments}
+        isLoading={isLoading}
+        error={error}
+        onEdit={handleEdit}
+        onDelete={handleDelete}
+        onCreate={handleCreate}
+        onImport={() => setShowImportDialog(true)}
+        currentPage={page}
+        totalPages={totalPages}
+        totalElements={totalElements}
+        onPageChange={setPage}
+        onFiltersChange={setFilters}
+      />
+      <ExcelImportDialog
+        isOpen={showImportDialog}
+        onClose={() => setShowImportDialog(false)}
+        entityName='Department'
+        importEndpoint='/master/departments/import'
+        templateEndpoint='/master/departments/template'
+        onImportSuccess={() => setPage(0)}
+      />
+    </>
   );
 };
 

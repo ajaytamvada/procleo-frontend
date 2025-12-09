@@ -42,9 +42,9 @@ const UserManagement: React.FC = () => {
           notifications: {
             email: true,
             push: true,
-            desktop: true
-          }
-        }
+            desktop: true,
+          },
+        },
       },
       {
         id: 2,
@@ -78,9 +78,9 @@ const UserManagement: React.FC = () => {
           notifications: {
             email: true,
             push: false,
-            desktop: true
-          }
-        }
+            desktop: true,
+          },
+        },
       },
       {
         id: 3,
@@ -113,9 +113,9 @@ const UserManagement: React.FC = () => {
           notifications: {
             email: true,
             push: true,
-            desktop: false
-          }
-        }
+            desktop: false,
+          },
+        },
       },
       {
         id: 4,
@@ -149,9 +149,9 @@ const UserManagement: React.FC = () => {
           notifications: {
             email: false,
             push: false,
-            desktop: false
-          }
-        }
+            desktop: false,
+          },
+        },
       },
       {
         id: 5,
@@ -180,10 +180,10 @@ const UserManagement: React.FC = () => {
           notifications: {
             email: true,
             push: false,
-            desktop: false
-          }
-        }
-      }
+            desktop: false,
+          },
+        },
+      },
     ];
 
     // Simulate API loading
@@ -205,7 +205,7 @@ const UserManagement: React.FC = () => {
       const confirmDelete = window.confirm(
         `Are you sure you want to delete user "${user.firstName} ${user.lastName}"?`
       );
-      
+
       if (confirmDelete) {
         setUsers(prev => prev.filter(u => u.id !== userId));
         toast.success('User deleted successfully');

@@ -118,15 +118,15 @@ export function DataTable<TData, TValue>({
       header: ({ table }) => (
         <Checkbox
           checked={table.getIsAllPageRowsSelected()}
-          onChange={(checked) => table.toggleAllPageRowsSelected(!!checked)}
-          aria-label="Select all"
+          onChange={checked => table.toggleAllPageRowsSelected(!!checked)}
+          aria-label='Select all'
         />
       ),
       cell: ({ row }) => (
         <Checkbox
           checked={row.getIsSelected()}
-          onChange={(checked) => row.toggleSelected(!!checked)}
-          aria-label="Select row"
+          onChange={checked => row.toggleSelected(!!checked)}
+          aria-label='Select row'
         />
       ),
       enableSorting: false,
@@ -154,22 +154,28 @@ export function DataTable<TData, TValue>({
       columnVisibility,
       rowSelection: rowSelectionState,
       globalFilter,
-      pagination: pagination ? {
-        pageIndex: 0,
-        pageSize,
-      } : undefined,
+      pagination: pagination
+        ? {
+            pageIndex: 0,
+            pageSize,
+          }
+        : undefined,
     },
     initialState: {
-      pagination: pagination ? {
-        pageSize,
-      } : undefined,
+      pagination: pagination
+        ? {
+            pageSize,
+          }
+        : undefined,
     },
   });
 
   // Handle row selection change
   React.useEffect(() => {
     if (onRowSelectionChange && rowSelection) {
-      const selectedRows = table.getFilteredSelectedRowModel().rows.map(row => row.original);
+      const selectedRows = table
+        .getFilteredSelectedRowModel()
+        .rows.map(row => row.original);
       onRowSelectionChange(selectedRows);
     }
   }, [rowSelectionState, onRowSelectionChange, rowSelection, table]);
@@ -183,17 +189,29 @@ export function DataTable<TData, TValue>({
 
   if (error) {
     return (
-      <div className="flex flex-col items-center justify-center py-12 text-center">
-        <div className="text-red-500 mb-4">
-          <svg className="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+      <div className='flex flex-col items-center justify-center py-12 text-center'>
+        <div className='text-red-500 mb-4'>
+          <svg
+            className='w-12 h-12 mx-auto'
+            fill='none'
+            stroke='currentColor'
+            viewBox='0 0 24 24'
+          >
+            <path
+              strokeLinecap='round'
+              strokeLinejoin='round'
+              strokeWidth={2}
+              d='M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z'
+            />
           </svg>
         </div>
-        <h3 className="text-lg font-medium text-gray-900 mb-2">Error Loading Data</h3>
-        <p className="text-gray-500 mb-4">{error}</p>
+        <h3 className='text-lg font-medium text-gray-900 mb-2'>
+          Error Loading Data
+        </h3>
+        <p className='text-gray-500 mb-4'>{error}</p>
         {onRefresh && (
-          <Button onClick={onRefresh} variant="outline" size="sm">
-            <RefreshCw className="w-4 h-4 mr-2" />
+          <Button onClick={onRefresh} variant='outline' size='sm'>
+            <RefreshCw className='w-4 h-4 mr-2' />
             Try Again
           </Button>
         )}
@@ -204,34 +222,35 @@ export function DataTable<TData, TValue>({
   return (
     <div className={cn('space-y-4', className)}>
       {/* Toolbar */}
-      <div className="flex items-center justify-between gap-4 flex-wrap">
-        <div className="flex items-center gap-2 flex-1 min-w-0">
+      <div className='flex items-center justify-between gap-4 flex-wrap'>
+        <div className='flex items-center gap-2 flex-1 min-w-0'>
           {searchable && (
-            <div className="relative max-w-sm">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+            <div className='relative max-w-sm'>
+              <Search className='absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4' />
               <Input
                 placeholder={searchPlaceholder}
                 value={globalFilter}
-                onChange={(e) => setGlobalFilter(e.target.value)}
-                className="pl-10"
+                onChange={e => setGlobalFilter(e.target.value)}
+                className='pl-10'
               />
             </div>
           )}
-          
-          {rowSelection && table.getFilteredSelectedRowModel().rows.length > 0 && (
-            <Badge variant="secondary">
-              {table.getFilteredSelectedRowModel().rows.length} selected
-            </Badge>
-          )}
+
+          {rowSelection &&
+            table.getFilteredSelectedRowModel().rows.length > 0 && (
+              <Badge variant='secondary'>
+                {table.getFilteredSelectedRowModel().rows.length} selected
+              </Badge>
+            )}
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className='flex items-center gap-2'>
           {toolbar}
-          
+
           {onRefresh && (
             <Button
-              variant="outline"
-              size="sm"
+              variant='outline'
+              size='sm'
               onClick={onRefresh}
               disabled={loading}
             >
@@ -240,36 +259,41 @@ export function DataTable<TData, TValue>({
           )}
 
           {onExport && (
-            <Button variant="outline" size="sm" onClick={onExport}>
-              <Download className="w-4 h-4 mr-2" />
+            <Button variant='outline' size='sm' onClick={onExport}>
+              <Download className='w-4 h-4 mr-2' />
               Export
             </Button>
           )}
 
           {filterable && (
-            <div className="relative">
+            <div className='relative'>
               <Button
-                variant="outline"
-                size="sm"
+                variant='outline'
+                size='sm'
                 onClick={() => setShowColumnVisibility(!showColumnVisibility)}
               >
-                <Settings className="w-4 h-4 mr-2" />
+                <Settings className='w-4 h-4 mr-2' />
                 Columns
               </Button>
-              
+
               {showColumnVisibility && (
-                <div className="absolute right-0 top-full mt-2 bg-white border rounded-lg shadow-lg p-4 z-10 min-w-[200px]">
-                  <div className="space-y-2">
+                <div className='absolute right-0 top-full mt-2 bg-white border rounded-lg shadow-lg p-4 z-10 min-w-[200px]'>
+                  <div className='space-y-2'>
                     {table
                       .getAllColumns()
-                      .filter((column) => column.getCanHide())
-                      .map((column) => (
-                        <label key={column.id} className="flex items-center space-x-2 text-sm">
+                      .filter(column => column.getCanHide())
+                      .map(column => (
+                        <label
+                          key={column.id}
+                          className='flex items-center space-x-2 text-sm'
+                        >
                           <Checkbox
                             checked={column.getIsVisible()}
-                            onChange={(checked) => column.toggleVisibility(!!checked)}
+                            onChange={checked =>
+                              column.toggleVisibility(!!checked)
+                            }
                           />
-                          <span className="capitalize">{column.id}</span>
+                          <span className='capitalize'>{column.id}</span>
                         </label>
                       ))}
                   </div>
@@ -281,58 +305,66 @@ export function DataTable<TData, TValue>({
       </div>
 
       {/* Table */}
-      <div className={cn(
-        'border rounded-lg overflow-hidden',
-        stickyHeader && 'max-h-[600px] overflow-y-auto'
-      )}>
-        <table className="w-full">
-          <thead className={cn(
-            'bg-gray-50 border-b',
-            stickyHeader && 'sticky top-0 z-10'
-          )}>
-            {table.getHeaderGroups().map((headerGroup) => (
+      <div
+        className={cn(
+          'border rounded-lg overflow-hidden',
+          stickyHeader && 'max-h-[600px] overflow-y-auto'
+        )}
+      >
+        <table className='w-full'>
+          <thead
+            className={cn(
+              'bg-gray-50 border-b',
+              stickyHeader && 'sticky top-0 z-10'
+            )}
+          >
+            {table.getHeaderGroups().map(headerGroup => (
               <tr key={headerGroup.id}>
-                {headerGroup.headers.map((header) => (
+                {headerGroup.headers.map(header => (
                   <th
                     key={header.id}
                     className={cn(
                       'px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider',
-                      header.column.getCanSort() && 'cursor-pointer hover:bg-gray-100',
+                      header.column.getCanSort() &&
+                        'cursor-pointer hover:bg-gray-100',
                       compactMode && 'px-2 py-2'
                     )}
                     onClick={header.column.getToggleSortingHandler()}
                   >
-                    <div className="flex items-center space-x-1">
+                    <div className='flex items-center space-x-1'>
                       <span>
                         {header.isPlaceholder
                           ? null
-                          : flexRender(header.column.columnDef.header, header.getContext())}
+                          : flexRender(
+                              header.column.columnDef.header,
+                              header.getContext()
+                            )}
                       </span>
                       {header.column.getCanSort() && (
-                        <span className="ml-1">
+                        <span className='ml-1'>
                           {header.column.getIsSorted() === 'desc' ? (
-                            <ChevronDown className="w-4 h-4" />
+                            <ChevronDown className='w-4 h-4' />
                           ) : header.column.getIsSorted() === 'asc' ? (
-                            <ChevronUp className="w-4 h-4" />
+                            <ChevronUp className='w-4 h-4' />
                           ) : (
-                            <div className="w-4 h-4" />
+                            <div className='w-4 h-4' />
                           )}
                         </span>
                       )}
                     </div>
                   </th>
                 ))}
-                {expandable && <th className="w-12"></th>}
+                {expandable && <th className='w-12'></th>}
               </tr>
             ))}
           </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
+          <tbody className='bg-white divide-y divide-gray-200'>
             {loading ? (
               Array.from({ length: pageSize }).map((_, index) => (
                 <tr key={index}>
                   {enhancedColumns.map((_, colIndex) => (
-                    <td key={colIndex} className="px-4 py-3">
-                      <div className="animate-pulse bg-gray-200 h-4 rounded"></div>
+                    <td key={colIndex} className='px-4 py-3'>
+                      <div className='animate-pulse bg-gray-200 h-4 rounded'></div>
                     </td>
                   ))}
                 </tr>
@@ -347,7 +379,7 @@ export function DataTable<TData, TValue>({
                       row.getIsSelected() && 'bg-blue-50'
                     )}
                   >
-                    {row.getVisibleCells().map((cell) => (
+                    {row.getVisibleCells().map(cell => (
                       <td
                         key={cell.id}
                         className={cn(
@@ -355,20 +387,23 @@ export function DataTable<TData, TValue>({
                           compactMode && 'px-2 py-2'
                         )}
                       >
-                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext()
+                        )}
                       </td>
                     ))}
                     {expandable && (
-                      <td className="px-4 py-3 text-center">
+                      <td className='px-4 py-3 text-center'>
                         <Button
-                          variant="ghost"
-                          size="sm"
+                          variant='ghost'
+                          size='sm'
                           onClick={() => handleExpandRow(row.id)}
                         >
                           {expandedRows[row.id] ? (
-                            <ChevronUp className="w-4 h-4" />
+                            <ChevronUp className='w-4 h-4' />
                           ) : (
-                            <ChevronDown className="w-4 h-4" />
+                            <ChevronDown className='w-4 h-4' />
                           )}
                         </Button>
                       </td>
@@ -376,7 +411,10 @@ export function DataTable<TData, TValue>({
                   </tr>
                   {expandable && expandedRows[row.id] && renderExpandedRow && (
                     <tr>
-                      <td colSpan={enhancedColumns.length + 1} className="px-4 py-3 bg-gray-50">
+                      <td
+                        colSpan={enhancedColumns.length + 1}
+                        className='px-4 py-3 bg-gray-50'
+                      >
                         {renderExpandedRow(row.original)}
                       </td>
                     </tr>
@@ -387,18 +425,32 @@ export function DataTable<TData, TValue>({
               <tr>
                 <td
                   colSpan={enhancedColumns.length + (expandable ? 1 : 0)}
-                  className="px-4 py-12 text-center text-gray-500"
+                  className='px-4 py-12 text-center text-gray-500'
                 >
                   {emptyState || (
-                    <div className="flex flex-col items-center">
-                      <div className="text-gray-400 mb-4">
-                        <svg className="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    <div className='flex flex-col items-center'>
+                      <div className='text-gray-400 mb-4'>
+                        <svg
+                          className='w-12 h-12 mx-auto'
+                          fill='none'
+                          stroke='currentColor'
+                          viewBox='0 0 24 24'
+                        >
+                          <path
+                            strokeLinecap='round'
+                            strokeLinejoin='round'
+                            strokeWidth={2}
+                            d='M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z'
+                          />
                         </svg>
                       </div>
-                      <h3 className="text-lg font-medium text-gray-900 mb-2">No data found</h3>
-                      <p className="text-gray-500">
-                        {globalFilter ? 'No results match your search criteria.' : 'No data available to display.'}
+                      <h3 className='text-lg font-medium text-gray-900 mb-2'>
+                        No data found
+                      </h3>
+                      <p className='text-gray-500'>
+                        {globalFilter
+                          ? 'No results match your search criteria.'
+                          : 'No data available to display.'}
                       </p>
                     </div>
                   )}
@@ -411,59 +463,64 @@ export function DataTable<TData, TValue>({
 
       {/* Pagination */}
       {pagination && (
-        <div className="flex items-center justify-between px-2">
-          <div className="flex items-center space-x-2 text-sm text-gray-700">
+        <div className='flex items-center justify-between px-2'>
+          <div className='flex items-center space-x-2 text-sm text-gray-700'>
             <span>
-              Showing {table.getState().pagination.pageIndex * table.getState().pagination.pageSize + 1} to{' '}
+              Showing{' '}
+              {table.getState().pagination.pageIndex *
+                table.getState().pagination.pageSize +
+                1}{' '}
+              to{' '}
               {Math.min(
-                (table.getState().pagination.pageIndex + 1) * table.getState().pagination.pageSize,
+                (table.getState().pagination.pageIndex + 1) *
+                  table.getState().pagination.pageSize,
                 table.getFilteredRowModel().rows.length
               )}{' '}
               of {table.getFilteredRowModel().rows.length} entries
             </span>
           </div>
 
-          <div className="flex items-center space-x-2">
+          <div className='flex items-center space-x-2'>
             <Button
-              variant="outline"
-              size="sm"
+              variant='outline'
+              size='sm'
               onClick={() => table.setPageIndex(0)}
               disabled={!table.getCanPreviousPage()}
             >
-              <ChevronsLeft className="w-4 h-4" />
+              <ChevronsLeft className='w-4 h-4' />
             </Button>
             <Button
-              variant="outline"
-              size="sm"
+              variant='outline'
+              size='sm'
               onClick={() => table.previousPage()}
               disabled={!table.getCanPreviousPage()}
             >
-              <ChevronLeft className="w-4 h-4" />
+              <ChevronLeft className='w-4 h-4' />
             </Button>
-            
-            <span className="flex items-center space-x-1 text-sm">
+
+            <span className='flex items-center space-x-1 text-sm'>
               <span>Page</span>
               <strong>
                 {table.getState().pagination.pageIndex + 1} of{' '}
                 {table.getPageCount()}
               </strong>
             </span>
-            
+
             <Button
-              variant="outline"
-              size="sm"
+              variant='outline'
+              size='sm'
               onClick={() => table.nextPage()}
               disabled={!table.getCanNextPage()}
             >
-              <ChevronRight className="w-4 h-4" />
+              <ChevronRight className='w-4 h-4' />
             </Button>
             <Button
-              variant="outline"
-              size="sm"
+              variant='outline'
+              size='sm'
               onClick={() => table.setPageIndex(table.getPageCount() - 1)}
               disabled={!table.getCanNextPage()}
             >
-              <ChevronsRight className="w-4 h-4" />
+              <ChevronsRight className='w-4 h-4' />
             </Button>
           </div>
         </div>

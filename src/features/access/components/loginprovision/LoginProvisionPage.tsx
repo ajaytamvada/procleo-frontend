@@ -28,16 +28,16 @@ const LoginProvisionPage: React.FC = () => {
   };
 
   return (
-    <div className="p-6">
+    <div className='p-6'>
       {/* Header */}
-      <div className="mb-6 flex justify-between items-center">
+      <div className='mb-6 flex justify-between items-center'>
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Login Provision</h1>
-          <p className="text-gray-600 mt-1">Manage user login accounts</p>
+          <h1 className='text-2xl font-bold text-gray-900'>Login Provision</h1>
+          <p className='text-gray-600 mt-1'>Manage user login accounts</p>
         </div>
         <button
           onClick={handleAdd}
-          className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
+          className='px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2'
         >
           <Plus size={20} />
           Add User

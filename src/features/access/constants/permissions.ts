@@ -30,5 +30,8 @@ export const getPermissionName = (id: string): string => {
 
 export const parsePermissions = (permissionClass: string | null): string[] => {
   if (!permissionClass) return [];
-  return permissionClass.split(',').filter(p => p.trim()).map(p => p.trim());
+  return permissionClass
+    .split(',')
+    .filter(p => p.trim())
+    .map(p => p.trim());
 };

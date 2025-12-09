@@ -15,10 +15,10 @@ export const useRFPsForFinalization = () => {
     queryKey: ['rfps', 'finalization'],
     queryFn: async () => {
       // Get RFPs with QUOTATION_RECEIVED status
-      const response = await rfpApi.getRFPsByStatus('QUOTATION_RECEIVED');
+      const response = await rfpApi.getRFPsByStatus('FLOATED,NEGOTIATION,UNDER_EVALUATION');
       // Filter to only include RFPs with quotations
-      return response.filter((rfp) =>
-        rfp.quotations && rfp.quotations.length > 0
+      return response.filter(
+        rfp => rfp.quotations && rfp.quotations.length > 0
       );
     },
   });
@@ -32,14 +32,16 @@ export const useSendForApproval = () => {
 
   return useMutation({
     mutationFn: (request: any) => rfpApi.sendForApproval(request),
-    onSuccess: (data) => {
+    onSuccess: data => {
       toast.success('RFP sent for approval successfully!');
       // Invalidate and refetch RFP queries
       queryClient.invalidateQueries({ queryKey: ['rfps'] });
       queryClient.invalidateQueries({ queryKey: ['rfp', data.id] });
     },
     onError: (error: any) => {
-      toast.error(error.response?.data?.message || 'Failed to send RFP for approval');
+      toast.error(
+        error.response?.data?.message || 'Failed to send RFP for approval'
+      );
     },
   });
 };

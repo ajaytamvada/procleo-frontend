@@ -13,10 +13,10 @@ export const useNegotiatedQuotations = () => {
   return useQuery({
     queryKey: ['rfps', 'negotiated'],
     queryFn: async () => {
-      const response = await rfpApi.getRFPsByStatus('QUOTATION_RECEIVED');
+      const response = await rfpApi.getRFPsByStatus('NEGOTIATION');
       // Filter to only include RFPs with negotiated quotations
-      return response.filter((rfp) =>
-        rfp.quotations?.some((q) => q.status === 'NEGOTIATION')
+      return response.filter(rfp =>
+        rfp.quotations?.some(q => q.status === 'NEGOTIATION')
       );
     },
   });

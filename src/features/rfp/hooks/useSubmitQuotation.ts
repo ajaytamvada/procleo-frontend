@@ -36,17 +36,25 @@ export const useSubmitQuotation = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ rfpId, quotation }: { rfpId: number; quotation: RFPQuotation }) =>
-      rfpApi.submitQuotation(rfpId, quotation),
-    onSuccess: (data) => {
-      toast.success(`Quotation ${data.quotations?.[data.quotations.length - 1]?.quotationNumber} submitted successfully!`);
+    mutationFn: ({
+      rfpId,
+      quotation,
+    }: {
+      rfpId: number;
+      quotation: RFPQuotation;
+    }) => rfpApi.submitQuotation(rfpId, quotation),
+    onSuccess: data => {
+      toast.success(
+        `Quotation ${data.quotations?.[data.quotations.length - 1]?.quotationNumber} submitted successfully!`
+      );
       // Invalidate relevant queries
       queryClient.invalidateQueries({ queryKey: ['rfp', data.id] });
       queryClient.invalidateQueries({ queryKey: ['rfps'] });
       queryClient.invalidateQueries({ queryKey: ['rfps', 'floated'] });
     },
     onError: (error: any) => {
-      const errorMessage = error?.response?.data?.message || 'Failed to submit quotation';
+      const errorMessage =
+        error?.response?.data?.message || 'Failed to submit quotation';
       toast.error(errorMessage);
     },
   });

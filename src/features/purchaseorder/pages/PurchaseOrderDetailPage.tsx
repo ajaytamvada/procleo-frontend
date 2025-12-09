@@ -1,6 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Edit, Download, Package, FileText, CheckCircle, XCircle, Clock, Truck, Send } from 'lucide-react';
+import {
+  ArrowLeft,
+  Edit,
+  Download,
+  Package,
+  FileText,
+  CheckCircle,
+  XCircle,
+  Clock,
+  Truck,
+  Send,
+} from 'lucide-react';
 import type { PurchaseOrder } from '../types';
 import { POStatus, POType } from '../types';
 import { format } from 'date-fns';
@@ -8,7 +19,9 @@ import { format } from 'date-fns';
 const PurchaseOrderDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const [purchaseOrder, setPurchaseOrder] = useState<PurchaseOrder | null>(null);
+  const [purchaseOrder, setPurchaseOrder] = useState<PurchaseOrder | null>(
+    null
+  );
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -48,7 +61,8 @@ const PurchaseOrderDetailPage: React.FC = () => {
             id: 1,
             itemName: 'Bitumen Pressure Distributor',
             itemCode: 'BPD-001',
-            itemDescription: 'Heavy duty bitumen pressure distributor with automated controls',
+            itemDescription:
+              'Heavy duty bitumen pressure distributor with automated controls',
             quantity: 2,
             unitOfMeasurement: 'Units',
             unitPrice: 200000,
@@ -62,7 +76,7 @@ const PurchaseOrderDetailPage: React.FC = () => {
             grandTotal: 436000,
             deliveryDate: '2024-09-15',
             category: 'Equipment',
-            subCategory: 'Heavy Machinery'
+            subCategory: 'Heavy Machinery',
           },
           {
             id: 2,
@@ -82,13 +96,13 @@ const PurchaseOrderDetailPage: React.FC = () => {
             grandTotal: 47200,
             deliveryDate: '2024-09-15',
             category: 'Spare Parts',
-            subCategory: 'Maintenance'
-          }
+            subCategory: 'Maintenance',
+          },
         ],
         createdBy: 'Admin',
         createdDate: '2024-09-08',
         approvedBy: 'Manager',
-        approvedDate: '2024-09-08'
+        approvedDate: '2024-09-08',
       };
       setPurchaseOrder(mockData);
     } catch (error) {
@@ -99,7 +113,9 @@ const PurchaseOrderDetailPage: React.FC = () => {
   };
 
   const handleApprove = async () => {
-    if (window.confirm('Are you sure you want to approve this Purchase Order?')) {
+    if (
+      window.confirm('Are you sure you want to approve this Purchase Order?')
+    ) {
       // Implement approval logic
       console.log('Approving PO:', id);
     }
@@ -155,60 +171,68 @@ const PurchaseOrderDetailPage: React.FC = () => {
   const getStatusIcon = (status?: POStatus) => {
     switch (status) {
       case POStatus.APPROVED:
-        return <CheckCircle className="w-4 h-4" />;
+        return <CheckCircle className='w-4 h-4' />;
       case POStatus.REJECTED:
-        return <XCircle className="w-4 h-4" />;
+        return <XCircle className='w-4 h-4' />;
       case POStatus.PARTIALLY_DELIVERED:
       case POStatus.DELIVERED:
-        return <Truck className="w-4 h-4" />;
+        return <Truck className='w-4 h-4' />;
       default:
-        return <Clock className="w-4 h-4" />;
+        return <Clock className='w-4 h-4' />;
     }
   };
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-gray-500">Loading...</div>
+      <div className='flex items-center justify-center h-64'>
+        <div className='text-gray-500'>Loading...</div>
       </div>
     );
   }
 
   if (!purchaseOrder) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-gray-500">Purchase Order not found</div>
+      <div className='flex items-center justify-center h-64'>
+        <div className='text-gray-500'>Purchase Order not found</div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <div className='space-y-6'>
       {/* Header */}
-      <div className="flex justify-between items-start">
-        <div className="flex items-center space-x-4">
+      <div className='flex justify-between items-start'>
+        <div className='flex items-center space-x-4'>
           <button
             onClick={() => navigate('/purchase-orders')}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            className='p-2 hover:bg-gray-100 rounded-lg transition-colors'
           >
-            <ArrowLeft className="w-5 h-5" />
+            <ArrowLeft className='w-5 h-5' />
           </button>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Purchase Order Details</h1>
-            <p className="text-sm text-gray-500 mt-1">PO Number: {purchaseOrder.poNumber}</p>
+            <h1 className='text-2xl font-bold text-gray-900'>
+              Purchase Order Details
+            </h1>
+            <p className='text-sm text-gray-500 mt-1'>
+              PO Number: {purchaseOrder.poNumber}
+            </p>
           </div>
         </div>
-        <div className="flex items-center space-x-3">
-          <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold ${getStatusBadgeClass(purchaseOrder.status)}`}>
+        <div className='flex items-center space-x-3'>
+          <span
+            className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold ${getStatusBadgeClass(purchaseOrder.status)}`}
+          >
             {getStatusIcon(purchaseOrder.status)}
-            <span className="ml-1">{purchaseOrder.status?.replace('_', ' ')}</span>
+            <span className='ml-1'>
+              {purchaseOrder.status?.replace('_', ' ')}
+            </span>
           </span>
           {purchaseOrder.status === POStatus.DRAFT && (
             <button
               onClick={() => navigate(`/purchase-orders/${id}/edit`)}
-              className="flex items-center px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+              className='flex items-center px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors'
             >
-              <Edit className="w-4 h-4 mr-2" />
+              <Edit className='w-4 h-4 mr-2' />
               Edit
             </button>
           )}
@@ -216,16 +240,16 @@ const PurchaseOrderDetailPage: React.FC = () => {
             <>
               <button
                 onClick={handleApprove}
-                className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                className='flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors'
               >
-                <CheckCircle className="w-4 h-4 mr-2" />
+                <CheckCircle className='w-4 h-4 mr-2' />
                 Approve
               </button>
               <button
                 onClick={handleReject}
-                className="flex items-center px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                className='flex items-center px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors'
               >
-                <XCircle className="w-4 h-4 mr-2" />
+                <XCircle className='w-4 h-4 mr-2' />
                 Reject
               </button>
             </>
@@ -234,16 +258,16 @@ const PurchaseOrderDetailPage: React.FC = () => {
             <>
               <button
                 onClick={handleCreateGRN}
-                className="flex items-center px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+                className='flex items-center px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors'
               >
-                <Package className="w-4 h-4 mr-2" />
+                <Package className='w-4 h-4 mr-2' />
                 Create GRN
               </button>
               <button
                 onClick={handleSend}
-                className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                className='flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors'
               >
-                <Send className="w-4 h-4 mr-2" />
+                <Send className='w-4 h-4 mr-2' />
                 Send to Supplier
               </button>
             </>
@@ -251,148 +275,204 @@ const PurchaseOrderDetailPage: React.FC = () => {
           {purchaseOrder.status === POStatus.DELIVERED && (
             <button
               onClick={handleCreateInvoice}
-              className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+              className='flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors'
             >
-              <FileText className="w-4 h-4 mr-2" />
+              <FileText className='w-4 h-4 mr-2' />
               Create Invoice
             </button>
           )}
           <button
             onClick={handleDownload}
-            className="flex items-center px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+            className='flex items-center px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors'
           >
-            <Download className="w-4 h-4 mr-2" />
+            <Download className='w-4 h-4 mr-2' />
             Download
           </button>
         </div>
       </div>
 
       {/* PO Information */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <h2 className="text-lg font-semibold text-gray-900">Purchase Order Information</h2>
+      <div className='bg-white rounded-lg shadow-sm border border-gray-200'>
+        <div className='px-6 py-4 border-b border-gray-200'>
+          <h2 className='text-lg font-semibold text-gray-900'>
+            Purchase Order Information
+          </h2>
         </div>
-        <div className="p-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className='p-6'>
+          <div className='grid grid-cols-1 md:grid-cols-3 gap-6'>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">PO Number</label>
-              <p className="text-sm text-gray-900">{purchaseOrder.poNumber}</p>
+              <label className='block text-sm font-medium text-gray-700 mb-1'>
+                PO Number
+              </label>
+              <p className='text-sm text-gray-900'>{purchaseOrder.poNumber}</p>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">PO Date</label>
-              <p className="text-sm text-gray-900">{format(new Date(purchaseOrder.poDate), 'dd/MM/yyyy')}</p>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Delivery Date</label>
-              <p className="text-sm text-gray-900">
-                {purchaseOrder.deliveryDate ? format(new Date(purchaseOrder.deliveryDate), 'dd/MM/yyyy') : '-'}
+              <label className='block text-sm font-medium text-gray-700 mb-1'>
+                PO Date
+              </label>
+              <p className='text-sm text-gray-900'>
+                {format(new Date(purchaseOrder.poDate), 'dd/MM/yyyy')}
               </p>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">RFP Number</label>
-              <p className="text-sm text-blue-600 hover:text-blue-800 cursor-pointer">
+              <label className='block text-sm font-medium text-gray-700 mb-1'>
+                Delivery Date
+              </label>
+              <p className='text-sm text-gray-900'>
+                {purchaseOrder.deliveryDate
+                  ? format(new Date(purchaseOrder.deliveryDate), 'dd/MM/yyyy')
+                  : '-'}
+              </p>
+            </div>
+            <div>
+              <label className='block text-sm font-medium text-gray-700 mb-1'>
+                RFP Number
+              </label>
+              <p className='text-sm text-blue-600 hover:text-blue-800 cursor-pointer'>
                 {purchaseOrder.rfpNumber || '-'}
               </p>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Quotation Number</label>
-              <p className="text-sm text-gray-900">{purchaseOrder.quotationNumber || '-'}</p>
+              <label className='block text-sm font-medium text-gray-700 mb-1'>
+                Quotation Number
+              </label>
+              <p className='text-sm text-gray-900'>
+                {purchaseOrder.quotationNumber || '-'}
+              </p>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">PO Type</label>
-              <p className="text-sm text-gray-900">{purchaseOrder.poType || '-'}</p>
+              <label className='block text-sm font-medium text-gray-700 mb-1'>
+                PO Type
+              </label>
+              <p className='text-sm text-gray-900'>
+                {purchaseOrder.poType || '-'}
+              </p>
             </div>
           </div>
         </div>
       </div>
 
       {/* Supplier Information */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <h2 className="text-lg font-semibold text-gray-900">Supplier Information</h2>
+      <div className='bg-white rounded-lg shadow-sm border border-gray-200'>
+        <div className='px-6 py-4 border-b border-gray-200'>
+          <h2 className='text-lg font-semibold text-gray-900'>
+            Supplier Information
+          </h2>
         </div>
-        <div className="p-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className='p-6'>
+          <div className='grid grid-cols-1 md:grid-cols-3 gap-6'>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Supplier Name</label>
-              <p className="text-sm text-gray-900">{purchaseOrder.supplierName}</p>
+              <label className='block text-sm font-medium text-gray-700 mb-1'>
+                Supplier Name
+              </label>
+              <p className='text-sm text-gray-900'>
+                {purchaseOrder.supplierName}
+              </p>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Supplier Code</label>
-              <p className="text-sm text-gray-900">{purchaseOrder.supplierCode || '-'}</p>
+              <label className='block text-sm font-medium text-gray-700 mb-1'>
+                Supplier Code
+              </label>
+              <p className='text-sm text-gray-900'>
+                {purchaseOrder.supplierCode || '-'}
+              </p>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Payment Terms</label>
-              <p className="text-sm text-gray-900">{purchaseOrder.paymentTerms || '-'}</p>
+              <label className='block text-sm font-medium text-gray-700 mb-1'>
+                Payment Terms
+              </label>
+              <p className='text-sm text-gray-900'>
+                {purchaseOrder.paymentTerms || '-'}
+              </p>
             </div>
-            <div className="md:col-span-3">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Bill To Address</label>
-              <p className="text-sm text-gray-900">{purchaseOrder.billToAddress || '-'}</p>
+            <div className='md:col-span-3'>
+              <label className='block text-sm font-medium text-gray-700 mb-1'>
+                Bill To Address
+              </label>
+              <p className='text-sm text-gray-900'>
+                {purchaseOrder.billToAddress || '-'}
+              </p>
             </div>
-            <div className="md:col-span-3">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Ship To Address</label>
-              <p className="text-sm text-gray-900">{purchaseOrder.shipToAddress || '-'}</p>
+            <div className='md:col-span-3'>
+              <label className='block text-sm font-medium text-gray-700 mb-1'>
+                Ship To Address
+              </label>
+              <p className='text-sm text-gray-900'>
+                {purchaseOrder.shipToAddress || '-'}
+              </p>
             </div>
           </div>
         </div>
       </div>
 
       {/* Line Items */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <h2 className="text-lg font-semibold text-gray-900">Line Items</h2>
+      <div className='bg-white rounded-lg shadow-sm border border-gray-200'>
+        <div className='px-6 py-4 border-b border-gray-200'>
+          <h2 className='text-lg font-semibold text-gray-900'>Line Items</h2>
         </div>
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-gray-50 border-b border-gray-200">
+        <div className='overflow-x-auto'>
+          <table className='w-full'>
+            <thead className='bg-gray-50 border-b border-gray-200'>
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
                   Item Details
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
                   Quantity
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
                   Unit Price
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
                   Tax
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
                   Total
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className='bg-white divide-y divide-gray-200'>
               {purchaseOrder.items?.map((item, index) => (
                 <tr key={item.id || index}>
-                  <td className="px-6 py-4">
+                  <td className='px-6 py-4'>
                     <div>
-                      <p className="text-sm font-medium text-gray-900">{item.itemName}</p>
-                      <p className="text-xs text-gray-500">{item.itemCode}</p>
-                      <p className="text-xs text-gray-500 mt-1">{item.itemDescription}</p>
+                      <p className='text-sm font-medium text-gray-900'>
+                        {item.itemName}
+                      </p>
+                      <p className='text-xs text-gray-500'>{item.itemCode}</p>
+                      <p className='text-xs text-gray-500 mt-1'>
+                        {item.itemDescription}
+                      </p>
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <p className="text-sm text-gray-900">
+                  <td className='px-6 py-4 whitespace-nowrap'>
+                    <p className='text-sm text-gray-900'>
                       {item.quantity} {item.unitOfMeasurement}
                     </p>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <p className="text-sm text-gray-900">₹ {item.unitPrice?.toLocaleString('en-IN')}</p>
+                  <td className='px-6 py-4 whitespace-nowrap'>
+                    <p className='text-sm text-gray-900'>
+                      ₹ {item.unitPrice?.toLocaleString('en-IN')}
+                    </p>
                   </td>
-                  <td className="px-6 py-4">
-                    <div className="text-xs">
+                  <td className='px-6 py-4'>
+                    <div className='text-xs'>
                       {item.tax1Type && (
-                        <p>{item.tax1Type}: {item.tax1Rate}% (₹ {item.tax1Amount?.toLocaleString('en-IN')})</p>
+                        <p>
+                          {item.tax1Type}: {item.tax1Rate}% (₹{' '}
+                          {item.tax1Amount?.toLocaleString('en-IN')})
+                        </p>
                       )}
                       {item.tax2Type && (
-                        <p>{item.tax2Type}: {item.tax2Rate}% (₹ {item.tax2Amount?.toLocaleString('en-IN')})</p>
+                        <p>
+                          {item.tax2Type}: {item.tax2Rate}% (₹{' '}
+                          {item.tax2Amount?.toLocaleString('en-IN')})
+                        </p>
                       )}
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <p className="text-sm font-semibold text-gray-900">
+                  <td className='px-6 py-4 whitespace-nowrap'>
+                    <p className='text-sm font-semibold text-gray-900'>
                       ₹ {item.grandTotal?.toLocaleString('en-IN')}
                     </p>
                   </td>
@@ -401,32 +481,37 @@ const PurchaseOrderDetailPage: React.FC = () => {
             </tbody>
           </table>
         </div>
-        <div className="px-6 py-4 border-t border-gray-200 bg-gray-50">
-          <div className="flex justify-end space-y-2">
-            <div className="text-right">
-              <div className="flex justify-between items-center py-1">
-                <span className="text-sm text-gray-600 mr-8">Subtotal:</span>
-                <span className="text-sm font-medium text-gray-900">
+        <div className='px-6 py-4 border-t border-gray-200 bg-gray-50'>
+          <div className='flex justify-end space-y-2'>
+            <div className='text-right'>
+              <div className='flex justify-between items-center py-1'>
+                <span className='text-sm text-gray-600 mr-8'>Subtotal:</span>
+                <span className='text-sm font-medium text-gray-900'>
                   ₹ {purchaseOrder.subTotal?.toLocaleString('en-IN')}
                 </span>
               </div>
-              <div className="flex justify-between items-center py-1">
-                <span className="text-sm text-gray-600 mr-8">Tax Amount:</span>
-                <span className="text-sm font-medium text-gray-900">
+              <div className='flex justify-between items-center py-1'>
+                <span className='text-sm text-gray-600 mr-8'>Tax Amount:</span>
+                <span className='text-sm font-medium text-gray-900'>
                   ₹ {purchaseOrder.taxAmount?.toLocaleString('en-IN')}
                 </span>
               </div>
-              {purchaseOrder.discountAmount && purchaseOrder.discountAmount > 0 && (
-                <div className="flex justify-between items-center py-1">
-                  <span className="text-sm text-gray-600 mr-8">Discount:</span>
-                  <span className="text-sm font-medium text-red-600">
-                    - ₹ {purchaseOrder.discountAmount.toLocaleString('en-IN')}
-                  </span>
-                </div>
-              )}
-              <div className="flex justify-between items-center py-2 border-t border-gray-300 mt-2">
-                <span className="text-base font-semibold text-gray-900 mr-8">Grand Total:</span>
-                <span className="text-lg font-bold text-primary-600">
+              {purchaseOrder.discountAmount &&
+                purchaseOrder.discountAmount > 0 && (
+                  <div className='flex justify-between items-center py-1'>
+                    <span className='text-sm text-gray-600 mr-8'>
+                      Discount:
+                    </span>
+                    <span className='text-sm font-medium text-red-600'>
+                      - ₹ {purchaseOrder.discountAmount.toLocaleString('en-IN')}
+                    </span>
+                  </div>
+                )}
+              <div className='flex justify-between items-center py-2 border-t border-gray-300 mt-2'>
+                <span className='text-base font-semibold text-gray-900 mr-8'>
+                  Grand Total:
+                </span>
+                <span className='text-lg font-bold text-primary-600'>
                   ₹ {purchaseOrder.grandTotal?.toLocaleString('en-IN')}
                 </span>
               </div>
@@ -436,45 +521,72 @@ const PurchaseOrderDetailPage: React.FC = () => {
       </div>
 
       {/* Additional Information */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <h2 className="text-lg font-semibold text-gray-900">Additional Information</h2>
+      <div className='bg-white rounded-lg shadow-sm border border-gray-200'>
+        <div className='px-6 py-4 border-b border-gray-200'>
+          <h2 className='text-lg font-semibold text-gray-900'>
+            Additional Information
+          </h2>
         </div>
-        <div className="p-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className='p-6'>
+          <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Department</label>
-              <p className="text-sm text-gray-900">{purchaseOrder.department || '-'}</p>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Raised By</label>
-              <p className="text-sm text-gray-900">{purchaseOrder.raisedBy || '-'}</p>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Created Date</label>
-              <p className="text-sm text-gray-900">
-                {purchaseOrder.createdDate ? format(new Date(purchaseOrder.createdDate), 'dd/MM/yyyy HH:mm') : '-'}
+              <label className='block text-sm font-medium text-gray-700 mb-1'>
+                Department
+              </label>
+              <p className='text-sm text-gray-900'>
+                {purchaseOrder.department || '-'}
               </p>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Approved By</label>
-              <p className="text-sm text-gray-900">
+              <label className='block text-sm font-medium text-gray-700 mb-1'>
+                Raised By
+              </label>
+              <p className='text-sm text-gray-900'>
+                {purchaseOrder.raisedBy || '-'}
+              </p>
+            </div>
+            <div>
+              <label className='block text-sm font-medium text-gray-700 mb-1'>
+                Created Date
+              </label>
+              <p className='text-sm text-gray-900'>
+                {purchaseOrder.createdDate
+                  ? format(
+                      new Date(purchaseOrder.createdDate),
+                      'dd/MM/yyyy HH:mm'
+                    )
+                  : '-'}
+              </p>
+            </div>
+            <div>
+              <label className='block text-sm font-medium text-gray-700 mb-1'>
+                Approved By
+              </label>
+              <p className='text-sm text-gray-900'>
                 {purchaseOrder.approvedBy || '-'}
                 {purchaseOrder.approvedDate && (
-                  <span className="text-xs text-gray-500 ml-2">
-                    ({format(new Date(purchaseOrder.approvedDate), 'dd/MM/yyyy')})
+                  <span className='text-xs text-gray-500 ml-2'>
+                    (
+                    {format(new Date(purchaseOrder.approvedDate), 'dd/MM/yyyy')}
+                    )
                   </span>
                 )}
               </p>
             </div>
-            <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Terms & Conditions</label>
-              <p className="text-sm text-gray-900 whitespace-pre-wrap">{purchaseOrder.termsConditions || '-'}</p>
+            <div className='md:col-span-2'>
+              <label className='block text-sm font-medium text-gray-700 mb-1'>
+                Terms & Conditions
+              </label>
+              <p className='text-sm text-gray-900 whitespace-pre-wrap'>
+                {purchaseOrder.termsConditions || '-'}
+              </p>
             </div>
             {purchaseOrder.remarks && (
-              <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Remarks</label>
-                <p className="text-sm text-gray-900">{purchaseOrder.remarks}</p>
+              <div className='md:col-span-2'>
+                <label className='block text-sm font-medium text-gray-700 mb-1'>
+                  Remarks
+                </label>
+                <p className='text-sm text-gray-900'>{purchaseOrder.remarks}</p>
               </div>
             )}
           </div>

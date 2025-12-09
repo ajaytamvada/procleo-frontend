@@ -64,7 +64,8 @@ export const useDeletePR = () => {
     },
     onError: (error: any) => {
       const errorMessage =
-        error.response?.data?.message || 'Failed to delete purchase requisition. Please try again.';
+        error.response?.data?.message ||
+        'Failed to delete purchase requisition. Please try again.';
       toast.error(errorMessage);
     },
   });
@@ -79,7 +80,9 @@ export const useDeletePRs = () => {
   return useMutation({
     mutationFn: deletePRs,
     onSuccess: (_, ids) => {
-      toast.success(`${ids.length} purchase requisition(s) deleted successfully`);
+      toast.success(
+        `${ids.length} purchase requisition(s) deleted successfully`
+      );
 
       // Invalidate and refetch relevant queries
       queryClient.invalidateQueries({ queryKey: ['pr-drafts'] });
@@ -88,7 +91,8 @@ export const useDeletePRs = () => {
     },
     onError: (error: any) => {
       const errorMessage =
-        error.response?.data?.message || 'Failed to delete purchase requisitions. Please try again.';
+        error.response?.data?.message ||
+        'Failed to delete purchase requisitions. Please try again.';
       toast.error(errorMessage);
     },
   });

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import FinancialYearForm from './FinancialYearForm';
 import FinancialYearList from './FinancialYearList';
+import ExcelImportDialog from '@/components/ExcelImportDialog';
 import {
   useFinancialYears,
   useCreateFinancialYear,
@@ -12,12 +13,21 @@ import type { FinancialYear } from '../../types';
 
 const FinancialYearPage: React.FC = () => {
   const [showForm, setShowForm] = useState(false);
-  const [selectedFinancialYear, setSelectedFinancialYear] = useState<FinancialYear | undefined>(undefined);
+  const [showImportDialog, setShowImportDialog] = useState(false);
+  const [selectedFinancialYear, setSelectedFinancialYear] = useState<
+    FinancialYear | undefined
+  >(undefined);
   const [page, setPage] = useState(0);
-  const [activeYearFilter, setActiveYearFilter] = useState<number | undefined>(undefined);
+  const [activeYearFilter, setActiveYearFilter] = useState<number | undefined>(
+    undefined
+  );
 
   // Fetch financial years with pagination
-  const { data, isLoading, error, refetch } = useFinancialYears(page, 15, activeYearFilter);
+  const { data, isLoading, error, refetch } = useFinancialYears(
+    page,
+    15,
+    activeYearFilter
+  );
   const financialYears = data?.content || [];
   const totalPages = data?.totalPages || 0;
   const totalElements = data?.totalElements || 0;
@@ -89,7 +99,7 @@ const FinancialYearPage: React.FC = () => {
 
   if (showForm) {
     return (
-      <div className="container mx-auto p-6">
+      <div className='container mx-auto p-6'>
         <FinancialYearForm
           financialYear={selectedFinancialYear}
           onSubmit={handleSubmit}
@@ -102,22 +112,33 @@ const FinancialYearPage: React.FC = () => {
   }
 
   return (
-    <div className="container mx-auto p-6">
-      <FinancialYearList
-        financialYears={financialYears}
-        isLoading={isLoading}
-        error={error}
-        onEdit={handleEdit}
-        onDelete={handleDelete}
-        onCreate={handleCreate}
-        onMakeCurrent={handleMakeCurrent}
-        currentPage={page}
-        totalPages={totalPages}
-        totalElements={totalElements}
-        onPageChange={setPage}
-        onFilterChange={handleFilterChange}
+    <>
+      <div className='container mx-auto p-6'>
+        <FinancialYearList
+          financialYears={financialYears}
+          isLoading={isLoading}
+          error={error}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+          onCreate={handleCreate}
+          onMakeCurrent={handleMakeCurrent}
+          onImport={() => setShowImportDialog(true)}
+          currentPage={page}
+          totalPages={totalPages}
+          totalElements={totalElements}
+          onPageChange={setPage}
+          onFilterChange={handleFilterChange}
+        />
+      </div>
+      <ExcelImportDialog
+        isOpen={showImportDialog}
+        onClose={() => setShowImportDialog(false)}
+        entityName='Financial Year'
+        importEndpoint='/master/financial-year/import'
+        templateEndpoint='/master/financial-year/template'
+        onImportSuccess={() => setPage(0)}
       />
-    </div>
+    </>
   );
 };
 

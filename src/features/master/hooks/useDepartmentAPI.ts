@@ -19,17 +19,25 @@ const departmentAPI = {
   },
 
   getById: async (id: number) => {
-    const response = await apiClient.get<Department>(`/master/departments/${id}`);
+    const response = await apiClient.get<Department>(
+      `/master/departments/${id}`
+    );
     return response.data;
   },
 
   create: async (department: Omit<Department, 'id'>) => {
-    const response = await apiClient.post<Department>('/master/departments', department);
+    const response = await apiClient.post<Department>(
+      '/master/departments',
+      department
+    );
     return response.data;
   },
 
   update: async (id: number, department: Partial<Department>) => {
-    const response = await apiClient.put<Department>(`/master/departments/${id}`, department);
+    const response = await apiClient.put<Department>(
+      `/master/departments/${id}`,
+      department
+    );
     return response.data;
   },
 
@@ -38,7 +46,9 @@ const departmentAPI = {
   },
 
   getAllList: async () => {
-    const response = await apiClient.get<Department[]>('/master/departments/all');
+    const response = await apiClient.get<Department[]>(
+      '/master/departments/all'
+    );
     return response.data;
   },
 
@@ -47,14 +57,21 @@ const departmentAPI = {
     if (filters.name) params.append('name', filters.name);
     if (filters.code) params.append('code', filters.code);
 
-    const response = await apiClient.get(`/master/departments/export?${params}`, {
-      responseType: 'blob',
-    });
+    const response = await apiClient.get(
+      `/master/departments/export?${params}`,
+      {
+        responseType: 'blob',
+      }
+    );
     return response.data;
   },
 };
 
-export const useDepartments = (page = 0, size = 15, filters: MasterEntityFilters = {}) => {
+export const useDepartments = (
+  page = 0,
+  size = 15,
+  filters: MasterEntityFilters = {}
+) => {
   return useQuery({
     queryKey: ['departments', page, size, filters],
     queryFn: () => departmentAPI.getAll(page, size, filters),

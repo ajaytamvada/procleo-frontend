@@ -36,16 +36,24 @@ export const useFloatRFP = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ rfpId, supplierIds }: { rfpId: number; supplierIds: number[] }) =>
-      rfpApi.floatRFP(rfpId, supplierIds),
-    onSuccess: (data) => {
-      toast.success(`RFP ${data.rfpNumber} floated successfully to ${data.totalSuppliers} suppliers!`);
+    mutationFn: ({
+      rfpId,
+      supplierIds,
+    }: {
+      rfpId: number;
+      supplierIds: number[];
+    }) => rfpApi.floatRFP(rfpId, supplierIds),
+    onSuccess: data => {
+      toast.success(
+        `RFP ${data.rfpNumber} floated successfully to ${data.totalSuppliers} suppliers!`
+      );
       // Invalidate relevant queries
       queryClient.invalidateQueries({ queryKey: ['rfp', data.id] });
       queryClient.invalidateQueries({ queryKey: ['rfps'] });
     },
     onError: (error: any) => {
-      const errorMessage = error?.response?.data?.message || 'Failed to float RFP';
+      const errorMessage =
+        error?.response?.data?.message || 'Failed to float RFP';
       toast.error(errorMessage);
     },
   });
@@ -58,14 +66,20 @@ export const useAddSuppliers = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ rfpId, supplierIds }: { rfpId: number; supplierIds: number[] }) =>
-      rfpApi.addSuppliersToRFP(rfpId, supplierIds),
-    onSuccess: (data) => {
+    mutationFn: ({
+      rfpId,
+      supplierIds,
+    }: {
+      rfpId: number;
+      supplierIds: number[];
+    }) => rfpApi.addSuppliersToRFP(rfpId, supplierIds),
+    onSuccess: data => {
       toast.success(`Added suppliers to RFP ${data.rfpNumber}`);
       queryClient.invalidateQueries({ queryKey: ['rfp', data.id] });
     },
     onError: (error: any) => {
-      const errorMessage = error?.response?.data?.message || 'Failed to add suppliers';
+      const errorMessage =
+        error?.response?.data?.message || 'Failed to add suppliers';
       toast.error(errorMessage);
     },
   });
@@ -78,14 +92,20 @@ export const useRemoveSuppliers = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ rfpId, supplierIds }: { rfpId: number; supplierIds: number[] }) =>
-      rfpApi.removeSuppliersFromRFP(rfpId, supplierIds),
-    onSuccess: (data) => {
+    mutationFn: ({
+      rfpId,
+      supplierIds,
+    }: {
+      rfpId: number;
+      supplierIds: number[];
+    }) => rfpApi.removeSuppliersFromRFP(rfpId, supplierIds),
+    onSuccess: data => {
       toast.success(`Removed suppliers from RFP ${data.rfpNumber}`);
       queryClient.invalidateQueries({ queryKey: ['rfp', data.id] });
     },
     onError: (error: any) => {
-      const errorMessage = error?.response?.data?.message || 'Failed to remove suppliers';
+      const errorMessage =
+        error?.response?.data?.message || 'Failed to remove suppliers';
       toast.error(errorMessage);
     },
   });

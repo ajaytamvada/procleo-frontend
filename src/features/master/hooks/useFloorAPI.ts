@@ -39,7 +39,11 @@ const floorAPI = {
     return response.data;
   },
 
-  getPaged: async (page = 0, size = 15, filters: FloorFilters = {}): Promise<PagedResponse<Floor>> => {
+  getPaged: async (
+    page = 0,
+    size = 15,
+    filters: FloorFilters = {}
+  ): Promise<PagedResponse<Floor>> => {
     const params = new URLSearchParams({
       page: page.toString(),
       size: size.toString(),
@@ -112,7 +116,11 @@ export const useFloors = () => {
   });
 };
 
-export const useFloorsPaged = (page = 0, size = 15, filters: FloorFilters = {}) => {
+export const useFloorsPaged = (
+  page = 0,
+  size = 15,
+  filters: FloorFilters = {}
+) => {
   return useQuery({
     queryKey: [...FLOOR_QUERY_KEY, 'paged', page, size, filters],
     queryFn: () => floorAPI.getPaged(page, size, filters),

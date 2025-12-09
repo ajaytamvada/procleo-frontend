@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { toast } from 'react-hot-toast';
 import ItemList from './ItemList';
 import ItemForm from './ItemForm';
+import ExcelImportDialog from '@/components/ExcelImportDialog';
 import {
   useItemsPaged,
   useCreateItem,
@@ -13,6 +14,7 @@ import {
 
 const ItemPage: React.FC = () => {
   const [showForm, setShowForm] = useState(false);
+  const [showImportDialog, setShowImportDialog] = useState(false);
   const [selectedItem, setSelectedItem] = useState<Item | undefined>();
   const [page, setPage] = useState(0);
   const [filters, setFilters] = useState<ItemFilters>({});
@@ -40,7 +42,12 @@ const ItemPage: React.FC = () => {
     setSelectedItem(undefined);
   };
 
-  const handleSubmit = async (data: Omit<Item, 'id' | 'categoryName' | 'subCategoryName' | 'uomName' | 'displayName'>) => {
+  const handleSubmit = async (
+    data: Omit<
+      Item,
+      'id' | 'categoryName' | 'subCategoryName' | 'uomName' | 'displayName'
+    >
+  ) => {
     try {
       if (selectedItem?.id) {
         await updateMutation.mutateAsync({
@@ -78,8 +85,8 @@ const ItemPage: React.FC = () => {
 
   if (error) {
     return (
-      <div className="p-6">
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+      <div className='p-6'>
+        <div className='bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded'>
           Error loading items: {(error as Error).message}
         </div>
       </div>
@@ -98,18 +105,29 @@ const ItemPage: React.FC = () => {
   }
 
   return (
-    <ItemList
-      items={items}
-      onEdit={handleEdit}
-      onCreate={handleCreate}
-      onDelete={handleDelete}
-      isLoading={isLoading}
-      page={page}
-      totalPages={totalPages}
-      totalElements={totalElements}
-      onPageChange={setPage}
-      onFiltersChange={setFilters}
-    />
+    <>
+      <ItemList
+        items={items}
+        onEdit={handleEdit}
+        onCreate={handleCreate}
+        onDelete={handleDelete}
+        onImport={() => setShowImportDialog(true)}
+        isLoading={isLoading}
+        page={page}
+        totalPages={totalPages}
+        totalElements={totalElements}
+        onPageChange={setPage}
+        onFiltersChange={setFilters}
+      />
+      <ExcelImportDialog
+        isOpen={showImportDialog}
+        onClose={() => setShowImportDialog(false)}
+        entityName='Item'
+        importEndpoint='/master/items/import'
+        templateEndpoint='/master/items/template'
+        onImportSuccess={() => setPage(0)}
+      />
+    </>
   );
 };
 

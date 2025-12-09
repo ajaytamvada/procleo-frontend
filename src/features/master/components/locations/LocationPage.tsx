@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { toast } from 'react-hot-toast';
 import LocationList from './LocationList';
 import LocationForm from './LocationForm';
+import ExcelImportDialog from '@/components/ExcelImportDialog';
 import {
   useLocations,
   useCreateLocation,
@@ -12,7 +13,10 @@ import {
 
 const LocationPage: React.FC = () => {
   const [showForm, setShowForm] = useState(false);
-  const [selectedLocation, setSelectedLocation] = useState<Location | undefined>();
+  const [showImportDialog, setShowImportDialog] = useState(false);
+  const [selectedLocation, setSelectedLocation] = useState<
+    Location | undefined
+  >();
 
   const { data: locations = [], isLoading, error } = useLocations();
   const createMutation = useCreateLocation();
@@ -74,8 +78,8 @@ const LocationPage: React.FC = () => {
 
   if (error) {
     return (
-      <div className="p-6">
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+      <div className='p-6'>
+        <div className='bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded'>
           Error loading locations: {(error as Error).message}
         </div>
       </div>
@@ -94,13 +98,24 @@ const LocationPage: React.FC = () => {
   }
 
   return (
-    <LocationList
-      locations={locations}
-      onEdit={handleEdit}
-      onCreate={handleCreate}
-      onDelete={handleDelete}
-      isLoading={isLoading}
-    />
+    <>
+      <LocationList
+        locations={locations}
+        onEdit={handleEdit}
+        onCreate={handleCreate}
+        onDelete={handleDelete}
+        onImport={() => setShowImportDialog(true)}
+        isLoading={isLoading}
+      />
+      <ExcelImportDialog
+        isOpen={showImportDialog}
+        onClose={() => setShowImportDialog(false)}
+        entityName='Location'
+        importEndpoint='/master/locations/import'
+        templateEndpoint='/master/locations/template'
+        onImportSuccess={() => {}}
+      />
+    </>
   );
 };
 

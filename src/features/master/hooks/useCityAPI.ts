@@ -35,7 +35,11 @@ const cityAPI = {
     return response.data;
   },
 
-  getPaged: async (page = 0, size = 15, filters: CityFilters = {}): Promise<PagedResponse<City>> => {
+  getPaged: async (
+    page = 0,
+    size = 15,
+    filters: CityFilters = {}
+  ): Promise<PagedResponse<City>> => {
     const params = new URLSearchParams({
       page: page.toString(),
       size: size.toString(),
@@ -101,7 +105,11 @@ export const useCities = () => {
   });
 };
 
-export const useCitiesPaged = (page = 0, size = 15, filters: CityFilters = {}) => {
+export const useCitiesPaged = (
+  page = 0,
+  size = 15,
+  filters: CityFilters = {}
+) => {
   return useQuery({
     queryKey: [...CITY_QUERY_KEY, 'paged', page, size, filters],
     queryFn: () => cityAPI.getPaged(page, size, filters),

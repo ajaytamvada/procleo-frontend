@@ -27,7 +27,11 @@ const categoryAPI = {
     return response.data;
   },
 
-  getPaged: async (page = 0, size = 15, filters: CategoryFilters = {}): Promise<PagedResponse<Category>> => {
+  getPaged: async (
+    page = 0,
+    size = 15,
+    filters: CategoryFilters = {}
+  ): Promise<PagedResponse<Category>> => {
     const params = new URLSearchParams({
       page: page.toString(),
       size: size.toString(),
@@ -50,7 +54,10 @@ const categoryAPI = {
     return response.data;
   },
 
-  update: async (id: number, category: Omit<Category, 'id'>): Promise<Category> => {
+  update: async (
+    id: number,
+    category: Omit<Category, 'id'>
+  ): Promise<Category> => {
     const response = await apiClient.put(`/master/categories/${id}`, category);
     return response.data;
   },
@@ -64,9 +71,12 @@ const categoryAPI = {
     if (filters.name) params.append('name', filters.name);
     if (filters.code) params.append('code', filters.code);
 
-    const response = await apiClient.get(`/master/categories/export?${params}`, {
-      responseType: 'blob',
-    });
+    const response = await apiClient.get(
+      `/master/categories/export?${params}`,
+      {
+        responseType: 'blob',
+      }
+    );
     return response.data;
   },
 };
@@ -78,7 +88,11 @@ export const useCategories = () => {
   });
 };
 
-export const useCategoriesPaged = (page: number, size: number, filters: CategoryFilters) => {
+export const useCategoriesPaged = (
+  page: number,
+  size: number,
+  filters: CategoryFilters
+) => {
   return useQuery<PagedResponse<Category>>({
     queryKey: ['categories', 'paged', page, size, filters],
     queryFn: () => categoryAPI.getPaged(page, size, filters),

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { toast } from 'react-hot-toast';
 import CountryList from './CountryList';
 import CountryForm from './CountryForm';
+import ExcelImportDialog from '@/components/ExcelImportDialog';
 import {
   useCountriesPaged,
   useCreateCountry,
@@ -13,6 +14,7 @@ import {
 
 const CountryPage: React.FC = () => {
   const [showForm, setShowForm] = useState(false);
+  const [showImportDialog, setShowImportDialog] = useState(false);
   const [selectedCountry, setSelectedCountry] = useState<Country | undefined>();
   const [page, setPage] = useState(0);
   const [filters, setFilters] = useState<CountryFilters>({});
@@ -80,8 +82,8 @@ const CountryPage: React.FC = () => {
 
   if (error) {
     return (
-      <div className="p-6">
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+      <div className='p-6'>
+        <div className='bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded'>
           Error loading countries: {(error as Error).message}
         </div>
       </div>
@@ -100,18 +102,29 @@ const CountryPage: React.FC = () => {
   }
 
   return (
-    <CountryList
-      countries={countries}
-      onEdit={handleEdit}
-      onCreate={handleCreate}
-      onDelete={handleDelete}
-      isLoading={isLoading}
-      page={page}
-      totalPages={totalPages}
-      totalElements={totalElements}
-      onPageChange={setPage}
-      onFiltersChange={setFilters}
-    />
+    <>
+      <CountryList
+        countries={countries}
+        onEdit={handleEdit}
+        onCreate={handleCreate}
+        onDelete={handleDelete}
+        onImport={() => setShowImportDialog(true)}
+        isLoading={isLoading}
+        page={page}
+        totalPages={totalPages}
+        totalElements={totalElements}
+        onPageChange={setPage}
+        onFiltersChange={setFilters}
+      />
+      <ExcelImportDialog
+        isOpen={showImportDialog}
+        onClose={() => setShowImportDialog(false)}
+        entityName='Country'
+        importEndpoint='/master/countries/import'
+        templateEndpoint='/master/countries/template'
+        onImportSuccess={() => setPage(0)}
+      />
+    </>
   );
 };
 

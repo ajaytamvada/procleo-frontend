@@ -15,8 +15,10 @@ const inputVariants = cva(
       },
       variant: {
         default: 'border-gray-200 hover:border-gray-300',
-        error: 'border-red-300 focus-visible:ring-red-500/20 focus-visible:border-red-500',
-        success: 'border-green-300 focus-visible:ring-green-500/20 focus-visible:border-green-500',
+        error:
+          'border-red-300 focus-visible:ring-red-500/20 focus-visible:border-red-500',
+        success:
+          'border-green-300 focus-visible:ring-green-500/20 focus-visible:border-green-500',
       },
     },
     defaultVariants: {
@@ -38,31 +40,36 @@ export interface InputProps
 }
 
 const Input = React.forwardRef<HTMLInputElement, InputProps>(
-  ({ 
-    className, 
-    type = 'text', 
-    size, 
-    variant, 
-    leftIcon, 
-    rightIcon, 
-    error,
-    helperText,
-    label,
-    required,
-    id,
-    ...props 
-  }, ref) => {
+  (
+    {
+      className,
+      type = 'text',
+      size,
+      variant,
+      leftIcon,
+      rightIcon,
+      error,
+      helperText,
+      label,
+      required,
+      id,
+      ...props
+    },
+    ref
+  ) => {
     const [showPassword, setShowPassword] = React.useState(false);
-    const [inputId] = React.useState(() => id || `input-${Math.random().toString(36).substr(2, 9)}`);
+    const [inputId] = React.useState(
+      () => id || `input-${Math.random().toString(36).substr(2, 9)}`
+    );
     const isPassword = type === 'password';
     const inputType = isPassword && showPassword ? 'text' : type;
     const hasError = !!error;
     const currentVariant = hasError ? 'error' : variant;
 
     const inputElement = (
-      <div className="relative">
+      <div className='relative'>
         {leftIcon && (
-          <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+          <div className='absolute left-3 top-1/2 -translate-y-1/2 text-gray-400'>
             {leftIcon}
           </div>
         )}
@@ -78,25 +85,31 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
           id={inputId}
           aria-invalid={hasError}
           aria-describedby={
-            error ? `${inputId}-error` : helperText ? `${inputId}-helper` : undefined
+            error
+              ? `${inputId}-error`
+              : helperText
+                ? `${inputId}-helper`
+                : undefined
           }
           {...props}
         />
         {(rightIcon || isPassword) && (
-          <div className="absolute right-3 top-1/2 -translate-y-1/2">
+          <div className='absolute right-3 top-1/2 -translate-y-1/2'>
             {isPassword ? (
               <button
-                type="button"
+                type='button'
                 onClick={() => setShowPassword(!showPassword)}
-                className="text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500/20 rounded-sm transition-colors duration-200"
+                className='text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500/20 rounded-sm transition-colors duration-200'
                 aria-label={showPassword ? 'Hide password' : 'Show password'}
               >
-                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                {showPassword ? (
+                  <EyeOff className='h-4 w-4' />
+                ) : (
+                  <Eye className='h-4 w-4' />
+                )}
               </button>
             ) : (
-              <div className="text-gray-400">
-                {rightIcon}
-              </div>
+              <div className='text-gray-400'>{rightIcon}</div>
             )}
           </div>
         )}
@@ -105,14 +118,18 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
 
     if (label || error || helperText) {
       return (
-        <div className="space-y-1">
+        <div className='space-y-1'>
           {label && (
-            <label 
+            <label
               htmlFor={inputId}
-              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+              className='text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70'
             >
               {label}
-              {required && <span className="text-destructive ml-1" aria-label="required">*</span>}
+              {required && (
+                <span className='text-destructive ml-1' aria-label='required'>
+                  *
+                </span>
+              )}
             </label>
           )}
           {inputElement}
@@ -121,15 +138,18 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
-              className="text-sm text-destructive"
+              className='text-sm text-destructive'
               id={`${inputId}-error`}
-              role="alert"
+              role='alert'
             >
               {error}
             </motion.p>
           )}
           {helperText && !error && (
-            <p className="text-sm text-muted-foreground" id={`${inputId}-helper`}>
+            <p
+              className='text-sm text-muted-foreground'
+              id={`${inputId}-helper`}
+            >
               {helperText}
             </p>
           )}

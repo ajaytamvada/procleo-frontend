@@ -22,7 +22,11 @@ const PurchaseRequestPage: React.FC = () => {
   const [isExporting, setIsExporting] = useState(false);
   const [isLoadingPR, setIsLoadingPR] = useState(false);
 
-  const { data: pagedData, isLoading } = usePurchaseRequestsPaged(page, 15, filters);
+  const { data: pagedData, isLoading } = usePurchaseRequestsPaged(
+    page,
+    15,
+    filters
+  );
   const createMutation = useCreatePurchaseRequest();
   const updateMutation = useUpdatePurchaseRequest();
   const deleteMutation = useDeletePurchaseRequest();
@@ -54,7 +58,9 @@ const PurchaseRequestPage: React.FC = () => {
   };
 
   const handleDelete = async (id: number) => {
-    if (window.confirm('Are you sure you want to delete this purchase request?')) {
+    if (
+      window.confirm('Are you sure you want to delete this purchase request?')
+    ) {
       try {
         await deleteMutation.mutateAsync(id);
         alert('Purchase request deleted successfully');
@@ -160,10 +166,12 @@ const PurchaseRequestPage: React.FC = () => {
   if (viewMode === 'view') {
     if (isLoadingPR) {
       return (
-        <div className="flex items-center justify-center min-h-screen">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-            <p className="mt-4 text-gray-600">Loading purchase request details...</p>
+        <div className='flex items-center justify-center min-h-screen'>
+          <div className='text-center'>
+            <div className='animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto'></div>
+            <p className='mt-4 text-gray-600'>
+              Loading purchase request details...
+            </p>
           </div>
         </div>
       );
@@ -181,21 +189,21 @@ const PurchaseRequestPage: React.FC = () => {
   }
 
   return (
-    <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Purchase Requests</h1>
-        <div className="flex gap-2">
+    <div className='p-6'>
+      <div className='flex justify-between items-center mb-6'>
+        <h1 className='text-2xl font-bold'>Purchase Requests</h1>
+        <div className='flex gap-2'>
           <button
             onClick={handleExport}
             disabled={isExporting}
-            className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 disabled:bg-gray-400"
+            className='bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 disabled:bg-gray-400'
           >
             <Download size={20} />
             {isExporting ? 'Exporting...' : 'Export to Excel'}
           </button>
           <button
             onClick={handleCreate}
-            className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2"
+            className='bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2'
           >
             <Plus size={20} />
             Create Purchase Request

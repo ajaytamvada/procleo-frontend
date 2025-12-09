@@ -20,3 +20,4 @@ export { ApprovalListPage } from './pages/ApprovalListPage';
 export { ApprovalDetailPage } from './pages/ApprovalDetailPage';
 export { RFPSummaryListPage } from './pages/RFPSummaryListPage';
 export { RFPSummaryDetailPage } from './pages/RFPSummaryDetailPage';
+export { default as FloatRFPListPage } from './pages/FloatRFPListPage';

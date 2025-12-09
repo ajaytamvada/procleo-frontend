@@ -13,27 +13,39 @@ const paymentTermAPI = {
 
     if (name) params.append('name', name);
 
-    const response = await apiClient.get<PagedResponse<PaymentTerm>>(`/master/payment-terms?${params}`);
+    const response = await apiClient.get<PagedResponse<PaymentTerm>>(
+      `/master/payment-terms?${params}`
+    );
     return response.data;
   },
 
   getAllList: async () => {
-    const response = await apiClient.get<PaymentTerm[]>(`/master/payment-terms/all`);
+    const response = await apiClient.get<PaymentTerm[]>(
+      `/master/payment-terms/all`
+    );
     return response.data;
   },
 
   getById: async (id: number) => {
-    const response = await apiClient.get<PaymentTerm>(`/master/payment-terms/${id}`);
+    const response = await apiClient.get<PaymentTerm>(
+      `/master/payment-terms/${id}`
+    );
     return response.data;
   },
 
   create: async (paymentTerm: Omit<PaymentTerm, 'id'>) => {
-    const response = await apiClient.post<PaymentTerm>(`/master/payment-terms`, paymentTerm);
+    const response = await apiClient.post<PaymentTerm>(
+      `/master/payment-terms`,
+      paymentTerm
+    );
     return response.data;
   },
 
   update: async (id: number, paymentTerm: Partial<PaymentTerm>) => {
-    const response = await apiClient.put<PaymentTerm>(`/master/payment-terms/${id}`, paymentTerm);
+    const response = await apiClient.put<PaymentTerm>(
+      `/master/payment-terms/${id}`,
+      paymentTerm
+    );
     return response.data;
   },
 
@@ -47,7 +59,7 @@ export const usePaymentTerms = (page = 0, size = 20, name?: string) => {
   return useQuery({
     queryKey: ['payment-terms', page, size, name],
     queryFn: () => paymentTermAPI.getAll(page, size, name),
-    placeholderData: (previousData) => previousData,
+    placeholderData: previousData => previousData,
   });
 };
 
@@ -76,7 +88,8 @@ export const useCreatePaymentTerm = () => {
       toast.success('Payment term created successfully');
     },
     onError: (error: any) => {
-      const message = error.response?.data?.message || 'Failed to create payment term';
+      const message =
+        error.response?.data?.message || 'Failed to create payment term';
       toast.error(message);
     },
   });
@@ -86,14 +99,20 @@ export const useUpdatePaymentTerm = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, paymentTerm }: { id: number; paymentTerm: Partial<PaymentTerm> }) =>
-      paymentTermAPI.update(id, paymentTerm),
+    mutationFn: ({
+      id,
+      paymentTerm,
+    }: {
+      id: number;
+      paymentTerm: Partial<PaymentTerm>;
+    }) => paymentTermAPI.update(id, paymentTerm),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['payment-terms'] });
       toast.success('Payment term updated successfully');
     },
     onError: (error: any) => {
-      const message = error.response?.data?.message || 'Failed to update payment term';
+      const message =
+        error.response?.data?.message || 'Failed to update payment term';
       toast.error(message);
     },
   });
@@ -109,7 +128,8 @@ export const useDeletePaymentTerm = () => {
       toast.success('Payment term deleted successfully');
     },
     onError: (error: any) => {
-      const message = error.response?.data?.message || 'Failed to delete payment term';
+      const message =
+        error.response?.data?.message || 'Failed to delete payment term';
       toast.error(message);
     },
   });

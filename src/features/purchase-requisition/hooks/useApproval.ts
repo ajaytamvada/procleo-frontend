@@ -41,20 +41,31 @@ export const useApprovePRItems = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ prId, approvalRequest }: { prId: number; approvalRequest: PRApprovalRequest }) =>
-      approvePRItems(prId, approvalRequest),
+    mutationFn: ({
+      prId,
+      approvalRequest,
+    }: {
+      prId: number;
+      approvalRequest: PRApprovalRequest;
+    }) => approvePRItems(prId, approvalRequest),
     onSuccess: (_, variables) => {
-      const action = variables.approvalRequest.approvalStatus === 'Accepted' ? 'approved' : 'rejected';
+      const action =
+        variables.approvalRequest.approvalStatus === 'Accepted'
+          ? 'approved'
+          : 'rejected';
       toast.success(`PR items ${action} successfully`);
 
       // Invalidate and refetch relevant queries
       queryClient.invalidateQueries({ queryKey: ['prs-pending-approval'] });
-      queryClient.invalidateQueries({ queryKey: ['pr-approval-details', variables.prId] });
+      queryClient.invalidateQueries({
+        queryKey: ['pr-approval-details', variables.prId],
+      });
       queryClient.invalidateQueries({ queryKey: ['pr-status'] }); // Also invalidate PR status
     },
     onError: (error: any) => {
       const errorMessage =
-        error.response?.data?.message || 'Failed to process approval. Please try again.';
+        error.response?.data?.message ||
+        'Failed to process approval. Please try again.';
       toast.error(errorMessage);
     },
   });

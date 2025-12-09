@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { toast } from 'react-hot-toast';
 import CostCenterList from './CostCenterList';
 import CostCenterForm from './CostCenterForm';
+import ExcelImportDialog from '@/components/ExcelImportDialog';
 import {
   useCostCentersPaged,
   useCreateCostCenter,
@@ -13,11 +14,18 @@ import {
 
 const CostCenterPage: React.FC = () => {
   const [showForm, setShowForm] = useState(false);
-  const [selectedCostCenter, setSelectedCostCenter] = useState<CostCenter | undefined>();
+  const [showImportDialog, setShowImportDialog] = useState(false);
+  const [selectedCostCenter, setSelectedCostCenter] = useState<
+    CostCenter | undefined
+  >();
   const [page, setPage] = useState(0);
   const [filters, setFilters] = useState<CostCenterFilters>({});
 
-  const { data, isLoading, error, refetch } = useCostCentersPaged(page, 15, filters);
+  const { data, isLoading, error, refetch } = useCostCentersPaged(
+    page,
+    15,
+    filters
+  );
   const costCenters = data?.content || [];
   const totalPages = data?.totalPages || 0;
   const totalElements = data?.totalElements || 0;
@@ -75,8 +83,8 @@ const CostCenterPage: React.FC = () => {
 
   if (error) {
     return (
-      <div className="p-6">
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+      <div className='p-6'>
+        <div className='bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded'>
           Error loading cost centers: {(error as Error).message}
         </div>
       </div>
@@ -95,19 +103,30 @@ const CostCenterPage: React.FC = () => {
   }
 
   return (
-    <CostCenterList
-      costCenters={costCenters}
-      onEdit={handleEdit}
-      onCreate={handleCreate}
-      onDelete={handleDelete}
-      isLoading={isLoading}
-      error={error}
-      currentPage={page}
-      totalPages={totalPages}
-      totalElements={totalElements}
-      onPageChange={setPage}
-      onFiltersChange={setFilters}
-    />
+    <>
+      <CostCenterList
+        costCenters={costCenters}
+        onEdit={handleEdit}
+        onCreate={handleCreate}
+        onDelete={handleDelete}
+        onImport={() => setShowImportDialog(true)}
+        isLoading={isLoading}
+        error={error}
+        currentPage={page}
+        totalPages={totalPages}
+        totalElements={totalElements}
+        onPageChange={setPage}
+        onFiltersChange={setFilters}
+      />
+      <ExcelImportDialog
+        isOpen={showImportDialog}
+        onClose={() => setShowImportDialog(false)}
+        entityName='Cost Center'
+        importEndpoint='/master/cost-centers/import'
+        templateEndpoint='/master/cost-centers/import/template'
+        onImportSuccess={() => setPage(0)}
+      />
+    </>
   );
 };
 

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { toast } from 'react-hot-toast';
 import FloorList from './FloorList';
 import FloorForm from './FloorForm';
+import ExcelImportDialog from '@/components/ExcelImportDialog';
 import {
   useFloorsPaged,
   useCreateFloor,
@@ -13,6 +14,7 @@ import {
 
 const FloorPage: React.FC = () => {
   const [showForm, setShowForm] = useState(false);
+  const [showImportDialog, setShowImportDialog] = useState(false);
   const [selectedFloor, setSelectedFloor] = useState<Floor | undefined>();
   const [page, setPage] = useState(0);
   const [filters, setFilters] = useState<FloorFilters>({});
@@ -78,8 +80,8 @@ const FloorPage: React.FC = () => {
 
   if (error) {
     return (
-      <div className="p-6">
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+      <div className='p-6'>
+        <div className='bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded'>
           Error loading locations: {(error as Error).message}
         </div>
       </div>
@@ -98,18 +100,29 @@ const FloorPage: React.FC = () => {
   }
 
   return (
-    <FloorList
-      floors={floors}
-      onEdit={handleEdit}
-      onCreate={handleCreate}
-      onDelete={handleDelete}
-      isLoading={isLoading}
-      page={page}
-      totalPages={totalPages}
-      totalElements={totalElements}
-      onPageChange={setPage}
-      onFiltersChange={setFilters}
-    />
+    <>
+      <FloorList
+        floors={floors}
+        onEdit={handleEdit}
+        onCreate={handleCreate}
+        onDelete={handleDelete}
+        onImport={() => setShowImportDialog(true)}
+        isLoading={isLoading}
+        page={page}
+        totalPages={totalPages}
+        totalElements={totalElements}
+        onPageChange={setPage}
+        onFiltersChange={setFilters}
+      />
+      <ExcelImportDialog
+        isOpen={showImportDialog}
+        onClose={() => setShowImportDialog(false)}
+        entityName='Floor'
+        importEndpoint='/master/floors/import'
+        templateEndpoint='/master/floors/import/template'
+        onImportSuccess={() => setPage(0)}
+      />
+    </>
   );
 };
 

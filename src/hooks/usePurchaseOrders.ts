@@ -34,7 +34,13 @@ export interface PurchaseOrder {
     name: string;
     department: string;
   };
-  status: 'draft' | 'pending_approval' | 'approved' | 'ordered' | 'received' | 'cancelled';
+  status:
+    | 'draft'
+    | 'pending_approval'
+    | 'approved'
+    | 'ordered'
+    | 'received'
+    | 'cancelled';
   totalAmount: number;
   currency: string;
   description?: string;
@@ -77,7 +83,8 @@ export interface CreatePurchaseOrderData {
   attachments?: File[];
 }
 
-export interface UpdatePurchaseOrderData extends Partial<CreatePurchaseOrderData> {
+export interface UpdatePurchaseOrderData
+  extends Partial<CreatePurchaseOrderData> {
   status?: PurchaseOrder['status'];
 }
 
@@ -98,7 +105,9 @@ export interface PurchaseOrderFilters {
 
 // Purchase Orders Service
 class PurchaseOrderService {
-  static async getAll(filters: PurchaseOrderFilters = {}): Promise<PaginatedResponse<PurchaseOrder>> {
+  static async getAll(
+    filters: PurchaseOrderFilters = {}
+  ): Promise<PaginatedResponse<PurchaseOrder>> {
     return api.getPaginated<PurchaseOrder>('/purchase-orders', filters);
   }
 
@@ -112,8 +121,14 @@ class PurchaseOrderService {
     return response.data;
   }
 
-  static async update(id: string, data: UpdatePurchaseOrderData): Promise<PurchaseOrder> {
-    const response = await api.put<PurchaseOrder>(`/purchase-orders/${id}`, data);
+  static async update(
+    id: string,
+    data: UpdatePurchaseOrderData
+  ): Promise<PurchaseOrder> {
+    const response = await api.put<PurchaseOrder>(
+      `/purchase-orders/${id}`,
+      data
+    );
     return response.data;
   }
 
@@ -122,22 +137,33 @@ class PurchaseOrderService {
   }
 
   static async approve(id: string, comments?: string): Promise<PurchaseOrder> {
-    const response = await api.post<PurchaseOrder>(`/purchase-orders/${id}/approve`, { comments });
+    const response = await api.post<PurchaseOrder>(
+      `/purchase-orders/${id}/approve`,
+      { comments }
+    );
     return response.data;
   }
 
   static async reject(id: string, comments: string): Promise<PurchaseOrder> {
-    const response = await api.post<PurchaseOrder>(`/purchase-orders/${id}/reject`, { comments });
+    const response = await api.post<PurchaseOrder>(
+      `/purchase-orders/${id}/reject`,
+      { comments }
+    );
     return response.data;
   }
 
   static async cancel(id: string, reason: string): Promise<PurchaseOrder> {
-    const response = await api.post<PurchaseOrder>(`/purchase-orders/${id}/cancel`, { reason });
+    const response = await api.post<PurchaseOrder>(
+      `/purchase-orders/${id}/cancel`,
+      { reason }
+    );
     return response.data;
   }
 
   static async duplicate(id: string): Promise<PurchaseOrder> {
-    const response = await api.post<PurchaseOrder>(`/purchase-orders/${id}/duplicate`);
+    const response = await api.post<PurchaseOrder>(
+      `/purchase-orders/${id}/duplicate`
+    );
     return response.data;
   }
 
@@ -200,10 +226,10 @@ export function useCreatePurchaseOrder() {
 
   return useMutation({
     mutationFn: PurchaseOrderService.create,
-    onMutate: async (newPO) => {
+    onMutate: async newPO => {
       // Optimistic update for list queries
-      const listQueries = queryClient.getQueriesData({ 
-        queryKey: queryKeys.purchaseOrders.lists() 
+      const listQueries = queryClient.getQueriesData({
+        queryKey: queryKeys.purchaseOrders.lists(),
       });
 
       const optimisticPO: PurchaseOrder = {
@@ -214,9 +240,15 @@ export function useCreatePurchaseOrder() {
         vendor: { id: newPO.vendorId, name: 'Loading...', email: '' },
         requester: { id: 'current', name: 'You', department: '' },
         status: 'draft',
-        totalAmount: newPO.items.reduce((sum, item) => sum + item.totalPrice, 0),
+        totalAmount: newPO.items.reduce(
+          (sum, item) => sum + item.totalPrice,
+          0
+        ),
         currency: 'USD',
-        items: newPO.items.map((item, index) => ({ ...item, id: `temp-item-${index}` })),
+        items: newPO.items.map((item, index) => ({
+          ...item,
+          id: `temp-item-${index}`,
+        })),
         attachments: [],
         approvals: [],
         createdAt: new Date().toISOString(),
@@ -240,11 +272,15 @@ export function useCreatePurchaseOrder() {
 
       return { optimisticPO };
     },
-    onSuccess: (data) => {
+    onSuccess: data => {
       // Invalidate and refetch purchase orders
-      queryClient.invalidateQueries({ queryKey: queryKeys.purchaseOrders.lists() });
-      queryClient.invalidateQueries({ queryKey: queryKeys.purchaseOrders.statistics() });
-      
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.purchaseOrders.lists(),
+      });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.purchaseOrders.statistics(),
+      });
+
       // Add success notification
       addNotification({
         type: 'success',
@@ -258,8 +294,8 @@ export function useCreatePurchaseOrder() {
     onError: (error: any, variables, context) => {
       // Remove optimistic update on error
       if (context?.optimisticPO) {
-        const listQueries = queryClient.getQueriesData({ 
-          queryKey: queryKeys.purchaseOrders.lists() 
+        const listQueries = queryClient.getQueriesData({
+          queryKey: queryKeys.purchaseOrders.lists(),
         });
 
         listQueries.forEach(([queryKey, oldData]) => {
@@ -267,7 +303,9 @@ export function useCreatePurchaseOrder() {
             const typedOldData = oldData as PaginatedResponse<PurchaseOrder>;
             queryClient.setQueryData(queryKey, {
               ...typedOldData,
-              data: typedOldData.data.filter((po: PurchaseOrder) => po.id !== context.optimisticPO.id),
+              data: typedOldData.data.filter(
+                (po: PurchaseOrder) => po.id !== context.optimisticPO.id
+              ),
               pagination: {
                 ...typedOldData.pagination,
                 total: typedOldData.pagination.total - 1,
@@ -291,7 +329,9 @@ export function useUpdatePurchaseOrder() {
       PurchaseOrderService.update(id, data),
     onMutate: async ({ id, data }) => {
       // Cancel outgoing refetches
-      await queryClient.cancelQueries({ queryKey: queryKeys.purchaseOrders.detail(id) });
+      await queryClient.cancelQueries({
+        queryKey: queryKeys.purchaseOrders.detail(id),
+      });
 
       // Snapshot the previous value
       const previousPO = queryClient.getQueryData<PurchaseOrder>(
@@ -301,11 +341,14 @@ export function useUpdatePurchaseOrder() {
       // Optimistically update
       if (previousPO) {
         const updatedPO = { ...previousPO, ...data };
-        queryClient.setQueryData(queryKeys.purchaseOrders.detail(id), updatedPO);
-        
+        queryClient.setQueryData(
+          queryKeys.purchaseOrders.detail(id),
+          updatedPO
+        );
+
         // Also update list queries
-        const listQueries = queryClient.getQueriesData({ 
-          queryKey: queryKeys.purchaseOrders.lists() 
+        const listQueries = queryClient.getQueriesData({
+          queryKey: queryKeys.purchaseOrders.lists(),
         });
 
         listQueries.forEach(([queryKey, oldData]) => {
@@ -326,14 +369,17 @@ export function useUpdatePurchaseOrder() {
     onError: (error: any, { id }, context) => {
       // Rollback on error
       if (context?.previousPO) {
-        queryClient.setQueryData(queryKeys.purchaseOrders.detail(id), context.previousPO);
+        queryClient.setQueryData(
+          queryKeys.purchaseOrders.detail(id),
+          context.previousPO
+        );
       }
       toast.error(error.message || 'Failed to update purchase order');
     },
     onSuccess: (data, { id }) => {
       // Update cache with server response
       queryClient.setQueryData(queryKeys.purchaseOrders.detail(id), data);
-      
+
       addNotification({
         type: 'success',
         title: 'Purchase Order Updated',
@@ -345,8 +391,12 @@ export function useUpdatePurchaseOrder() {
     },
     onSettled: (data, error, { id }) => {
       // Always refetch after mutation
-      queryClient.invalidateQueries({ queryKey: queryKeys.purchaseOrders.detail(id) });
-      queryClient.invalidateQueries({ queryKey: queryKeys.purchaseOrders.lists() });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.purchaseOrders.detail(id),
+      });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.purchaseOrders.lists(),
+      });
     },
   });
 }
@@ -359,11 +409,13 @@ export function useDeletePurchaseOrder() {
     mutationFn: PurchaseOrderService.delete,
     onSuccess: (_, id) => {
       // Remove from cache
-      queryClient.removeQueries({ queryKey: queryKeys.purchaseOrders.detail(id) });
-      
+      queryClient.removeQueries({
+        queryKey: queryKeys.purchaseOrders.detail(id),
+      });
+
       // Update list queries
-      const listQueries = queryClient.getQueriesData({ 
-        queryKey: queryKeys.purchaseOrders.lists() 
+      const listQueries = queryClient.getQueriesData({
+        queryKey: queryKeys.purchaseOrders.lists(),
       });
 
       listQueries.forEach(([queryKey, oldData]) => {
@@ -380,7 +432,9 @@ export function useDeletePurchaseOrder() {
         }
       });
 
-      queryClient.invalidateQueries({ queryKey: queryKeys.purchaseOrders.statistics() });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.purchaseOrders.statistics(),
+      });
 
       addNotification({
         type: 'success',
@@ -407,8 +461,12 @@ export function useApprovePurchaseOrder() {
     onSuccess: (data, { id }) => {
       // Update cache
       queryClient.setQueryData(queryKeys.purchaseOrders.detail(id), data);
-      queryClient.invalidateQueries({ queryKey: queryKeys.purchaseOrders.lists() });
-      queryClient.invalidateQueries({ queryKey: queryKeys.purchaseOrders.statistics() });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.purchaseOrders.lists(),
+      });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.purchaseOrders.statistics(),
+      });
 
       addNotification({
         type: 'success',

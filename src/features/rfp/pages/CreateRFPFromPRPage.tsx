@@ -58,8 +58,8 @@ export const CreateRFPFromPRPage = () => {
 
   // Handle PR selection
   const handlePRSelect = (prId: number) => {
-    setSelectedPRIds((prev) =>
-      prev.includes(prId) ? prev.filter((id) => id !== prId) : [...prev, prId]
+    setSelectedPRIds(prev =>
+      prev.includes(prId) ? prev.filter(id => id !== prId) : [...prev, prId]
     );
   };
 
@@ -68,7 +68,7 @@ export const CreateRFPFromPRPage = () => {
     if (selectedPRIds.length === approvedPRs.length) {
       setSelectedPRIds([]);
     } else {
-      setSelectedPRIds(approvedPRs.map((pr) => pr.prId));
+      setSelectedPRIds(approvedPRs.map(pr => pr.prId));
     }
   };
 
@@ -85,7 +85,7 @@ export const CreateRFPFromPRPage = () => {
   useMemo(() => {
     if (prItems.length > 0 && selectedItems.size === 0) {
       const itemsMap = new Map<number, ApprovedPRItemForRFP>();
-      prItems.forEach((item) => {
+      prItems.forEach(item => {
         itemsMap.set(item.itemId, item);
       });
       setSelectedItems(itemsMap);
@@ -103,12 +103,12 @@ export const CreateRFPFromPRPage = () => {
 
   // Handle item selection toggle
   const handleItemSelect = (itemId: number) => {
-    setSelectedItems((prev) => {
+    setSelectedItems(prev => {
       const newMap = new Map(prev);
       if (newMap.has(itemId)) {
         newMap.delete(itemId);
       } else {
-        const item = prItems.find((i) => i.itemId === itemId);
+        const item = prItems.find(i => i.itemId === itemId);
         if (item) {
           newMap.set(itemId, item);
         }
@@ -123,14 +123,14 @@ export const CreateRFPFromPRPage = () => {
       setSelectedItems(new Map());
     } else {
       const newMap = new Map<number, ApprovedPRItemForRFP>();
-      prItems.forEach((item) => newMap.set(item.itemId, item));
+      prItems.forEach(item => newMap.set(item.itemId, item));
       setSelectedItems(newMap);
     }
   };
 
   // Update target unit price for an item
   const handleTargetPriceChange = (itemId: number, newPrice: string) => {
-    setSelectedItems((prev) => {
+    setSelectedItems(prev => {
       const newMap = new Map(prev);
       const item = newMap.get(itemId);
       if (item) {
@@ -175,7 +175,7 @@ export const CreateRFPFromPRPage = () => {
 
     // Build request
     const items: RFPItemFromPR[] = Array.from(selectedItems.values()).map(
-      (item) => ({
+      item => ({
         prItemId: item.itemId,
         prId: item.prId,
         requestNumber: item.requestNumber,
@@ -201,8 +201,12 @@ export const CreateRFPFromPRPage = () => {
     };
 
     try {
-      await createRFPMutation.mutateAsync(request);
-      navigate('/rfp');
+      const newRfp = await createRFPMutation.mutateAsync(request);
+      if (newRfp && newRfp.id) {
+        navigate('/rfp/float');
+      } else {
+        navigate('/rfp/manage');
+      }
     } catch (error) {
       // Error handled by mutation
     }
@@ -219,21 +223,21 @@ export const CreateRFPFromPRPage = () => {
   };
 
   return (
-    <div className="container mx-auto p-6 max-w-7xl">
+    <div className='container mx-auto p-6 max-w-7xl'>
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-4">
+      <div className='flex items-center justify-between mb-6'>
+        <div className='flex items-center gap-4'>
           <button
             onClick={handleBack}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            className='p-2 hover:bg-gray-100 rounded-lg transition-colors'
           >
-            <ArrowLeft className="w-5 h-5" />
+            <ArrowLeft className='w-5 h-5' />
           </button>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">
+            <h1 className='text-2xl font-bold text-gray-900'>
               {phase === 'select-prs' ? 'Select Approved PRs' : 'Create RFP'}
             </h1>
-            <p className="text-sm text-gray-600 mt-1">
+            <p className='text-sm text-gray-600 mt-1'>
               {phase === 'select-prs'
                 ? 'Select Purchase Requests to combine into an RFP'
                 : 'Review and configure RFP details'}
@@ -245,9 +249,9 @@ export const CreateRFPFromPRPage = () => {
           <button
             onClick={handleCombinePRs}
             disabled={selectedPRIds.length === 0}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+            className='px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2'
           >
-            <Plus className="w-4 h-4" />
+            <Plus className='w-4 h-4' />
             Combine PR
           </button>
         )}
@@ -256,9 +260,9 @@ export const CreateRFPFromPRPage = () => {
           <button
             onClick={handleCreateRFP}
             disabled={createRFPMutation.isPending || selectedItems.size === 0}
-            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+            className='px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2'
           >
-            <FileText className="w-4 h-4" />
+            <FileText className='w-4 h-4' />
             {createRFPMutation.isPending ? 'Creating...' : 'Create RFP'}
           </button>
         )}
@@ -266,108 +270,111 @@ export const CreateRFPFromPRPage = () => {
 
       {/* Phase 1: Select PRs */}
       {phase === 'select-prs' && (
-        <div className="bg-white rounded-lg shadow">
+        <div className='bg-white rounded-lg shadow'>
           {/* Search */}
-          <div className="p-4 border-b">
+          <div className='p-4 border-b'>
             <input
-              type="text"
-              placeholder="Search by PR Number, Date, Requested By, or Department..."
+              type='text'
+              placeholder='Search by PR Number, Date, Requested By, or Department...'
               value={searchWord}
-              onChange={(e) => setSearchWord(e.target.value)}
-              className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              onChange={e => setSearchWord(e.target.value)}
+              className='w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500'
             />
           </div>
 
           {/* Table */}
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-gray-50 border-b">
+          <div className='overflow-x-auto'>
+            <table className='w-full'>
+              <thead className='bg-gray-50 border-b'>
                 <tr>
-                  <th className="px-4 py-3 text-left">
+                  <th className='px-4 py-3 text-left'>
                     <input
-                      type="checkbox"
+                      type='checkbox'
                       checked={
                         approvedPRs.length > 0 &&
                         selectedPRIds.length === approvedPRs.length
                       }
                       onChange={handleSelectAll}
-                      className="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
+                      className='w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500'
                     />
                   </th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">
+                  <th className='px-4 py-3 text-left text-sm font-semibold text-gray-700'>
                     Request Number
                   </th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">
+                  <th className='px-4 py-3 text-left text-sm font-semibold text-gray-700'>
                     Request Date
                   </th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">
+                  <th className='px-4 py-3 text-left text-sm font-semibold text-gray-700'>
                     Requested By
                   </th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">
+                  <th className='px-4 py-3 text-left text-sm font-semibold text-gray-700'>
                     Department
                   </th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">
+                  <th className='px-4 py-3 text-left text-sm font-semibold text-gray-700'>
                     Created By
                   </th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">
+                  <th className='px-4 py-3 text-left text-sm font-semibold text-gray-700'>
                     Created Date
                   </th>
-                  <th className="px-4 py-3 text-center text-sm font-semibold text-gray-700">
+                  <th className='px-4 py-3 text-center text-sm font-semibold text-gray-700'>
                     Items
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y">
+              <tbody className='divide-y'>
                 {loadingPRs ? (
                   <tr>
-                    <td colSpan={8} className="px-4 py-8 text-center">
-                      <div className="flex items-center justify-center">
-                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                    <td colSpan={8} className='px-4 py-8 text-center'>
+                      <div className='flex items-center justify-center'>
+                        <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600'></div>
                       </div>
                     </td>
                   </tr>
                 ) : approvedPRs.length === 0 ? (
                   <tr>
-                    <td colSpan={8} className="px-4 py-8 text-center text-gray-500">
+                    <td
+                      colSpan={8}
+                      className='px-4 py-8 text-center text-gray-500'
+                    >
                       No approved PRs found for RFP creation
                     </td>
                   </tr>
                 ) : (
-                  approvedPRs.map((pr) => (
+                  approvedPRs.map(pr => (
                     <tr
                       key={pr.prId}
-                      className="hover:bg-gray-50 cursor-pointer"
+                      className='hover:bg-gray-50 cursor-pointer'
                       onClick={() => handlePRSelect(pr.prId)}
                     >
-                      <td className="px-4 py-3">
+                      <td className='px-4 py-3'>
                         <input
-                          type="checkbox"
+                          type='checkbox'
                           checked={selectedPRIds.includes(pr.prId)}
                           onChange={() => handlePRSelect(pr.prId)}
-                          onClick={(e) => e.stopPropagation()}
-                          className="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
+                          onClick={e => e.stopPropagation()}
+                          className='w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500'
                         />
                       </td>
-                      <td className="px-4 py-3 text-sm font-medium text-blue-600">
+                      <td className='px-4 py-3 text-sm font-medium text-blue-600'>
                         {pr.requestNumber}
                       </td>
-                      <td className="px-4 py-3 text-sm text-gray-900">
+                      <td className='px-4 py-3 text-sm text-gray-900'>
                         {new Date(pr.requestDate).toLocaleDateString()}
                       </td>
-                      <td className="px-4 py-3 text-sm text-gray-900">
+                      <td className='px-4 py-3 text-sm text-gray-900'>
                         {pr.requestedByName || pr.requestedBy}
                       </td>
-                      <td className="px-4 py-3 text-sm text-gray-900">
+                      <td className='px-4 py-3 text-sm text-gray-900'>
                         {pr.department}
                       </td>
-                      <td className="px-4 py-3 text-sm text-gray-900">
+                      <td className='px-4 py-3 text-sm text-gray-900'>
                         {pr.createdByName || pr.createdBy}
                       </td>
-                      <td className="px-4 py-3 text-sm text-gray-900">
+                      <td className='px-4 py-3 text-sm text-gray-900'>
                         {new Date(pr.createdDate).toLocaleDateString()}
                       </td>
-                      <td className="px-4 py-3 text-center">
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                      <td className='px-4 py-3 text-center'>
+                        <span className='inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800'>
                           {pr.itemCount}
                         </span>
                       </td>
@@ -382,93 +389,94 @@ export const CreateRFPFromPRPage = () => {
 
       {/* Phase 2: Create RFP */}
       {phase === 'create-rfp' && (
-        <div className="space-y-6">
+        <div className='space-y-6'>
           {/* RFP Details Card */}
-          <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">
+          <div className='bg-white rounded-lg shadow p-6'>
+            <h2 className='text-lg font-semibold text-gray-900 mb-4'>
               RFP Details
             </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  RFP Number <span className="text-red-500">*</span>
+                <label className='block text-sm font-medium text-gray-700 mb-1'>
+                  RFP Number <span className='text-red-500'>*</span>
                 </label>
                 <input
-                  type="text"
+                  type='text'
                   value={rfpNumber}
-                  onChange={(e) => setRfpNumber(e.target.value)}
-                  className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  onChange={e => setRfpNumber(e.target.value)}
+                  className='w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500'
                   readOnly
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  RFP Date <span className="text-red-500">*</span>
+                <label className='block text-sm font-medium text-gray-700 mb-1'>
+                  RFP Date <span className='text-red-500'>*</span>
                 </label>
                 <input
-                  type="date"
+                  type='date'
                   value={rfpDate}
-                  onChange={(e) => setRfpDate(e.target.value)}
-                  className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  onChange={e => setRfpDate(e.target.value)}
+                  className='w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500'
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Closing Date <span className="text-red-500">*</span>
+                <label className='block text-sm font-medium text-gray-700 mb-1'>
+                  Closing Date <span className='text-red-500'>*</span>
                 </label>
                 <input
-                  type="date"
+                  type='date'
                   value={closingDate}
-                  onChange={(e) => setClosingDate(e.target.value)}
-                  className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  onChange={e => setClosingDate(e.target.value)}
+                  className='w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500'
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className='block text-sm font-medium text-gray-700 mb-1'>
                   Payment Terms
                 </label>
                 <input
-                  type="text"
+                  type='text'
                   value={paymentTerms}
-                  onChange={(e) => setPaymentTerms(e.target.value)}
-                  placeholder="e.g., Net 30 days"
-                  className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  onChange={e => setPaymentTerms(e.target.value)}
+                  placeholder='e.g., Net 30 days'
+                  className='w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500'
                 />
               </div>
 
-              <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+              <div className='md:col-span-2'>
+                <label className='block text-sm font-medium text-gray-700 mb-1'>
                   Remarks
                 </label>
                 <textarea
                   value={remarks}
-                  onChange={(e) => setRemarks(e.target.value)}
+                  onChange={e => setRemarks(e.target.value)}
                   rows={3}
-                  className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Enter any additional remarks..."
+                  className='w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500'
+                  placeholder='Enter any additional remarks...'
                 />
               </div>
             </div>
           </div>
 
           {/* RFP Items Card */}
-          <div className="bg-white rounded-lg shadow">
-            <div className="p-4 border-b flex items-center justify-between">
+          <div className='bg-white rounded-lg shadow'>
+            <div className='p-4 border-b flex items-center justify-between'>
               <div>
-                <h2 className="text-lg font-semibold text-gray-900">
+                <h2 className='text-lg font-semibold text-gray-900'>
                   Item Details
                 </h2>
-                <p className="text-sm text-gray-600 mt-1">
+                <p className='text-sm text-gray-600 mt-1'>
                   {selectedItems.size} of {prItems.length} items selected
                 </p>
               </div>
-              <div className="text-right">
-                <p className="text-sm text-gray-600">Total Amount</p>
-                <p className="text-xl font-bold text-green-600">
-                  ₹{totalAmount.toLocaleString('en-IN', {
+              <div className='text-right'>
+                <p className='text-sm text-gray-600'>Total Amount</p>
+                <p className='text-xl font-bold text-green-600'>
+                  ₹
+                  {totalAmount.toLocaleString('en-IN', {
                     minimumFractionDigits: 2,
                     maximumFractionDigits: 2,
                   })}
@@ -476,113 +484,121 @@ export const CreateRFPFromPRPage = () => {
               </div>
             </div>
 
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-gray-50 border-b">
+            <div className='overflow-x-auto'>
+              <table className='w-full'>
+                <thead className='bg-gray-50 border-b'>
                   <tr>
-                    <th className="px-4 py-3 text-left">
+                    <th className='px-4 py-3 text-left'>
                       <input
-                        type="checkbox"
+                        type='checkbox'
                         checked={
                           prItems.length > 0 &&
                           selectedItems.size === prItems.length
                         }
                         onChange={handleSelectAllItems}
-                        className="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
+                        className='w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500'
                       />
                     </th>
-                    <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">
+                    <th className='px-4 py-3 text-left text-sm font-semibold text-gray-700'>
                       Item
                     </th>
-                    <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">
+                    <th className='px-4 py-3 text-left text-sm font-semibold text-gray-700'>
                       Remarks
                     </th>
-                    <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">
+                    <th className='px-4 py-3 text-left text-sm font-semibold text-gray-700'>
                       PR Number
                     </th>
-                    <th className="px-4 py-3 text-center text-sm font-semibold text-gray-700">
+                    <th className='px-4 py-3 text-center text-sm font-semibold text-gray-700'>
                       Quantity
                     </th>
-                    <th className="px-4 py-3 text-right text-sm font-semibold text-gray-700">
+                    <th className='px-4 py-3 text-right text-sm font-semibold text-gray-700'>
                       Indicative Price
                     </th>
-                    <th className="px-4 py-3 text-right text-sm font-semibold text-gray-700">
-                      Target Unit Price <span className="text-red-500">*</span>
+                    <th className='px-4 py-3 text-right text-sm font-semibold text-gray-700'>
+                      Target Unit Price <span className='text-red-500'>*</span>
                     </th>
-                    <th className="px-4 py-3 text-right text-sm font-semibold text-gray-700">
+                    <th className='px-4 py-3 text-right text-sm font-semibold text-gray-700'>
                       Grand Total
                     </th>
                   </tr>
                 </thead>
-                <tbody className="divide-y">
+                <tbody className='divide-y'>
                   {loadingItems ? (
                     <tr>
-                      <td colSpan={8} className="px-4 py-8 text-center">
-                        <div className="flex items-center justify-center">
-                          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                      <td colSpan={8} className='px-4 py-8 text-center'>
+                        <div className='flex items-center justify-center'>
+                          <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600'></div>
                         </div>
                       </td>
                     </tr>
                   ) : prItems.length === 0 ? (
                     <tr>
-                      <td colSpan={8} className="px-4 py-8 text-center text-gray-500">
+                      <td
+                        colSpan={8}
+                        className='px-4 py-8 text-center text-gray-500'
+                      >
                         No items found
                       </td>
                     </tr>
                   ) : (
-                    prItems.map((item) => {
+                    prItems.map(item => {
                       const isSelected = selectedItems.has(item.itemId);
                       const selectedItem = selectedItems.get(item.itemId);
-                      const targetPrice = selectedItem?.targetUnitPrice || item.targetUnitPrice;
+                      const targetPrice =
+                        selectedItem?.targetUnitPrice || item.targetUnitPrice;
                       const grandTotal = targetPrice * item.quantity;
 
                       return (
                         <tr
                           key={item.itemId}
-                          className={`${
-                            isSelected ? 'bg-blue-50' : 'hover:bg-gray-50'
-                          }`}
+                          className={`${isSelected ? 'bg-blue-50' : 'hover:bg-gray-50'
+                            }`}
                         >
-                          <td className="px-4 py-3">
+                          <td className='px-4 py-3'>
                             <input
-                              type="checkbox"
+                              type='checkbox'
                               checked={isSelected}
                               onChange={() => handleItemSelect(item.itemId)}
-                              className="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
+                              className='w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500'
                             />
                           </td>
-                          <td className="px-4 py-3 text-sm text-gray-900">
+                          <td className='px-4 py-3 text-sm text-gray-900'>
                             {item.itemName}
                           </td>
-                          <td className="px-4 py-3 text-sm text-gray-600">
+                          <td className='px-4 py-3 text-sm text-gray-600'>
                             {item.remarks}
                           </td>
-                          <td className="px-4 py-3 text-sm font-medium text-blue-600">
+                          <td className='px-4 py-3 text-sm font-medium text-blue-600'>
                             {item.requestNumber}
                           </td>
-                          <td className="px-4 py-3 text-center text-sm text-gray-900">
+                          <td className='px-4 py-3 text-center text-sm text-gray-900'>
                             {item.quantity}
                           </td>
-                          <td className="px-4 py-3 text-right text-sm text-gray-900">
-                            ₹{item.indicativePrice.toLocaleString('en-IN', {
+                          <td className='px-4 py-3 text-right text-sm text-gray-900'>
+                            ₹
+                            {item.indicativePrice.toLocaleString('en-IN', {
                               minimumFractionDigits: 2,
                               maximumFractionDigits: 2,
                             })}
                           </td>
-                          <td className="px-4 py-3 text-right">
+                          <td className='px-4 py-3 text-right'>
                             <input
-                              type="number"
-                              step="0.01"
+                              type='number'
+                              step='0.01'
                               value={targetPrice}
-                              onChange={(e) =>
-                                handleTargetPriceChange(item.itemId, e.target.value)
+                              onChange={e =>
+                                handleTargetPriceChange(
+                                  item.itemId,
+                                  e.target.value
+                                )
                               }
                               disabled={!isSelected}
-                              className="w-28 px-2 py-1 text-right border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                              className='w-28 px-2 py-1 text-right border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed'
                             />
                           </td>
-                          <td className="px-4 py-3 text-right text-sm font-medium text-gray-900">
-                            ₹{grandTotal.toLocaleString('en-IN', {
+                          <td className='px-4 py-3 text-right text-sm font-medium text-gray-900'>
+                            ₹
+                            {grandTotal.toLocaleString('en-IN', {
                               minimumFractionDigits: 2,
                               maximumFractionDigits: 2,
                             })}

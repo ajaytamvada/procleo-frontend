@@ -1,6 +1,6 @@
 /**
  * Global TypeScript type definitions for the Autovitica P2P Frontend Application
- * 
+ *
  * This file contains shared types used across the application.
  * Feature-specific types should be defined in their respective feature directories.
  */
@@ -98,7 +98,7 @@ export interface AuthTokens {
 // Permission and Role Types
 // ========================================
 
-export type Permission = 
+export type Permission =
   | 'READ_USERS'
   | 'WRITE_USERS'
   | 'DELETE_USERS'
@@ -129,7 +129,14 @@ export interface SelectOption<T = string | number> {
 export interface FormField {
   name: string;
   label: string;
-  type: 'text' | 'email' | 'password' | 'number' | 'date' | 'select' | 'textarea';
+  type:
+    | 'text'
+    | 'email'
+    | 'password'
+    | 'number'
+    | 'date'
+    | 'select'
+    | 'textarea';
   required?: boolean;
   placeholder?: string;
   options?: SelectOption[];
@@ -298,4 +305,10 @@ export type ID = string | number;
 
 export type Status = 'active' | 'inactive' | 'pending' | 'archived';
 
-export type ActionType = 'create' | 'read' | 'update' | 'delete' | 'approve' | 'reject';
+export type ActionType =
+  | 'create'
+  | 'read'
+  | 'update'
+  | 'delete'
+  | 'approve'
+  | 'reject';

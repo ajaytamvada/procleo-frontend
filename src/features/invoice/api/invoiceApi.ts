@@ -1,218 +1,285 @@
-import axios from 'axios';
-import type { Invoice } from '../../purchaseorder/types';
-import { InvoiceStatus, InvoiceType } from '../../purchaseorder/types';
+import { apiClient } from '@/lib/api';
+import type {
+  Invoice,
+  CreateInvoiceRequest,
+  UpdateInvoiceRequest,
+  CreateDirectInvoiceRequest,
+  UpdateDirectInvoiceRequest,
+  POItemForInvoice,
+  PODetailsForInvoice,
+  POForInvoicing,
+} from '../types';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api';
+// ========== INVOICE ENTRY (PO-based) ENDPOINTS ==========
+
+export const createInvoice = async (
+  request: CreateInvoiceRequest
+): Promise<Invoice> => {
+  const response = await apiClient.post<Invoice>('/invoice', request);
+  return response.data;
+};
+
+export const updateInvoice = async (
+  id: number,
+  request: UpdateInvoiceRequest
+): Promise<Invoice> => {
+  const response = await apiClient.put<Invoice>(`/invoice/${id}`, request);
+  return response.data;
+};
+
+export const getInvoiceById = async (id: number): Promise<Invoice> => {
+  const response = await apiClient.get<Invoice>(`/invoice/${id}`);
+  return response.data;
+};
+
+export const getInvoiceByNumber = async (
+  invoiceNumber: string
+): Promise<Invoice> => {
+  const response = await apiClient.get<Invoice>(
+    `/invoice/number/${invoiceNumber}`
+  );
+  return response.data;
+};
+
+export const getAllInvoices = async (
+  paginated?: boolean
+): Promise<Invoice[]> => {
+  const response = await apiClient.get<Invoice[]>('/invoice', {
+    params: { paginated: paginated || false },
+  });
+
+  // Defensive programming: ensure we return an array
+  return Array.isArray(response.data) ? response.data : [];
+};
+
+export const getInvoicesPaginated = async (
+  page: number = 0,
+  size: number = 10
+) => {
+  const response = await apiClient.get('/invoice', {
+    params: { paginated: true, page, size },
+  });
+  return response.data;
+};
+
+export const getInvoicesByPoId = async (poId: number): Promise<Invoice[]> => {
+  const response = await apiClient.get<Invoice[]>(`/invoice/po/${poId}`);
+  return Array.isArray(response.data) ? response.data : [];
+};
+
+export const getInvoicesBySupplierId = async (
+  supplierId: number
+): Promise<Invoice[]> => {
+  const response = await apiClient.get<Invoice[]>(
+    `/invoice/supplier/${supplierId}`
+  );
+  return Array.isArray(response.data) ? response.data : [];
+};
+
+export const getInvoicesByStatus = async (
+  status: string
+): Promise<Invoice[]> => {
+  const response = await apiClient.get<Invoice[]>(`/invoice/status/${status}`);
+  return Array.isArray(response.data) ? response.data : [];
+};
+
+export const getDraftInvoices = async (): Promise<Invoice[]> => {
+  const response = await apiClient.get<Invoice[]>('/invoice/drafts');
+  return Array.isArray(response.data) ? response.data : [];
+};
+
+export const getPendingApprovalInvoices = async (): Promise<Invoice[]> => {
+  const response = await apiClient.get<Invoice[]>('/invoice/pending-approval');
+  return Array.isArray(response.data) ? response.data : [];
+};
+
+export const getInvoicesByDateRange = async (
+  startDate: string,
+  endDate: string
+): Promise<Invoice[]> => {
+  const response = await apiClient.get<Invoice[]>('/invoice/date-range', {
+    params: { startDate, endDate },
+  });
+  return Array.isArray(response.data) ? response.data : [];
+};
+
+export const searchInvoices = async (
+  searchTerm: string
+): Promise<Invoice[]> => {
+  const response = await apiClient.get<Invoice[]>('/invoice/search', {
+    params: { searchTerm },
+  });
+  return Array.isArray(response.data) ? response.data : [];
+};
+
+export const deleteInvoice = async (
+  id: number
+): Promise<{ message: string }> => {
+  const response = await apiClient.delete<{ message: string }>(
+    `/invoice/${id}`
+  );
+  return response.data;
+};
+
+// ========== INVOICE WORKFLOW ENDPOINTS ==========
+
+export const submitInvoice = async (id: number): Promise<Invoice> => {
+  const response = await apiClient.post<Invoice>(`/invoice/${id}/submit`);
+  return response.data;
+};
+
+export const approveInvoice = async (id: number): Promise<Invoice> => {
+  const response = await apiClient.post<Invoice>(`/invoice/${id}/approve`);
+  return response.data;
+};
+
+export const rejectInvoice = async (
+  id: number,
+  remarks: string
+): Promise<Invoice> => {
+  const response = await apiClient.post<Invoice>(
+    `/invoice/${id}/reject`,
+    null,
+    {
+      params: { remarks },
+    }
+  );
+  return response.data;
+};
+
+// ========== PO HELPERS FOR INVOICE ENTRY ==========
+
+export const getPOItemsForInvoicing = async (
+  poId: number
+): Promise<POItemForInvoice[]> => {
+  const response = await apiClient.get<POItemForInvoice[]>(
+    `/invoice/po/${poId}/items`
+  );
+  return Array.isArray(response.data) ? response.data : [];
+};
+
+export const getPODetails = async (
+  poId: number
+): Promise<PODetailsForInvoice> => {
+  const response = await apiClient.get<PODetailsForInvoice>(
+    `/invoice/po/${poId}/details`
+  );
+  return response.data;
+};
+
+export const getPOsForInvoicing = async (): Promise<POForInvoicing[]> => {
+  const response = await apiClient.get<POForInvoicing[]>(
+    '/invoice/po/available'
+  );
+  return Array.isArray(response.data) ? response.data : [];
+};
+
+// ========== INVOICE NUMBER UTILITIES ==========
+
+export const checkInvoiceNumber = async (
+  invoiceNumber: string
+): Promise<boolean> => {
+  const response = await apiClient.get<{ exists: boolean }>(
+    `/invoice/check-number/${invoiceNumber}`
+  );
+  return response.data.exists;
+};
+
+export const generateInvoiceNumber = async (): Promise<string> => {
+  const response = await apiClient.get<{ invoiceNumber: string }>(
+    '/invoice/generate-number'
+  );
+  return response.data.invoiceNumber;
+};
+
+// ========== DIRECT INVOICE ENDPOINTS ==========
+
+export const createDirectInvoice = async (
+  request: CreateDirectInvoiceRequest
+): Promise<Invoice> => {
+  const response = await apiClient.post<Invoice>('/invoice/direct', request);
+  return response.data;
+};
+
+export const updateDirectInvoice = async (
+  id: number,
+  request: UpdateDirectInvoiceRequest
+): Promise<Invoice> => {
+  const response = await apiClient.put<Invoice>(
+    `/invoice/direct/${id}`,
+    request
+  );
+  return response.data;
+};
+
+export const getAllDirectInvoices = async (): Promise<Invoice[]> => {
+  const response = await apiClient.get<Invoice[]>('/invoice/direct');
+  return Array.isArray(response.data) ? response.data : [];
+};
+
+export const getDirectDraftInvoices = async (): Promise<Invoice[]> => {
+  const response = await apiClient.get<Invoice[]>('/invoice/direct/drafts');
+  return Array.isArray(response.data) ? response.data : [];
+};
+
+export const deleteDirectInvoiceItem = async (
+  itemId: number
+): Promise<{ message: string }> => {
+  const response = await apiClient.delete<{ message: string }>(
+    `/invoice/direct/item/${itemId}`
+  );
+  return response.data;
+};
+
+// ========== FILE DOWNLOAD ==========
+
+export const downloadInvoiceAttachment = async (id: number): Promise<Blob> => {
+  const response = await apiClient.get(`/invoice/${id}/download`, {
+    responseType: 'blob',
+  });
+  return response.data;
+};
+
+// ========== EXPORT ALL AS OBJECT ==========
 
 export const invoiceApi = {
-  // Get all invoices
-  getAllInvoices: async (params?: {
-    status?: InvoiceStatus;
-    type?: InvoiceType;
-    supplierId?: number;
-    search?: string;
-    startDate?: string;
-    endDate?: string;
-    page?: number;
-    size?: number;
-  }) => {
-    const response = await axios.get(`${API_BASE_URL}/invoice`, { params });
-    return response.data;
-  },
+  // Invoice Entry (PO-based)
+  createInvoice,
+  updateInvoice,
+  getInvoiceById,
+  getInvoiceByNumber,
+  getAllInvoices,
+  getInvoicesPaginated,
+  getInvoicesByPoId,
+  getInvoicesBySupplierId,
+  getInvoicesByStatus,
+  getDraftInvoices,
+  getPendingApprovalInvoices,
+  getInvoicesByDateRange,
+  searchInvoices,
+  deleteInvoice,
 
-  // Get invoice by ID
-  getInvoiceById: async (id: number) => {
-    const response = await axios.get<Invoice>(`${API_BASE_URL}/invoice/${id}`);
-    return response.data;
-  },
+  // Workflow
+  submitInvoice,
+  approveInvoice,
+  rejectInvoice,
 
-  // Create new invoice
-  createInvoice: async (data: Partial<Invoice>) => {
-    const response = await axios.post<Invoice>(`${API_BASE_URL}/invoice`, data);
-    return response.data;
-  },
+  // PO Helpers
+  getPOItemsForInvoicing,
+  getPODetails,
+  getPOsForInvoicing,
 
-  // Update invoice
-  updateInvoice: async (id: number, data: Partial<Invoice>) => {
-    const response = await axios.put<Invoice>(`${API_BASE_URL}/invoice/${id}`, data);
-    return response.data;
-  },
+  // Utilities
+  checkInvoiceNumber,
+  generateInvoiceNumber,
 
-  // Delete invoice
-  deleteInvoice: async (id: number) => {
-    const response = await axios.delete(`${API_BASE_URL}/invoice/${id}`);
-    return response.data;
-  },
+  // Direct Invoice
+  createDirectInvoice,
+  updateDirectInvoice,
+  getAllDirectInvoices,
+  getDirectDraftInvoices,
+  deleteDirectInvoiceItem,
 
-  // Submit invoice for approval
-  submitInvoice: async (id: number) => {
-    const response = await axios.put<Invoice>(`${API_BASE_URL}/invoice/${id}/submit`);
-    return response.data;
-  },
-
-  // Approve invoice
-  approveInvoice: async (id: number, comments?: string) => {
-    const response = await axios.put<Invoice>(
-      `${API_BASE_URL}/invoice/${id}/approve`,
-      { comments }
-    );
-    return response.data;
-  },
-
-  // Reject invoice
-  rejectInvoice: async (id: number, reason: string) => {
-    const response = await axios.put<Invoice>(
-      `${API_BASE_URL}/invoice/${id}/reject`,
-      { reason }
-    );
-    return response.data;
-  },
-
-  // Perform three-way matching
-  performThreeWayMatch: async (id: number) => {
-    const response = await axios.post<{
-      matched: boolean;
-      matchStatus: string;
-      discrepancies?: Array<{
-        field: string;
-        poValue: any;
-        grnValue: any;
-        invoiceValue: any;
-      }>;
-    }>(`${API_BASE_URL}/invoice/${id}/three-way-match`);
-    return response.data;
-  },
-
-  // Record payment
-  recordPayment: async (id: number, data: {
-    paymentAmount: number;
-    paymentDate: string;
-    paymentMode: string;
-    paymentReference: string;
-    bankName?: string;
-    remarks?: string;
-  }) => {
-    const response = await axios.post<Invoice>(
-      `${API_BASE_URL}/invoice/${id}/payment`,
-      data
-    );
-    return response.data;
-  },
-
-  // Create invoice from PO
-  createInvoiceFromPO: async (poId: number) => {
-    const response = await axios.post<Invoice>(
-      `${API_BASE_URL}/invoice/from-po/${poId}`
-    );
-    return response.data;
-  },
-
-  // Create invoice from GRN
-  createInvoiceFromGRN: async (grnId: number) => {
-    const response = await axios.post<Invoice>(
-      `${API_BASE_URL}/invoice/from-grn/${grnId}`
-    );
-    return response.data;
-  },
-
-  // Create credit note
-  createCreditNote: async (originalInvoiceId: number, data: {
-    reason: string;
-    items: Array<{
-      id: number;
-      quantity: number;
-      amount: number;
-    }>;
-  }) => {
-    const response = await axios.post<Invoice>(
-      `${API_BASE_URL}/invoice/${originalInvoiceId}/credit-note`,
-      data
-    );
-    return response.data;
-  },
-
-  // Create debit note
-  createDebitNote: async (originalInvoiceId: number, data: {
-    reason: string;
-    additionalAmount: number;
-    description: string;
-  }) => {
-    const response = await axios.post<Invoice>(
-      `${API_BASE_URL}/invoice/${originalInvoiceId}/debit-note`,
-      data
-    );
-    return response.data;
-  },
-
-  // Get invoices by PO ID
-  getInvoicesByPurchaseOrderId: async (poId: number) => {
-    const response = await axios.get<Invoice[]>(`${API_BASE_URL}/invoice/purchase-order/${poId}`);
-    return response.data;
-  },
-
-  // Get invoices by GRN ID
-  getInvoicesByGRNId: async (grnId: number) => {
-    const response = await axios.get<Invoice[]>(`${API_BASE_URL}/invoice/grn/${grnId}`);
-    return response.data;
-  },
-
-  // Get overdue invoices
-  getOverdueInvoices: async () => {
-    const response = await axios.get<Invoice[]>(`${API_BASE_URL}/invoice/overdue`);
-    return response.data;
-  },
-
-  // Download invoice as PDF
-  downloadInvoice: async (id: number) => {
-    const response = await axios.get(
-      `${API_BASE_URL}/invoice/${id}/download`,
-      { responseType: 'blob' }
-    );
-    return response.data;
-  },
-
-  // Get invoice statistics
-  getInvoiceStatistics: async () => {
-    const response = await axios.get(`${API_BASE_URL}/invoice/statistics`);
-    return response.data;
-  },
-
-  // Get payment summary
-  getPaymentSummary: async (params?: {
-    startDate?: string;
-    endDate?: string;
-    supplierId?: number;
-  }) => {
-    const response = await axios.get(`${API_BASE_URL}/invoice/payment-summary`, { params });
-    return response.data;
-  },
-
-  // Upload invoice attachment
-  uploadInvoiceAttachment: async (id: number, file: File) => {
-    const formData = new FormData();
-    formData.append('file', file);
-    
-    const response = await axios.post(
-      `${API_BASE_URL}/invoice/${id}/attachment`,
-      formData,
-      {
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        }
-      }
-    );
-    return response.data;
-  },
-
-  // Send invoice reminder
-  sendPaymentReminder: async (id: number, data?: {
-    recipientEmail?: string;
-    message?: string;
-  }) => {
-    const response = await axios.post(
-      `${API_BASE_URL}/invoice/${id}/reminder`,
-      data
-    );
-    return response.data;
-  }
+  // File Download
+  downloadInvoiceAttachment,
 };

@@ -99,13 +99,15 @@ export class IndexedDBManager {
         resolve(request.result);
       };
 
-      request.onupgradeneeded = (event) => {
+      request.onupgradeneeded = event => {
         const db = (event.target as IDBOpenDBRequest).result;
 
         // Create object stores
         Object.entries(STORES).forEach(([storeName, schema]) => {
           if (!db.objectStoreNames.contains(storeName)) {
-            const store = db.createObjectStore(storeName, { keyPath: schema.key });
+            const store = db.createObjectStore(storeName, {
+              keyPath: schema.key,
+            });
 
             // Create indexes
             if (schema.indexes) {
@@ -129,7 +131,7 @@ export class IndexedDBManager {
     const db = await this.getDB();
     const transaction = db.transaction([storeName], 'readwrite');
     const store = transaction.objectStore(storeName);
-    
+
     return new Promise((resolve, reject) => {
       const request = store.put(data);
       request.onsuccess = () => resolve();
@@ -141,7 +143,7 @@ export class IndexedDBManager {
     const db = await this.getDB();
     const transaction = db.transaction([storeName], 'readonly');
     const store = transaction.objectStore(storeName);
-    
+
     return new Promise((resolve, reject) => {
       const request = store.get(key);
       request.onsuccess = () => resolve(request.result);
@@ -153,7 +155,7 @@ export class IndexedDBManager {
     const db = await this.getDB();
     const transaction = db.transaction([storeName], 'readonly');
     const store = transaction.objectStore(storeName);
-    
+
     return new Promise((resolve, reject) => {
       const request = store.getAll();
       request.onsuccess = () => resolve(request.result);
@@ -165,7 +167,7 @@ export class IndexedDBManager {
     const db = await this.getDB();
     const transaction = db.transaction([storeName], 'readwrite');
     const store = transaction.objectStore(storeName);
-    
+
     return new Promise((resolve, reject) => {
       const request = store.delete(key);
       request.onsuccess = () => resolve();
@@ -177,7 +179,7 @@ export class IndexedDBManager {
     const db = await this.getDB();
     const transaction = db.transaction([storeName], 'readwrite');
     const store = transaction.objectStore(storeName);
-    
+
     return new Promise((resolve, reject) => {
       const request = store.clear();
       request.onsuccess = () => resolve();
@@ -195,7 +197,7 @@ export class IndexedDBManager {
     const transaction = db.transaction([storeName], 'readonly');
     const store = transaction.objectStore(storeName);
     const index = store.index(indexName);
-    
+
     return new Promise((resolve, reject) => {
       const request = index.getAll(value);
       request.onsuccess = () => resolve(request.result);
@@ -212,7 +214,7 @@ export class IndexedDBManager {
     const transaction = db.transaction([storeName], 'readonly');
     const store = transaction.objectStore(storeName);
     const index = store.index(indexName);
-    
+
     return new Promise((resolve, reject) => {
       const request = index.getAll(range);
       request.onsuccess = () => resolve(request.result);
@@ -240,15 +242,15 @@ export class IndexedDBManager {
 
   async getCache<T>(key: string): Promise<T | null> {
     const item = await this.get<CacheItem<T>>('cache', key);
-    
+
     if (!item) return null;
-    
+
     // Check if expired
     if (item.expiry && Date.now() > item.expiry) {
       await this.delete('cache', key);
       return null;
     }
-    
+
     return item.data;
   }
 
@@ -262,23 +264,31 @@ export class IndexedDBManager {
     const toDelete = allItems
       .filter(item => item.id.includes(pattern))
       .map(item => this.delete('cache', item.id));
-    
+
     await Promise.all(toDelete);
   }
 
   async cleanExpiredCache(): Promise<number> {
     const now = Date.now();
     const expiredRange = IDBKeyRange.upperBound(now);
-    const expiredItems = await this.getByIndexRange<CacheItem>('cache', 'expiry', expiredRange);
-    
-    const deletePromises = expiredItems.map(item => this.delete('cache', item.id));
+    const expiredItems = await this.getByIndexRange<CacheItem>(
+      'cache',
+      'expiry',
+      expiredRange
+    );
+
+    const deletePromises = expiredItems.map(item =>
+      this.delete('cache', item.id)
+    );
     await Promise.all(deletePromises);
-    
+
     return expiredItems.length;
   }
 
   // Mutation queue operations
-  async queueMutation(mutation: Omit<OfflineMutation, 'id' | 'timestamp' | 'retryCount'>): Promise<string> {
+  async queueMutation(
+    mutation: Omit<OfflineMutation, 'id' | 'timestamp' | 'retryCount'>
+  ): Promise<string> {
     const id = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     const fullMutation: OfflineMutation = {
       ...mutation,
@@ -296,7 +306,8 @@ export class IndexedDBManager {
     return mutations.sort((a, b) => {
       // Sort by priority (high > medium > low) then by timestamp
       const priorityOrder = { high: 3, medium: 2, low: 1 };
-      const priorityDiff = priorityOrder[b.priority] - priorityOrder[a.priority];
+      const priorityDiff =
+        priorityOrder[b.priority] - priorityOrder[a.priority];
       return priorityDiff !== 0 ? priorityDiff : a.timestamp - b.timestamp;
     });
   }
@@ -314,7 +325,11 @@ export class IndexedDBManager {
   }
 
   // Sync status operations
-  async updateSyncStatus(entityType: string, entityId: string, version: number): Promise<void> {
+  async updateSyncStatus(
+    entityType: string,
+    entityId: string,
+    version: number
+  ): Promise<void> {
     const syncStatus: SyncStatus = {
       id: `${entityType}:${entityId}`,
       entityType,
@@ -326,14 +341,21 @@ export class IndexedDBManager {
     await this.put('syncStatus', syncStatus);
   }
 
-  async getSyncStatus(entityType: string, entityId: string): Promise<SyncStatus | undefined> {
+  async getSyncStatus(
+    entityType: string,
+    entityId: string
+  ): Promise<SyncStatus | undefined> {
     return this.get<SyncStatus>('syncStatus', `${entityType}:${entityId}`);
   }
 
   async getStaleEntities(maxAge: number): Promise<SyncStatus[]> {
     const cutoff = Date.now() - maxAge;
     const cutoffRange = IDBKeyRange.upperBound(cutoff);
-    return this.getByIndexRange<SyncStatus>('syncStatus', 'lastSync', cutoffRange);
+    return this.getByIndexRange<SyncStatus>(
+      'syncStatus',
+      'lastSync',
+      cutoffRange
+    );
   }
 
   // File cache operations
@@ -348,28 +370,34 @@ export class IndexedDBManager {
   }
 
   async getCachedFile(url: string): Promise<Blob | undefined> {
-    const item = await this.get<{ url: string; blob: Blob; timestamp: number }>('fileCache', url);
+    const item = await this.get<{ url: string; blob: Blob; timestamp: number }>(
+      'fileCache',
+      url
+    );
     return item?.blob;
   }
 
   async cleanOldFiles(maxAge: number): Promise<number> {
     const cutoff = Date.now() - maxAge;
-    const oldFiles = await this.getByIndexRange<{ url: string; timestamp: number }>(
-      'fileCache', 
-      'timestamp', 
-      IDBKeyRange.upperBound(cutoff)
+    const oldFiles = await this.getByIndexRange<{
+      url: string;
+      timestamp: number;
+    }>('fileCache', 'timestamp', IDBKeyRange.upperBound(cutoff));
+
+    const deletePromises = oldFiles.map(file =>
+      this.delete('fileCache', file.url)
     );
-    
-    const deletePromises = oldFiles.map(file => this.delete('fileCache', file.url));
     await Promise.all(deletePromises);
-    
+
     return oldFiles.length;
   }
 
   // Database management
-  async getDatabaseSize(): Promise<{ store: string; count: number; size: number }[]> {
+  async getDatabaseSize(): Promise<
+    { store: string; count: number; size: number }[]
+  > {
     const results: { store: string; count: number; size: number }[] = [];
-    
+
     for (const storeName of Object.keys(STORES)) {
       const items = await this.getAll(storeName);
       const size = new Blob([JSON.stringify(items)]).size;
@@ -379,17 +407,17 @@ export class IndexedDBManager {
         size,
       });
     }
-    
+
     return results;
   }
 
   async exportData(): Promise<{ [storeName: string]: any[] }> {
     const exported: { [storeName: string]: any[] } = {};
-    
+
     for (const storeName of Object.keys(STORES)) {
       exported[storeName] = await this.getAll(storeName);
     }
-    
+
     return exported;
   }
 

@@ -11,9 +11,12 @@ const budgetAPI = {
       size: size.toString(),
     });
 
-    if (financialYearId !== undefined) params.append('financialYearId', financialYearId.toString());
+    if (financialYearId !== undefined)
+      params.append('financialYearId', financialYearId.toString());
 
-    const response = await apiClient.get<PagedResponse<Budget>>(`/master/budget?${params}`);
+    const response = await apiClient.get<PagedResponse<Budget>>(
+      `/master/budget?${params}`
+    );
     return response.data;
   },
 
@@ -28,7 +31,9 @@ const budgetAPI = {
   },
 
   getByFinancialYear: async (financialYearId: number) => {
-    const response = await apiClient.get<Budget[]>(`/master/budget/financial-year/${financialYearId}`);
+    const response = await apiClient.get<Budget[]>(
+      `/master/budget/financial-year/${financialYearId}`
+    );
     return response.data;
   },
 
@@ -38,7 +43,10 @@ const budgetAPI = {
   },
 
   update: async (id: number, budget: Partial<Budget>) => {
-    const response = await apiClient.put<Budget>(`/master/budget/${id}`, budget);
+    const response = await apiClient.put<Budget>(
+      `/master/budget/${id}`,
+      budget
+    );
     return response.data;
   },
 
@@ -52,7 +60,7 @@ export const useBudgets = (page = 0, size = 20, financialYearId?: number) => {
   return useQuery({
     queryKey: ['budgets', page, size, financialYearId],
     queryFn: () => budgetAPI.getAll(page, size, financialYearId),
-    placeholderData: (previousData) => previousData,
+    placeholderData: previousData => previousData,
   });
 };
 
@@ -71,7 +79,10 @@ export const useBudget = (id: number, enabled = true) => {
   });
 };
 
-export const useBudgetsByFinancialYear = (financialYearId: number, enabled = true) => {
+export const useBudgetsByFinancialYear = (
+  financialYearId: number,
+  enabled = true
+) => {
   return useQuery({
     queryKey: ['budgets', 'financial-year', financialYearId],
     queryFn: () => budgetAPI.getByFinancialYear(financialYearId),
@@ -89,7 +100,8 @@ export const useCreateBudget = () => {
       toast.success('Budget created successfully');
     },
     onError: (error: any) => {
-      const message = error.response?.data?.message || 'Failed to create budget';
+      const message =
+        error.response?.data?.message || 'Failed to create budget';
       toast.error(message);
     },
   });
@@ -106,7 +118,8 @@ export const useUpdateBudget = () => {
       toast.success('Budget updated successfully');
     },
     onError: (error: any) => {
-      const message = error.response?.data?.message || 'Failed to update budget';
+      const message =
+        error.response?.data?.message || 'Failed to update budget';
       toast.error(message);
     },
   });
@@ -122,7 +135,8 @@ export const useDeleteBudget = () => {
       toast.success('Budget deleted successfully');
     },
     onError: (error: any) => {
-      const message = error.response?.data?.message || 'Failed to delete budget';
+      const message =
+        error.response?.data?.message || 'Failed to delete budget';
       toast.error(message);
     },
   });

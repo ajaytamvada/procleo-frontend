@@ -48,7 +48,11 @@ const employeeAPI = {
     return data;
   },
 
-  getPaged: async (page: number, size: number, filters: EmployeeFilters): Promise<PagedResponse> => {
+  getPaged: async (
+    page: number,
+    size: number,
+    filters: EmployeeFilters
+  ): Promise<PagedResponse> => {
     const { data } = await apiClient.get(`${API_BASE_URL}/paged`, {
       params: { page, size, ...filters },
     });
@@ -66,7 +70,9 @@ const employeeAPI = {
   },
 
   getWorkingByDepartment: async (departmentId: number): Promise<Employee[]> => {
-    const { data} = await apiClient.get(`${API_BASE_URL}/by-department/${departmentId}`);
+    const { data } = await apiClient.get(
+      `${API_BASE_URL}/by-department/${departmentId}`
+    );
     return data;
   },
 
@@ -101,7 +107,11 @@ export const useEmployeesList = () => {
   });
 };
 
-export const useEmployeesPaged = (page = 0, size = 15, filters: EmployeeFilters = {}) => {
+export const useEmployeesPaged = (
+  page = 0,
+  size = 15,
+  filters: EmployeeFilters = {}
+) => {
   return useQuery({
     queryKey: [...EMPLOYEE_QUERY_KEY, 'paged', page, size, filters],
     queryFn: () => employeeAPI.getPaged(page, size, filters),

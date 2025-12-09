@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { toast } from 'react-hot-toast';
 import StateList from './StateList';
 import StateForm from './StateForm';
+import ExcelImportDialog from '@/components/ExcelImportDialog';
 import {
   useStatesPaged,
   useCreateState,
@@ -13,6 +14,7 @@ import {
 
 const StatePage: React.FC = () => {
   const [showForm, setShowForm] = useState(false);
+  const [showImportDialog, setShowImportDialog] = useState(false);
   const [selectedState, setSelectedState] = useState<State | undefined>();
   const [page, setPage] = useState(0);
   const [filters, setFilters] = useState<StateFilters>({});
@@ -78,8 +80,8 @@ const StatePage: React.FC = () => {
 
   if (error) {
     return (
-      <div className="p-6">
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+      <div className='p-6'>
+        <div className='bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded'>
           Error loading states: {(error as Error).message}
         </div>
       </div>
@@ -98,18 +100,29 @@ const StatePage: React.FC = () => {
   }
 
   return (
-    <StateList
-      states={states}
-      onEdit={handleEdit}
-      onCreate={handleCreate}
-      onDelete={handleDelete}
-      isLoading={isLoading}
-      page={page}
-      totalPages={totalPages}
-      totalElements={totalElements}
-      onPageChange={setPage}
-      onFiltersChange={setFilters}
-    />
+    <>
+      <StateList
+        states={states}
+        onEdit={handleEdit}
+        onCreate={handleCreate}
+        onDelete={handleDelete}
+        onImport={() => setShowImportDialog(true)}
+        isLoading={isLoading}
+        page={page}
+        totalPages={totalPages}
+        totalElements={totalElements}
+        onPageChange={setPage}
+        onFiltersChange={setFilters}
+      />
+      <ExcelImportDialog
+        isOpen={showImportDialog}
+        onClose={() => setShowImportDialog(false)}
+        entityName='State'
+        importEndpoint='/master/states/import'
+        templateEndpoint='/master/states/import/template'
+        onImportSuccess={() => setPage(0)}
+      />
+    </>
   );
 };
 

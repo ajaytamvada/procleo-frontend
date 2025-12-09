@@ -37,7 +37,11 @@ const itemAPI = {
     return response.data;
   },
 
-  getPaged: async (page = 0, size = 15, filters: ItemFilters = {}): Promise<PagedResponse<Item>> => {
+  getPaged: async (
+    page = 0,
+    size = 15,
+    filters: ItemFilters = {}
+  ): Promise<PagedResponse<Item>> => {
     const params = new URLSearchParams({
       page: page.toString(),
       size: size.toString(),
@@ -45,8 +49,10 @@ const itemAPI = {
 
     if (filters.displayName) params.append('displayName', filters.displayName);
     if (filters.code) params.append('code', filters.code);
-    if (filters.categoryName) params.append('categoryName', filters.categoryName);
-    if (filters.subCategoryName) params.append('subCategoryName', filters.subCategoryName);
+    if (filters.categoryName)
+      params.append('categoryName', filters.categoryName);
+    if (filters.subCategoryName)
+      params.append('subCategoryName', filters.subCategoryName);
 
     const response = await apiClient.get(`/master/items?${params}`);
     return response.data;
@@ -57,12 +63,23 @@ const itemAPI = {
     return response.data;
   },
 
-  create: async (item: Omit<Item, 'id' | 'categoryName' | 'subCategoryName' | 'uomName' | 'displayName'>): Promise<Item> => {
+  create: async (
+    item: Omit<
+      Item,
+      'id' | 'categoryName' | 'subCategoryName' | 'uomName' | 'displayName'
+    >
+  ): Promise<Item> => {
     const response = await apiClient.post('/master/items', item);
     return response.data;
   },
 
-  update: async (id: number, item: Omit<Item, 'id' | 'categoryName' | 'subCategoryName' | 'uomName' | 'displayName'>): Promise<Item> => {
+  update: async (
+    id: number,
+    item: Omit<
+      Item,
+      'id' | 'categoryName' | 'subCategoryName' | 'uomName' | 'displayName'
+    >
+  ): Promise<Item> => {
     const response = await apiClient.put(`/master/items/${id}`, item);
     return response.data;
   },
@@ -75,8 +92,10 @@ const itemAPI = {
     const params = new URLSearchParams();
     if (filters.displayName) params.append('displayName', filters.displayName);
     if (filters.code) params.append('code', filters.code);
-    if (filters.categoryName) params.append('categoryName', filters.categoryName);
-    if (filters.subCategoryName) params.append('subCategoryName', filters.subCategoryName);
+    if (filters.categoryName)
+      params.append('categoryName', filters.categoryName);
+    if (filters.subCategoryName)
+      params.append('subCategoryName', filters.subCategoryName);
 
     const response = await apiClient.get(`/master/items/export?${params}`, {
       responseType: 'blob',
@@ -92,7 +111,11 @@ export const useItems = () => {
   });
 };
 
-export const useItemsPaged = (page: number, size: number, filters: ItemFilters) => {
+export const useItemsPaged = (
+  page: number,
+  size: number,
+  filters: ItemFilters
+) => {
   return useQuery<PagedResponse<Item>>({
     queryKey: ['items', 'paged', page, size, filters],
     queryFn: () => itemAPI.getPaged(page, size, filters),
@@ -122,8 +145,16 @@ export const useUpdateItem = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, data }: { id: number; data: Omit<Item, 'id' | 'categoryName' | 'subCategoryName' | 'uomName' | 'displayName'> }) =>
-      itemAPI.update(id, data),
+    mutationFn: ({
+      id,
+      data,
+    }: {
+      id: number;
+      data: Omit<
+        Item,
+        'id' | 'categoryName' | 'subCategoryName' | 'uomName' | 'displayName'
+      >;
+    }) => itemAPI.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['items'] });
     },

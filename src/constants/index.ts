@@ -69,19 +69,19 @@ export const ROUTES = {
   FORGOT_PASSWORD: '/forgot-password',
   RESET_PASSWORD: '/reset-password',
   DASHBOARD: '/dashboard',
-  
+
   // User Management
   USERS: '/users',
   USER_PROFILE: '/profile',
   USER_SETTINGS: '/settings',
-  
+
   // Purchase Management
   PURCHASES: '/purchases',
   PURCHASE_ORDERS: '/purchases/orders',
   PURCHASE_CREATE: '/purchases/create',
   PURCHASE_APPROVALS: '/purchases/approvals',
   QUOTATIONS: '/purchases/quotations',
-  
+
   // Asset Management
   ASSETS: '/assets',
   ASSET_REGISTER: '/assets/register',
@@ -89,17 +89,17 @@ export const ROUTES = {
   ASSET_MAINTENANCE: '/assets/maintenance',
   ASSET_VERIFICATION: '/assets/verification',
   ASSET_DISPOSAL: '/assets/disposal',
-  
+
   // Vendor Management
   VENDORS: '/vendors',
   VENDOR_REGISTER: '/vendors/register',
   VENDOR_SELECTION: '/vendors/selection',
   VENDOR_PERFORMANCE: '/vendors/performance',
-  
+
   // Reports
   REPORTS: '/reports',
   REPORTS_DASHBOARD: '/reports/dashboard',
-  
+
   // Admin
   ADMIN: '/admin',
   ADMIN_USERS: '/admin/users',
@@ -177,7 +177,7 @@ export const DATE_FORMATS = {
   INPUT: 'yyyy-MM-dd',
   DATETIME: 'MMM dd, yyyy HH:mm',
   TIME: 'HH:mm',
-  API: 'yyyy-MM-dd\'T\'HH:mm:ss',
+  API: "yyyy-MM-dd'T'HH:mm:ss",
 } as const;
 
 export const TIME_ZONES = [
@@ -241,24 +241,24 @@ export const PERMISSIONS = {
   READ_USERS: 'READ_USERS',
   WRITE_USERS: 'WRITE_USERS',
   DELETE_USERS: 'DELETE_USERS',
-  
+
   // Purchase Management
   READ_PURCHASES: 'READ_PURCHASES',
   WRITE_PURCHASES: 'WRITE_PURCHASES',
   APPROVE_PURCHASES: 'APPROVE_PURCHASES',
-  
+
   // Asset Management
   READ_ASSETS: 'READ_ASSETS',
   WRITE_ASSETS: 'WRITE_ASSETS',
   TRANSFER_ASSETS: 'TRANSFER_ASSETS',
-  
+
   // Vendor Management
   READ_VENDORS: 'READ_VENDORS',
   WRITE_VENDORS: 'WRITE_VENDORS',
-  
+
   // Reports
   READ_REPORTS: 'READ_REPORTS',
-  
+
   // Admin
   ADMIN_ACCESS: 'ADMIN_ACCESS',
 } as const;
@@ -278,8 +278,16 @@ export const FILE_UPLOAD = {
   MAX_SIZE: 10 * 1024 * 1024, // 10MB
   ALLOWED_TYPES: {
     IMAGE: ['image/jpeg', 'image/png', 'image/gif', 'image/webp'],
-    DOCUMENT: ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
-    SPREADSHEET: ['application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'text/csv'],
+    DOCUMENT: [
+      'application/pdf',
+      'application/msword',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    ],
+    SPREADSHEET: [
+      'application/vnd.ms-excel',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      'text/csv',
+    ],
   },
   UPLOAD_CHUNK_SIZE: 1024 * 1024, // 1MB chunks
 } as const;
@@ -307,14 +315,16 @@ export const ERROR_MESSAGES = {
   GENERIC: 'An unexpected error occurred. Please try again.',
   NETWORK: 'Network error. Please check your connection and try again.',
   UNAUTHORIZED: 'You are not authorized to perform this action.',
-  FORBIDDEN: 'Access denied. You do not have permission to access this resource.',
+  FORBIDDEN:
+    'Access denied. You do not have permission to access this resource.',
   NOT_FOUND: 'The requested resource was not found.',
   VALIDATION: 'Please check your input and try again.',
   SERVER_ERROR: 'Server error. Please try again later.',
   TIMEOUT: 'Request timed out. Please try again.',
   SESSION_EXPIRED: 'Your session has expired. Please log in again.',
   FILE_TOO_LARGE: 'File size exceeds the maximum allowed limit.',
-  INVALID_FILE_TYPE: 'Invalid file type. Please select a supported file format.',
+  INVALID_FILE_TYPE:
+    'Invalid file type. Please select a supported file format.',
 } as const;
 
 // ========================================

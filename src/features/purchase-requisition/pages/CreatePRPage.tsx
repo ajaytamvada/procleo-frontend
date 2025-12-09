@@ -1,7 +1,11 @@
 import React from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import PurchaseRequestForm from '@/features/purchase/components/PurchaseRequestForm';
-import { useCreatePurchaseRequest, useUpdatePurchaseRequest, usePurchaseRequest } from '@/features/purchase/hooks/usePurchaseRequestAPI';
+import {
+  useCreatePurchaseRequest,
+  useUpdatePurchaseRequest,
+  usePurchaseRequest,
+} from '@/features/purchase/hooks/usePurchaseRequestAPI';
 import toast from 'react-hot-toast';
 
 export const CreatePRPage: React.FC = () => {
@@ -63,14 +67,14 @@ export const CreatePRPage: React.FC = () => {
   // Show loading state while fetching PR data
   if (isEditMode && isLoadingPR) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      <div className='flex items-center justify-center h-64'>
+        <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600'></div>
       </div>
     );
   }
 
   return (
-    <div className="max-w-full mx-auto bg-gray-50 min-h-screen">
+    <div className='max-w-full mx-auto bg-gray-50 min-h-screen'>
       <PurchaseRequestForm
         purchaseRequest={isEditMode ? existingPR : undefined}
         onSubmit={handleSubmit}

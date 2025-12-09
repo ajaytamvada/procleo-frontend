@@ -1,6 +1,6 @@
 /**
  * Environment variable utilities and validation
- * 
+ *
  * This module provides type-safe access to environment variables
  * and validates their presence and format at runtime.
  */
@@ -15,43 +15,111 @@ const envSchema = z.object({
   // Application Configuration
   VITE_APP_NAME: z.string().default('Autovitica P2P'),
   VITE_APP_VERSION: z.string().default('1.0.0'),
-  VITE_APP_DESCRIPTION: z.string().default('Procurement to Pay Management System'),
+  VITE_APP_DESCRIPTION: z
+    .string()
+    .default('Procurement to Pay Management System'),
 
   // API Configuration
   VITE_API_BASE_URL: z.string().url().default('http://localhost:8080'),
-  VITE_API_TIMEOUT: z.string().default('30000').transform(val => parseInt(val)).pipe(z.number().positive()),
-  VITE_API_RETRY_ATTEMPTS: z.string().default('3').transform(val => parseInt(val)).pipe(z.number().min(0).max(10)),
+  VITE_API_TIMEOUT: z
+    .string()
+    .default('30000')
+    .transform(val => parseInt(val))
+    .pipe(z.number().positive()),
+  VITE_API_RETRY_ATTEMPTS: z
+    .string()
+    .default('3')
+    .transform(val => parseInt(val))
+    .pipe(z.number().min(0).max(10)),
 
   // Authentication Configuration
-  VITE_AUTH_TOKEN_REFRESH_THRESHOLD: z.string().default('300000').transform(val => parseInt(val)).pipe(z.number().positive()),
-  VITE_AUTH_SESSION_TIMEOUT: z.string().default('3600000').transform(val => parseInt(val)).pipe(z.number().positive()),
+  VITE_AUTH_TOKEN_REFRESH_THRESHOLD: z
+    .string()
+    .default('300000')
+    .transform(val => parseInt(val))
+    .pipe(z.number().positive()),
+  VITE_AUTH_SESSION_TIMEOUT: z
+    .string()
+    .default('3600000')
+    .transform(val => parseInt(val))
+    .pipe(z.number().positive()),
 
   // Feature Flags
-  VITE_FEATURE_ADVANCED_SEARCH: z.string().default('true').transform(val => val === 'true'),
-  VITE_FEATURE_DARK_MODE: z.string().default('true').transform(val => val === 'true'),
-  VITE_FEATURE_ANALYTICS: z.string().default('false').transform(val => val === 'true'),
-  VITE_FEATURE_NOTIFICATIONS: z.string().default('true').transform(val => val === 'true'),
-  VITE_FEATURE_REAL_TIME: z.string().default('false').transform(val => val === 'true'),
-  VITE_FEATURE_BULK_OPS: z.string().default('true').transform(val => val === 'true'),
-  VITE_FEATURE_EXPORT: z.string().default('true').transform(val => val === 'true'),
+  VITE_FEATURE_ADVANCED_SEARCH: z
+    .string()
+    .default('true')
+    .transform(val => val === 'true'),
+  VITE_FEATURE_DARK_MODE: z
+    .string()
+    .default('true')
+    .transform(val => val === 'true'),
+  VITE_FEATURE_ANALYTICS: z
+    .string()
+    .default('false')
+    .transform(val => val === 'true'),
+  VITE_FEATURE_NOTIFICATIONS: z
+    .string()
+    .default('true')
+    .transform(val => val === 'true'),
+  VITE_FEATURE_REAL_TIME: z
+    .string()
+    .default('false')
+    .transform(val => val === 'true'),
+  VITE_FEATURE_BULK_OPS: z
+    .string()
+    .default('true')
+    .transform(val => val === 'true'),
+  VITE_FEATURE_EXPORT: z
+    .string()
+    .default('true')
+    .transform(val => val === 'true'),
 
   // UI Configuration
-  VITE_DEFAULT_PAGE_SIZE: z.string().default('20').transform(val => parseInt(val)).pipe(z.number().positive()),
-  VITE_MAX_PAGE_SIZE: z.string().default('100').transform(val => parseInt(val)).pipe(z.number().positive()),
-  VITE_TOAST_DURATION: z.string().default('5000').transform(val => parseInt(val)).pipe(z.number().positive()),
+  VITE_DEFAULT_PAGE_SIZE: z
+    .string()
+    .default('20')
+    .transform(val => parseInt(val))
+    .pipe(z.number().positive()),
+  VITE_MAX_PAGE_SIZE: z
+    .string()
+    .default('100')
+    .transform(val => parseInt(val))
+    .pipe(z.number().positive()),
+  VITE_TOAST_DURATION: z
+    .string()
+    .default('5000')
+    .transform(val => parseInt(val))
+    .pipe(z.number().positive()),
 
   // File Upload Configuration
-  VITE_MAX_FILE_SIZE: z.string().default('10485760').transform(val => parseInt(val)).pipe(z.number().positive()),
-  VITE_ALLOWED_FILE_TYPES: z.string().default('image/jpeg,image/png,application/pdf,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'),
+  VITE_MAX_FILE_SIZE: z
+    .string()
+    .default('10485760')
+    .transform(val => parseInt(val))
+    .pipe(z.number().positive()),
+  VITE_ALLOWED_FILE_TYPES: z
+    .string()
+    .default(
+      'image/jpeg,image/png,application/pdf,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    ),
 
   // Development Configuration
-  VITE_ENABLE_DEVTOOLS: z.string().default('true').transform(val => val === 'true'),
+  VITE_ENABLE_DEVTOOLS: z
+    .string()
+    .default('true')
+    .transform(val => val === 'true'),
   VITE_LOG_LEVEL: z.enum(['debug', 'info', 'warn', 'error']).default('info'),
-  VITE_DEBUG_MODE: z.string().default('false').transform(val => val === 'true'),
+  VITE_DEBUG_MODE: z
+    .string()
+    .default('false')
+    .transform(val => val === 'true'),
 
   // Analytics Configuration
   VITE_ANALYTICS_ID: z.string().optional(),
-  VITE_ANALYTICS_DEBUG: z.string().default('false').transform(val => val === 'true'),
+  VITE_ANALYTICS_DEBUG: z
+    .string()
+    .default('false')
+    .transform(val => val === 'true'),
 
   // Monitoring Configuration
   VITE_SENTRY_DSN: z.string().optional(),
@@ -71,7 +139,9 @@ function validateEnv() {
     return envSchema.parse(import.meta.env);
   } catch (error) {
     console.error('❌ Environment validation failed:', error);
-    throw new Error('Invalid environment configuration. Please check your .env file.');
+    throw new Error(
+      'Invalid environment configuration. Please check your .env file.'
+    );
   }
 }
 
@@ -182,7 +252,8 @@ export const isDebugMode = () => env.VITE_DEBUG_MODE;
 /**
  * Checks if dev tools are enabled
  */
-export const areDevToolsEnabled = () => env.VITE_ENABLE_DEVTOOLS && isDevelopment;
+export const areDevToolsEnabled = () =>
+  env.VITE_ENABLE_DEVTOOLS && isDevelopment;
 
 /**
  * Gets analytics configuration
@@ -223,7 +294,9 @@ export const validateFeatureRequirements = () => {
 
   // Validate analytics requirements
   if (env.VITE_FEATURE_ANALYTICS && !env.VITE_ANALYTICS_ID) {
-    errors.push('VITE_ANALYTICS_ID is required when analytics feature is enabled');
+    errors.push(
+      'VITE_ANALYTICS_ID is required when analytics feature is enabled'
+    );
   }
 
   // Validate monitoring requirements

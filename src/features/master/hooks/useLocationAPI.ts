@@ -26,7 +26,10 @@ const locationAPI = {
     return response.data;
   },
 
-  update: async (id: number, location: Omit<Location, 'id'>): Promise<Location> => {
+  update: async (
+    id: number,
+    location: Omit<Location, 'id'>
+  ): Promise<Location> => {
     const response = await apiClient.put(`/master/locations/${id}`, location);
     return response.data;
   },

@@ -1,6 +1,6 @@
 /**
  * Error Boundary Component
- * 
+ *
  * A React error boundary that catches JavaScript errors anywhere in the child component tree,
  * logs those errors, and displays a fallback UI instead of the component tree that crashed.
  */
@@ -85,7 +85,8 @@ URL: ${window.location.href}
             Something went wrong
           </h2>
           <p className='mt-2 text-center text-sm text-gray-600'>
-            We apologize for the inconvenience. An unexpected error has occurred.
+            We apologize for the inconvenience. An unexpected error has
+            occurred.
           </p>
         </div>
 
@@ -165,9 +166,7 @@ URL: ${window.location.href}
       <div className='flex items-start'>
         <AlertTriangle className='h-5 w-5 text-red-400 mt-0.5' />
         <div className='ml-3 flex-1'>
-          <h3 className='text-sm font-medium text-red-800'>
-            Component Error
-          </h3>
+          <h3 className='text-sm font-medium text-red-800'>Component Error</h3>
           <p className='text-sm text-red-700 mt-1'>
             This component encountered an error and could not be displayed.
           </p>
@@ -270,9 +269,7 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
       hasError &&
       resetOnPropsChange &&
       resetKeys &&
-      resetKeys.some(
-        (key, index) => prevProps.resetKeys?.[index] !== key
-      )
+      resetKeys.some((key, index) => prevProps.resetKeys?.[index] !== key)
     ) {
       this.resetErrorBoundary();
     }
@@ -287,7 +284,7 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
   private reportError = (error: Error, errorInfo: ErrorInfo) => {
     // Additional error reporting can be added here
     // For example, sending to analytics, logging services, etc.
-    
+
     try {
       // Example: Send to custom analytics
       if (window.gtag) {
@@ -309,7 +306,10 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
         });
       }
     } catch (reportError) {
-      console.error('Failed to report error to external services:', reportError);
+      console.error(
+        'Failed to report error to external services:',
+        reportError
+      );
     }
   };
 
@@ -325,7 +325,7 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
 
   private handleReportError = () => {
     const { error, errorInfo, eventId } = this.state;
-    
+
     if (!error) return;
 
     // Open email client with pre-filled error report
@@ -342,14 +342,20 @@ Technical Details:
 - Timestamp: ${new Date().toISOString()}
 - Browser: ${navigator.userAgent}
 
-${isDevelopment ? `
+${
+  isDevelopment
+    ? `
 Developer Information:
 - Stack: ${error.stack}
 - Component Stack: ${errorInfo?.componentStack}
-` : ''}
+`
+    : ''
+}
     `);
 
-    window.open(`mailto:support@autovitica.com?subject=${subject}&body=${body}`);
+    window.open(
+      `mailto:support@autovitica.com?subject=${subject}&body=${body}`
+    );
   };
 
   render() {

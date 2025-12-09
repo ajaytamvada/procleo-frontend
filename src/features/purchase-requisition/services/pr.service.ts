@@ -12,7 +12,9 @@ const API_BASE_URL = '/purchase/requests';
  */
 export const getAllDrafts = async (): Promise<PRListItem[]> => {
   try {
-    const response = await apiClient.get<PRListItem[]>(`${API_BASE_URL}/drafts`);
+    const response = await apiClient.get<PRListItem[]>(
+      `${API_BASE_URL}/drafts`
+    );
     return Array.isArray(response.data) ? response.data : [];
   } catch (error) {
     console.error('getAllDrafts error:', error);
@@ -25,7 +27,9 @@ export const getAllDrafts = async (): Promise<PRListItem[]> => {
  */
 export const getAllSubmitted = async (): Promise<PRListItem[]> => {
   try {
-    const response = await apiClient.get<PRListItem[]>(`${API_BASE_URL}/submitted`);
+    const response = await apiClient.get<PRListItem[]>(
+      `${API_BASE_URL}/submitted`
+    );
     return Array.isArray(response.data) ? response.data : [];
   } catch (error) {
     console.error('getAllSubmitted error:', error);

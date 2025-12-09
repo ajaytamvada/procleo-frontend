@@ -85,7 +85,9 @@ const VendorForm: React.FC<VendorFormProps> = ({
 }) => {
   const [activeTab, setActiveTab] = useState(0);
   const [selectedCategories, setSelectedCategories] = useState<number[]>([]);
-  const [selectedSubCategories, setSelectedSubCategories] = useState<number[]>([]);
+  const [selectedSubCategories, setSelectedSubCategories] = useState<number[]>(
+    []
+  );
   const [selectedCountry, setSelectedCountry] = useState<number | null>(null);
   const [selectedState, setSelectedState] = useState<number | null>(null);
 
@@ -96,8 +98,8 @@ const VendorForm: React.FC<VendorFormProps> = ({
   const { data: cities = [] } = useCitiesByState(selectedState || 0);
 
   // Filter subcategories based on selected categories
-  const filteredSubCategories = allSubCategories.filter(
-    (sub) => selectedCategories.includes(sub.categoryId)
+  const filteredSubCategories = allSubCategories.filter(sub =>
+    selectedCategories.includes(sub.categoryId)
   );
 
   const {
@@ -153,11 +155,17 @@ const VendorForm: React.FC<VendorFormProps> = ({
     if (vendor) {
       reset(vendor);
       if (vendor.categoryIds) {
-        const catIds = vendor.categoryIds.split(',').map(Number).filter(Boolean);
+        const catIds = vendor.categoryIds
+          .split(',')
+          .map(Number)
+          .filter(Boolean);
         setSelectedCategories(catIds);
       }
       if (vendor.subCategoryIds) {
-        const subCatIds = vendor.subCategoryIds.split(',').map(Number).filter(Boolean);
+        const subCatIds = vendor.subCategoryIds
+          .split(',')
+          .map(Number)
+          .filter(Boolean);
         setSelectedSubCategories(subCatIds);
       }
       if (vendor.countryIds) {
@@ -233,115 +241,229 @@ const VendorForm: React.FC<VendorFormProps> = ({
     }`;
 
   return (
-    <div className="bg-white rounded-lg shadow-md">
-      <div className="border-b border-gray-200 p-6">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <button onClick={onCancel} className="text-gray-600 hover:text-gray-800 transition-colors" disabled={isSubmitting}>
+    <div className='bg-white rounded-lg shadow-md'>
+      <div className='border-b border-gray-200 p-6'>
+        <div className='flex items-center justify-between'>
+          <div className='flex items-center gap-4'>
+            <button
+              onClick={onCancel}
+              className='text-gray-600 hover:text-gray-800 transition-colors'
+              disabled={isSubmitting}
+            >
               <ArrowLeft size={24} />
             </button>
-            <h2 className="text-2xl font-bold text-gray-800">Supplier Details</h2>
+            <h2 className='text-2xl font-bold text-gray-800'>
+              Supplier Details
+            </h2>
           </div>
           <button
-            type="submit"
-            form="vendor-form"
+            type='submit'
+            form='vendor-form'
             disabled={isSubmitting}
-            className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:bg-gray-400"
+            className='px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:bg-gray-400'
           >
             Update
           </button>
         </div>
       </div>
 
-      <form id="vendor-form" onSubmit={handleSubmit(onSubmit)} className="p-6">
+      <form id='vendor-form' onSubmit={handleSubmit(onSubmit)} className='p-6'>
         {/* Main Section - Always Visible (Basic Information) */}
-        <div className="mb-6 space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className='mb-6 space-y-6'>
+          <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                <span className="text-red-500">*</span> Supplier Name
+              <label className='block text-sm font-medium text-gray-700 mb-2'>
+                <span className='text-red-500'>*</span> Supplier Name
               </label>
-              <input {...register('name')} className={inputClass(!!errors.name)} disabled={isSubmitting} />
-              {errors.name && <p className="mt-1 text-sm text-red-600">{errors.name.message}</p>}
+              <input
+                {...register('name')}
+                className={inputClass(!!errors.name)}
+                disabled={isSubmitting}
+              />
+              {errors.name && (
+                <p className='mt-1 text-sm text-red-600'>
+                  {errors.name.message}
+                </p>
+              )}
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                <span className="text-red-500">*</span> Supplier Code
+              <label className='block text-sm font-medium text-gray-700 mb-2'>
+                <span className='text-red-500'>*</span> Supplier Code
               </label>
-              <input {...register('code')} className={inputClass(!!errors.code)} disabled={isSubmitting} />
-              {errors.code && <p className="mt-1 text-sm text-red-600">{errors.code.message}</p>}
+              <input
+                {...register('code')}
+                className={inputClass(!!errors.code)}
+                disabled={isSubmitting}
+              />
+              {errors.code && (
+                <p className='mt-1 text-sm text-red-600'>
+                  {errors.code.message}
+                </p>
+              )}
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Company Type</label>
-              <select {...register('legalForm')} className={inputClass(!!errors.legalForm)} disabled={isSubmitting}>
+              <label className='block text-sm font-medium text-gray-700 mb-2'>
+                Company Type
+              </label>
+              <select
+                {...register('legalForm')}
+                className={inputClass(!!errors.legalForm)}
+                disabled={isSubmitting}
+              >
                 {COMPANY_TYPES.map(type => (
-                  <option key={type.value} value={type.value}>{type.label}</option>
+                  <option key={type.value} value={type.value}>
+                    {type.label}
+                  </option>
                 ))}
               </select>
-              {errors.legalForm && <p className="mt-1 text-sm text-red-600">{errors.legalForm.message}</p>}
+              {errors.legalForm && (
+                <p className='mt-1 text-sm text-red-600'>
+                  {errors.legalForm.message}
+                </p>
+              )}
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                <span className="text-red-500">*</span> Email Id
+              <label className='block text-sm font-medium text-gray-700 mb-2'>
+                <span className='text-red-500'>*</span> Email Id
               </label>
-              <input {...register('email')} type="email" className={inputClass(!!errors.email)} disabled={isSubmitting} />
-              {errors.email && <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>}
+              <input
+                {...register('email')}
+                type='email'
+                className={inputClass(!!errors.email)}
+                disabled={isSubmitting}
+              />
+              {errors.email && (
+                <p className='mt-1 text-sm text-red-600'>
+                  {errors.email.message}
+                </p>
+              )}
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Website Link</label>
-              <input {...register('webLink')} className={inputClass(!!errors.webLink)} disabled={isSubmitting} />
-              {errors.webLink && <p className="mt-1 text-sm text-red-600">{errors.webLink.message}</p>}
+              <label className='block text-sm font-medium text-gray-700 mb-2'>
+                Website Link
+              </label>
+              <input
+                {...register('webLink')}
+                className={inputClass(!!errors.webLink)}
+                disabled={isSubmitting}
+              />
+              {errors.webLink && (
+                <p className='mt-1 text-sm text-red-600'>
+                  {errors.webLink.message}
+                </p>
+              )}
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">CIN No.</label>
-              <input {...register('cin')} className={inputClass(!!errors.cin)} disabled={isSubmitting} />
-              {errors.cin && <p className="mt-1 text-sm text-red-600">{errors.cin.message}</p>}
+              <label className='block text-sm font-medium text-gray-700 mb-2'>
+                CIN No.
+              </label>
+              <input
+                {...register('cin')}
+                className={inputClass(!!errors.cin)}
+                disabled={isSubmitting}
+              />
+              {errors.cin && (
+                <p className='mt-1 text-sm text-red-600'>
+                  {errors.cin.message}
+                </p>
+              )}
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">GSTIN No.</label>
-              <input {...register('gst')} className={inputClass(!!errors.gst)} disabled={isSubmitting} />
-              {errors.gst && <p className="mt-1 text-sm text-red-600">{errors.gst.message}</p>}
+              <label className='block text-sm font-medium text-gray-700 mb-2'>
+                GSTIN No.
+              </label>
+              <input
+                {...register('gst')}
+                className={inputClass(!!errors.gst)}
+                disabled={isSubmitting}
+              />
+              {errors.gst && (
+                <p className='mt-1 text-sm text-red-600'>
+                  {errors.gst.message}
+                </p>
+              )}
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">DUNS No.</label>
-              <input {...register('dunsNo')} className={inputClass(!!errors.dunsNo)} disabled={isSubmitting} />
-              {errors.dunsNo && <p className="mt-1 text-sm text-red-600">{errors.dunsNo.message}</p>}
+              <label className='block text-sm font-medium text-gray-700 mb-2'>
+                DUNS No.
+              </label>
+              <input
+                {...register('dunsNo')}
+                className={inputClass(!!errors.dunsNo)}
+                disabled={isSubmitting}
+              />
+              {errors.dunsNo && (
+                <p className='mt-1 text-sm text-red-600'>
+                  {errors.dunsNo.message}
+                </p>
+              )}
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">PAN No.</label>
-              <input {...register('pan')} className={inputClass(!!errors.pan)} disabled={isSubmitting} />
-              {errors.pan && <p className="mt-1 text-sm text-red-600">{errors.pan.message}</p>}
+              <label className='block text-sm font-medium text-gray-700 mb-2'>
+                PAN No.
+              </label>
+              <input
+                {...register('pan')}
+                className={inputClass(!!errors.pan)}
+                disabled={isSubmitting}
+              />
+              {errors.pan && (
+                <p className='mt-1 text-sm text-red-600'>
+                  {errors.pan.message}
+                </p>
+              )}
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Industry</label>
-              <input {...register('industry')} className={inputClass(!!errors.industry)} disabled={isSubmitting} />
-              {errors.industry && <p className="mt-1 text-sm text-red-600">{errors.industry.message}</p>}
+              <label className='block text-sm font-medium text-gray-700 mb-2'>
+                Industry
+              </label>
+              <input
+                {...register('industry')}
+                className={inputClass(!!errors.industry)}
+                disabled={isSubmitting}
+              />
+              {errors.industry && (
+                <p className='mt-1 text-sm text-red-600'>
+                  {errors.industry.message}
+                </p>
+              )}
             </div>
 
-            <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-2">Business Description</label>
-              <textarea {...register('businessDescription')} rows={3} className={inputClass(!!errors.businessDescription)} disabled={isSubmitting} />
-              {errors.businessDescription && <p className="mt-1 text-sm text-red-600">{errors.businessDescription.message}</p>}
+            <div className='md:col-span-2'>
+              <label className='block text-sm font-medium text-gray-700 mb-2'>
+                Business Description
+              </label>
+              <textarea
+                {...register('businessDescription')}
+                rows={3}
+                className={inputClass(!!errors.businessDescription)}
+                disabled={isSubmitting}
+              />
+              {errors.businessDescription && (
+                <p className='mt-1 text-sm text-red-600'>
+                  {errors.businessDescription.message}
+                </p>
+              )}
             </div>
           </div>
         </div>
 
         {/* Tabs */}
-        <div className="border-t border-gray-200">
-          <nav className="flex -mb-px overflow-x-auto">
-            {tabs.map((tab) => (
+        <div className='border-t border-gray-200'>
+          <nav className='flex -mb-px overflow-x-auto'>
+            {tabs.map(tab => (
               <button
                 key={tab.id}
-                type="button"
+                type='button'
                 onClick={() => setActiveTab(tab.id)}
                 className={`py-4 px-6 border-b-2 font-medium text-sm transition-colors whitespace-nowrap ${
                   activeTab === tab.id
@@ -356,209 +478,389 @@ const VendorForm: React.FC<VendorFormProps> = ({
           </nav>
         </div>
 
-        <div className="mt-6 space-y-6">
+        <div className='mt-6 space-y-6'>
           {/* Tab 0: Registered Address */}
           {activeTab === 0 && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Building Address</label>
-                <input {...register('address1')} className={inputClass(!!errors.address1)} disabled={isSubmitting} />
-                {errors.address1 && <p className="mt-1 text-sm text-red-600">{errors.address1.message}</p>}
+                <label className='block text-sm font-medium text-gray-700 mb-2'>
+                  Building Address
+                </label>
+                <input
+                  {...register('address1')}
+                  className={inputClass(!!errors.address1)}
+                  disabled={isSubmitting}
+                />
+                {errors.address1 && (
+                  <p className='mt-1 text-sm text-red-600'>
+                    {errors.address1.message}
+                  </p>
+                )}
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Area/Street/Locality</label>
-                <input {...register('address2')} className={inputClass(!!errors.address2)} disabled={isSubmitting} />
-                {errors.address2 && <p className="mt-1 text-sm text-red-600">{errors.address2.message}</p>}
+                <label className='block text-sm font-medium text-gray-700 mb-2'>
+                  Area/Street/Locality
+                </label>
+                <input
+                  {...register('address2')}
+                  className={inputClass(!!errors.address2)}
+                  disabled={isSubmitting}
+                />
+                {errors.address2 && (
+                  <p className='mt-1 text-sm text-red-600'>
+                    {errors.address2.message}
+                  </p>
+                )}
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Country</label>
-                <select onChange={handleCountryChange} value={selectedCountry || ''} className={inputClass(false)} disabled={isSubmitting}>
-                  <option value="">Select</option>
-                  {countries.map((country) => (
-                    <option key={country.id} value={country.id}>{country.name}</option>
+                <label className='block text-sm font-medium text-gray-700 mb-2'>
+                  Country
+                </label>
+                <select
+                  onChange={handleCountryChange}
+                  value={selectedCountry || ''}
+                  className={inputClass(false)}
+                  disabled={isSubmitting}
+                >
+                  <option value=''>Select</option>
+                  {countries.map(country => (
+                    <option key={country.id} value={country.id}>
+                      {country.name}
+                    </option>
                   ))}
                 </select>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">State</label>
-                <select onChange={handleStateChange} value={selectedState || ''} className={inputClass(false)} disabled={isSubmitting || !selectedCountry}>
-                  <option value="">Select</option>
-                  {states.map((state) => (
-                    <option key={state.id} value={state.id}>{state.name}</option>
+                <label className='block text-sm font-medium text-gray-700 mb-2'>
+                  State
+                </label>
+                <select
+                  onChange={handleStateChange}
+                  value={selectedState || ''}
+                  className={inputClass(false)}
+                  disabled={isSubmitting || !selectedCountry}
+                >
+                  <option value=''>Select</option>
+                  {states.map(state => (
+                    <option key={state.id} value={state.id}>
+                      {state.name}
+                    </option>
                   ))}
                 </select>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">City</label>
-                <select onChange={handleCityChange} defaultValue={vendor?.cityId || ''} className={inputClass(false)} disabled={isSubmitting || !selectedState}>
-                  <option value="">Select</option>
-                  {cities.map((city) => (
-                    <option key={city.id} value={city.id}>{city.name}</option>
+                <label className='block text-sm font-medium text-gray-700 mb-2'>
+                  City
+                </label>
+                <select
+                  onChange={handleCityChange}
+                  defaultValue={vendor?.cityId || ''}
+                  className={inputClass(false)}
+                  disabled={isSubmitting || !selectedState}
+                >
+                  <option value=''>Select</option>
+                  {cities.map(city => (
+                    <option key={city.id} value={city.id}>
+                      {city.name}
+                    </option>
                   ))}
                 </select>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Pin Code</label>
-                <input {...register('pinCode')} className={inputClass(!!errors.pinCode)} disabled={isSubmitting} />
-                {errors.pinCode && <p className="mt-1 text-sm text-red-600">{errors.pinCode.message}</p>}
+                <label className='block text-sm font-medium text-gray-700 mb-2'>
+                  Pin Code
+                </label>
+                <input
+                  {...register('pinCode')}
+                  className={inputClass(!!errors.pinCode)}
+                  disabled={isSubmitting}
+                />
+                {errors.pinCode && (
+                  <p className='mt-1 text-sm text-red-600'>
+                    {errors.pinCode.message}
+                  </p>
+                )}
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Telephone No.</label>
-                <input {...register('phone')} className={inputClass(!!errors.phone)} disabled={isSubmitting} />
-                {errors.phone && <p className="mt-1 text-sm text-red-600">{errors.phone.message}</p>}
+                <label className='block text-sm font-medium text-gray-700 mb-2'>
+                  Telephone No.
+                </label>
+                <input
+                  {...register('phone')}
+                  className={inputClass(!!errors.phone)}
+                  disabled={isSubmitting}
+                />
+                {errors.phone && (
+                  <p className='mt-1 text-sm text-red-600'>
+                    {errors.phone.message}
+                  </p>
+                )}
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Mobile No.</label>
-                <input {...register('mobileNo')} className={inputClass(!!errors.mobileNo)} disabled={isSubmitting} />
-                {errors.mobileNo && <p className="mt-1 text-sm text-red-600">{errors.mobileNo.message}</p>}
+                <label className='block text-sm font-medium text-gray-700 mb-2'>
+                  Mobile No.
+                </label>
+                <input
+                  {...register('mobileNo')}
+                  className={inputClass(!!errors.mobileNo)}
+                  disabled={isSubmitting}
+                />
+                {errors.mobileNo && (
+                  <p className='mt-1 text-sm text-red-600'>
+                    {errors.mobileNo.message}
+                  </p>
+                )}
               </div>
             </div>
           )}
 
           {/* Tab 1: Contact Information */}
           {activeTab === 1 && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">First Name</label>
-                <input {...register('contactFirstName')} className={inputClass(!!errors.contactFirstName)} disabled={isSubmitting} />
-                {errors.contactFirstName && <p className="mt-1 text-sm text-red-600">{errors.contactFirstName.message}</p>}
+                <label className='block text-sm font-medium text-gray-700 mb-2'>
+                  First Name
+                </label>
+                <input
+                  {...register('contactFirstName')}
+                  className={inputClass(!!errors.contactFirstName)}
+                  disabled={isSubmitting}
+                />
+                {errors.contactFirstName && (
+                  <p className='mt-1 text-sm text-red-600'>
+                    {errors.contactFirstName.message}
+                  </p>
+                )}
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Last Name</label>
-                <input {...register('contactLastName')} className={inputClass(!!errors.contactLastName)} disabled={isSubmitting} />
-                {errors.contactLastName && <p className="mt-1 text-sm text-red-600">{errors.contactLastName.message}</p>}
+                <label className='block text-sm font-medium text-gray-700 mb-2'>
+                  Last Name
+                </label>
+                <input
+                  {...register('contactLastName')}
+                  className={inputClass(!!errors.contactLastName)}
+                  disabled={isSubmitting}
+                />
+                {errors.contactLastName && (
+                  <p className='mt-1 text-sm text-red-600'>
+                    {errors.contactLastName.message}
+                  </p>
+                )}
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Telephone Number</label>
-                <input {...register('contactPhone')} className={inputClass(!!errors.contactPhone)} disabled={isSubmitting} />
-                {errors.contactPhone && <p className="mt-1 text-sm text-red-600">{errors.contactPhone.message}</p>}
+                <label className='block text-sm font-medium text-gray-700 mb-2'>
+                  Telephone Number
+                </label>
+                <input
+                  {...register('contactPhone')}
+                  className={inputClass(!!errors.contactPhone)}
+                  disabled={isSubmitting}
+                />
+                {errors.contactPhone && (
+                  <p className='mt-1 text-sm text-red-600'>
+                    {errors.contactPhone.message}
+                  </p>
+                )}
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Mobile Number</label>
-                <input {...register('contactMobile')} className={inputClass(!!errors.contactMobile)} disabled={isSubmitting} />
-                {errors.contactMobile && <p className="mt-1 text-sm text-red-600">{errors.contactMobile.message}</p>}
+                <label className='block text-sm font-medium text-gray-700 mb-2'>
+                  Mobile Number
+                </label>
+                <input
+                  {...register('contactMobile')}
+                  className={inputClass(!!errors.contactMobile)}
+                  disabled={isSubmitting}
+                />
+                {errors.contactMobile && (
+                  <p className='mt-1 text-sm text-red-600'>
+                    {errors.contactMobile.message}
+                  </p>
+                )}
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Designation</label>
-                <input {...register('contactDesignation')} className={inputClass(!!errors.contactDesignation)} disabled={isSubmitting} />
-                {errors.contactDesignation && <p className="mt-1 text-sm text-red-600">{errors.contactDesignation.message}</p>}
+                <label className='block text-sm font-medium text-gray-700 mb-2'>
+                  Designation
+                </label>
+                <input
+                  {...register('contactDesignation')}
+                  className={inputClass(!!errors.contactDesignation)}
+                  disabled={isSubmitting}
+                />
+                {errors.contactDesignation && (
+                  <p className='mt-1 text-sm text-red-600'>
+                    {errors.contactDesignation.message}
+                  </p>
+                )}
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Email Id</label>
-                <input {...register('contactEmail')} type="email" className={inputClass(!!errors.contactEmail)} disabled={isSubmitting} />
-                {errors.contactEmail && <p className="mt-1 text-sm text-red-600">{errors.contactEmail.message}</p>}
+                <label className='block text-sm font-medium text-gray-700 mb-2'>
+                  Email Id
+                </label>
+                <input
+                  {...register('contactEmail')}
+                  type='email'
+                  className={inputClass(!!errors.contactEmail)}
+                  disabled={isSubmitting}
+                />
+                {errors.contactEmail && (
+                  <p className='mt-1 text-sm text-red-600'>
+                    {errors.contactEmail.message}
+                  </p>
+                )}
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Password</label>
-                <input {...register('password')} type="password" className={inputClass(!!errors.password)} disabled={isSubmitting} />
-                {errors.password && <p className="mt-1 text-sm text-red-600">{errors.password.message}</p>}
+                <label className='block text-sm font-medium text-gray-700 mb-2'>
+                  Password
+                </label>
+                <input
+                  {...register('password')}
+                  type='password'
+                  className={inputClass(!!errors.password)}
+                  disabled={isSubmitting}
+                />
+                {errors.password && (
+                  <p className='mt-1 text-sm text-red-600'>
+                    {errors.password.message}
+                  </p>
+                )}
               </div>
             </div>
           )}
 
           {/* Tab 2: Category - Hierarchical Tree View */}
           {activeTab === 2 && (
-            <div className="space-y-4">
-              <div className="flex items-center justify-between mb-4">
+            <div className='space-y-4'>
+              <div className='flex items-center justify-between mb-4'>
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-800">Select Categories and Sub-Categories</h3>
-                  <p className="text-sm text-gray-500 mt-1">
-                    {selectedCategories.length} {selectedCategories.length === 1 ? 'category' : 'categories'} selected, {selectedSubCategories.length} sub-{selectedSubCategories.length === 1 ? 'category' : 'categories'} selected
+                  <h3 className='text-lg font-semibold text-gray-800'>
+                    Select Categories and Sub-Categories
+                  </h3>
+                  <p className='text-sm text-gray-500 mt-1'>
+                    {selectedCategories.length}{' '}
+                    {selectedCategories.length === 1
+                      ? 'category'
+                      : 'categories'}{' '}
+                    selected, {selectedSubCategories.length} sub-
+                    {selectedSubCategories.length === 1
+                      ? 'category'
+                      : 'categories'}{' '}
+                    selected
                   </p>
                 </div>
               </div>
 
               {categories.length === 0 ? (
-                <div className="border border-gray-200 rounded-lg p-8 text-center">
-                  <p className="text-gray-500">No categories available</p>
+                <div className='border border-gray-200 rounded-lg p-8 text-center'>
+                  <p className='text-gray-500'>No categories available</p>
                 </div>
               ) : (
-                <div className="border border-gray-200 rounded-lg divide-y divide-gray-200 max-h-[500px] overflow-y-auto">
-                  {categories.map((category) => {
+                <div className='border border-gray-200 rounded-lg divide-y divide-gray-200 max-h-[500px] overflow-y-auto'>
+                  {categories.map(category => {
                     const categorySubCategories = allSubCategories.filter(
-                      (sub) => sub.categoryId === category.id
+                      sub => sub.categoryId === category.id
                     );
-                    const isCategorySelected = selectedCategories.includes(category.id);
+                    const isCategorySelected = selectedCategories.includes(
+                      category.id
+                    );
 
                     return (
-                      <div key={category.id} className="bg-white">
+                      <div key={category.id} className='bg-white'>
                         {/* Category Header */}
                         <div
                           className={`p-4 transition-colors ${
-                            isCategorySelected ? 'bg-blue-50' : 'hover:bg-gray-50'
+                            isCategorySelected
+                              ? 'bg-blue-50'
+                              : 'hover:bg-gray-50'
                           }`}
                         >
-                          <label className="flex items-start space-x-3 cursor-pointer">
+                          <label className='flex items-start space-x-3 cursor-pointer'>
                             <input
-                              type="checkbox"
+                              type='checkbox'
                               checked={isCategorySelected}
                               onChange={() => handleCategoryToggle(category.id)}
                               disabled={isSubmitting}
-                              className="mt-1 w-5 h-5 text-blue-600 rounded focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                              className='mt-1 w-5 h-5 text-blue-600 rounded focus:ring-2 focus:ring-blue-500 focus:ring-offset-2'
                             />
-                            <div className="flex-1">
-                              <div className="flex items-center justify-between">
-                                <span className="font-medium text-gray-900">{category.name}</span>
+                            <div className='flex-1'>
+                              <div className='flex items-center justify-between'>
+                                <span className='font-medium text-gray-900'>
+                                  {category.name}
+                                </span>
                                 {categorySubCategories.length > 0 && (
-                                  <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
-                                    {categorySubCategories.length} sub-{categorySubCategories.length === 1 ? 'category' : 'categories'}
+                                  <span className='text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full'>
+                                    {categorySubCategories.length} sub-
+                                    {categorySubCategories.length === 1
+                                      ? 'category'
+                                      : 'categories'}
                                   </span>
                                 )}
                               </div>
                               {category.code && (
-                                <span className="text-xs text-gray-500">Code: {category.code}</span>
+                                <span className='text-xs text-gray-500'>
+                                  Code: {category.code}
+                                </span>
                               )}
                             </div>
                           </label>
                         </div>
 
                         {/* Sub-Categories (shown only when category is selected) */}
-                        {isCategorySelected && categorySubCategories.length > 0 && (
-                          <div className="bg-gray-50 px-4 py-3 border-t border-gray-200">
-                            <div className="ml-8 space-y-2">
-                              <p className="text-xs font-medium text-gray-600 uppercase tracking-wide mb-3">
-                                Sub-Categories for {category.name}
-                              </p>
-                              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                                {categorySubCategories.map((subCat) => (
-                                  <label
-                                    key={subCat.id}
-                                    className="flex items-center space-x-2 cursor-pointer hover:bg-white p-2 rounded transition-colors"
-                                  >
-                                    <input
-                                      type="checkbox"
-                                      checked={selectedSubCategories.includes(subCat.id)}
-                                      onChange={() => handleSubCategoryToggle(subCat.id)}
-                                      disabled={isSubmitting}
-                                      className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
-                                    />
-                                    <span className="text-sm text-gray-700">{subCat.name}</span>
-                                  </label>
-                                ))}
+                        {isCategorySelected &&
+                          categorySubCategories.length > 0 && (
+                            <div className='bg-gray-50 px-4 py-3 border-t border-gray-200'>
+                              <div className='ml-8 space-y-2'>
+                                <p className='text-xs font-medium text-gray-600 uppercase tracking-wide mb-3'>
+                                  Sub-Categories for {category.name}
+                                </p>
+                                <div className='grid grid-cols-1 md:grid-cols-2 gap-2'>
+                                  {categorySubCategories.map(subCat => (
+                                    <label
+                                      key={subCat.id}
+                                      className='flex items-center space-x-2 cursor-pointer hover:bg-white p-2 rounded transition-colors'
+                                    >
+                                      <input
+                                        type='checkbox'
+                                        checked={selectedSubCategories.includes(
+                                          subCat.id
+                                        )}
+                                        onChange={() =>
+                                          handleSubCategoryToggle(subCat.id)
+                                        }
+                                        disabled={isSubmitting}
+                                        className='w-4 h-4 text-blue-600 rounded focus:ring-blue-500'
+                                      />
+                                      <span className='text-sm text-gray-700'>
+                                        {subCat.name}
+                                      </span>
+                                    </label>
+                                  ))}
+                                </div>
                               </div>
                             </div>
-                          </div>
-                        )}
+                          )}
 
                         {/* No Sub-Categories Message */}
-                        {isCategorySelected && categorySubCategories.length === 0 && (
-                          <div className="bg-gray-50 px-4 py-3 border-t border-gray-200">
-                            <p className="ml-8 text-sm text-gray-500 italic">No sub-categories available for this category</p>
-                          </div>
-                        )}
+                        {isCategorySelected &&
+                          categorySubCategories.length === 0 && (
+                            <div className='bg-gray-50 px-4 py-3 border-t border-gray-200'>
+                              <p className='ml-8 text-sm text-gray-500 italic'>
+                                No sub-categories available for this category
+                              </p>
+                            </div>
+                          )}
                       </div>
                     );
                   })}
@@ -566,28 +868,37 @@ const VendorForm: React.FC<VendorFormProps> = ({
               )}
 
               {/* Summary Section */}
-              {(selectedCategories.length > 0 || selectedSubCategories.length > 0) && (
-                <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                  <h4 className="font-medium text-blue-900 mb-2">Selection Summary</h4>
-                  <div className="space-y-2 text-sm">
+              {(selectedCategories.length > 0 ||
+                selectedSubCategories.length > 0) && (
+                <div className='mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg'>
+                  <h4 className='font-medium text-blue-900 mb-2'>
+                    Selection Summary
+                  </h4>
+                  <div className='space-y-2 text-sm'>
                     {selectedCategories.length > 0 && (
                       <div>
-                        <span className="font-medium text-blue-800">Categories: </span>
-                        <span className="text-blue-700">
+                        <span className='font-medium text-blue-800'>
+                          Categories:{' '}
+                        </span>
+                        <span className='text-blue-700'>
                           {categories
-                            .filter((cat) => selectedCategories.includes(cat.id))
-                            .map((cat) => cat.name)
+                            .filter(cat => selectedCategories.includes(cat.id))
+                            .map(cat => cat.name)
                             .join(', ')}
                         </span>
                       </div>
                     )}
                     {selectedSubCategories.length > 0 && (
                       <div>
-                        <span className="font-medium text-blue-800">Sub-Categories: </span>
-                        <span className="text-blue-700">
+                        <span className='font-medium text-blue-800'>
+                          Sub-Categories:{' '}
+                        </span>
+                        <span className='text-blue-700'>
                           {allSubCategories
-                            .filter((sub) => selectedSubCategories.includes(sub.id))
-                            .map((sub) => sub.name)
+                            .filter(sub =>
+                              selectedSubCategories.includes(sub.id)
+                            )
+                            .map(sub => sub.name)
                             .join(', ')}
                         </span>
                       </div>
@@ -600,34 +911,104 @@ const VendorForm: React.FC<VendorFormProps> = ({
 
           {/* Tab 3: Certificate Document */}
           {activeTab === 3 && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <Controller name="gstFilePath" control={control} render={({ field }) => (
-                <FileUpload label="GST Certificate" value={field.value} onChange={field.onChange} disabled={isSubmitting} multiple />
-              )} />
+            <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
+              <Controller
+                name='gstFilePath'
+                control={control}
+                render={({ field }) => (
+                  <FileUpload
+                    label='GST Certificate'
+                    value={field.value}
+                    onChange={field.onChange}
+                    disabled={isSubmitting}
+                    multiple
+                  />
+                )}
+              />
 
-              <Controller name="panFilePath" control={control} render={({ field }) => (
-                <FileUpload label="PAN Card" value={field.value} onChange={field.onChange} disabled={isSubmitting} multiple />
-              )} />
+              <Controller
+                name='panFilePath'
+                control={control}
+                render={({ field }) => (
+                  <FileUpload
+                    label='PAN Card'
+                    value={field.value}
+                    onChange={field.onChange}
+                    disabled={isSubmitting}
+                    multiple
+                  />
+                )}
+              />
 
-              <Controller name="tdsFilePath" control={control} render={({ field }) => (
-                <FileUpload label="TDS Letter for ITR-206AB" value={field.value} onChange={field.onChange} disabled={isSubmitting} multiple />
-              )} />
+              <Controller
+                name='tdsFilePath'
+                control={control}
+                render={({ field }) => (
+                  <FileUpload
+                    label='TDS Letter for ITR-206AB'
+                    value={field.value}
+                    onChange={field.onChange}
+                    disabled={isSubmitting}
+                    multiple
+                  />
+                )}
+              />
 
-              <Controller name="msmeFilePath" control={control} render={({ field }) => (
-                <FileUpload label="MSME Declaration" value={field.value} onChange={field.onChange} disabled={isSubmitting} multiple />
-              )} />
+              <Controller
+                name='msmeFilePath'
+                control={control}
+                render={({ field }) => (
+                  <FileUpload
+                    label='MSME Declaration'
+                    value={field.value}
+                    onChange={field.onChange}
+                    disabled={isSubmitting}
+                    multiple
+                  />
+                )}
+              />
 
-              <Controller name="isoFilePath" control={control} render={({ field }) => (
-                <FileUpload label="ISO Certificates" value={field.value} onChange={field.onChange} disabled={isSubmitting} multiple />
-              )} />
+              <Controller
+                name='isoFilePath'
+                control={control}
+                render={({ field }) => (
+                  <FileUpload
+                    label='ISO Certificates'
+                    value={field.value}
+                    onChange={field.onChange}
+                    disabled={isSubmitting}
+                    multiple
+                  />
+                )}
+              />
 
-              <Controller name="otherFilePath" control={control} render={({ field }) => (
-                <FileUpload label="Others" value={field.value} onChange={field.onChange} disabled={isSubmitting} multiple />
-              )} />
+              <Controller
+                name='otherFilePath'
+                control={control}
+                render={({ field }) => (
+                  <FileUpload
+                    label='Others'
+                    value={field.value}
+                    onChange={field.onChange}
+                    disabled={isSubmitting}
+                    multiple
+                  />
+                )}
+              />
 
-              <Controller name="incorporationFilePath" control={control} render={({ field }) => (
-                <FileUpload label="Incorporation Certificate" value={field.value} onChange={field.onChange} disabled={isSubmitting} multiple />
-              )} />
+              <Controller
+                name='incorporationFilePath'
+                control={control}
+                render={({ field }) => (
+                  <FileUpload
+                    label='Incorporation Certificate'
+                    value={field.value}
+                    onChange={field.onChange}
+                    disabled={isSubmitting}
+                    multiple
+                  />
+                )}
+              />
             </div>
           )}
         </div>

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { toast } from 'react-hot-toast';
 import BuildingList from './BuildingList';
 import BuildingForm from './BuildingForm';
+import ExcelImportDialog from '@/components/ExcelImportDialog';
 import {
   useBuildings,
   useCreateBuilding,
@@ -12,7 +13,10 @@ import {
 
 const BuildingPage: React.FC = () => {
   const [showForm, setShowForm] = useState(false);
-  const [selectedBuilding, setSelectedBuilding] = useState<Building | undefined>();
+  const [showImportDialog, setShowImportDialog] = useState(false);
+  const [selectedBuilding, setSelectedBuilding] = useState<
+    Building | undefined
+  >();
 
   const { data: buildings = [], isLoading, error } = useBuildings();
   const createMutation = useCreateBuilding();
@@ -74,8 +78,8 @@ const BuildingPage: React.FC = () => {
 
   if (error) {
     return (
-      <div className="p-6">
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+      <div className='p-6'>
+        <div className='bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded'>
           Error loading buildings: {(error as Error).message}
         </div>
       </div>
@@ -94,13 +98,24 @@ const BuildingPage: React.FC = () => {
   }
 
   return (
-    <BuildingList
-      buildings={buildings}
-      onEdit={handleEdit}
-      onCreate={handleCreate}
-      onDelete={handleDelete}
-      isLoading={isLoading}
-    />
+    <>
+      <BuildingList
+        buildings={buildings}
+        onEdit={handleEdit}
+        onCreate={handleCreate}
+        onDelete={handleDelete}
+        onImport={() => setShowImportDialog(true)}
+        isLoading={isLoading}
+      />
+      <ExcelImportDialog
+        isOpen={showImportDialog}
+        onClose={() => setShowImportDialog(false)}
+        entityName='Building'
+        importEndpoint='/master/buildings/import'
+        templateEndpoint='/master/buildings/template'
+        onImportSuccess={() => {}}
+      />
+    </>
   );
 };
 

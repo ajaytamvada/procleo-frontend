@@ -13,6 +13,8 @@ export interface PurchaseRequestItem {
   unitPrice: number;
   totalPrice?: number;
   description?: string;
+  rmApprovalStatus?: string;
+  approvalRemarks?: string;
 }
 
 export interface PurchaseRequest {

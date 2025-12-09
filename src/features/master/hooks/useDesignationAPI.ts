@@ -29,7 +29,11 @@ const designationAPI = {
     return response.data;
   },
 
-  getPaged: async (page = 0, size = 15, filters: DesignationFilters = {}): Promise<PagedResponse<Designation>> => {
+  getPaged: async (
+    page = 0,
+    size = 15,
+    filters: DesignationFilters = {}
+  ): Promise<PagedResponse<Designation>> => {
     const params = new URLSearchParams({
       page: page.toString(),
       size: size.toString(),
@@ -49,13 +53,21 @@ const designationAPI = {
     return response.data;
   },
 
-  create: async (designation: Omit<Designation, 'id'>): Promise<Designation> => {
+  create: async (
+    designation: Omit<Designation, 'id'>
+  ): Promise<Designation> => {
     const response = await apiClient.post('/master/designations', designation);
     return response.data;
   },
 
-  update: async (id: number, designation: Omit<Designation, 'id'>): Promise<Designation> => {
-    const response = await apiClient.put(`/master/designations/${id}`, designation);
+  update: async (
+    id: number,
+    designation: Omit<Designation, 'id'>
+  ): Promise<Designation> => {
+    const response = await apiClient.put(
+      `/master/designations/${id}`,
+      designation
+    );
     return response.data;
   },
 
@@ -68,9 +80,12 @@ const designationAPI = {
     if (filters.name) params.append('name', filters.name);
     if (filters.code) params.append('code', filters.code);
 
-    const response = await apiClient.get(`/master/designations/export?${params}`, {
-      responseType: 'blob',
-    });
+    const response = await apiClient.get(
+      `/master/designations/export?${params}`,
+      {
+        responseType: 'blob',
+      }
+    );
     return response.data;
   },
 };
@@ -83,7 +98,11 @@ export const useDesignations = () => {
   });
 };
 
-export const useDesignationsPaged = (page = 0, size = 15, filters: DesignationFilters = {}) => {
+export const useDesignationsPaged = (
+  page = 0,
+  size = 15,
+  filters: DesignationFilters = {}
+) => {
   return useQuery({
     queryKey: [...DESIGNATION_QUERY_KEY, 'paged', page, size, filters],
     queryFn: () => designationAPI.getPaged(page, size, filters),

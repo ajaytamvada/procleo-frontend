@@ -1,6 +1,6 @@
 /**
  * Jest test setup file
- * 
+ *
  * This file is run before each test file and sets up the testing environment
  * with necessary polyfills, mocks, and global configurations.
  */
@@ -123,15 +123,17 @@ Object.defineProperty(window, 'getComputedStyle', {
 
 // Mock File constructor
 global.File = class MockFile {
-  constructor(
-    bits: BlobPart[],
-    name: string,
-    options?: FilePropertyBag
-  ) {}
-  
-  get size() { return 1024; }
-  get type() { return (this as any).options?.type || 'text/plain'; }
-  get lastModified() { return Date.now(); }
+  constructor(bits: BlobPart[], name: string, options?: FilePropertyBag) {}
+
+  get size() {
+    return 1024;
+  }
+  get type() {
+    return (this as any).options?.type || 'text/plain';
+  }
+  get lastModified() {
+    return Date.now();
+  }
 } as any;
 
 // Mock FileReader
@@ -139,12 +141,20 @@ global.FileReader = class MockFileReader {
   result: string | ArrayBuffer | null = null;
   error: DOMException | null = null;
   readyState: 0 | 1 | 2 = 0;
-  onload: ((this: FileReader, ev: ProgressEvent<FileReader>) => any) | null = null;
-  onerror: ((this: FileReader, ev: ProgressEvent<FileReader>) => any) | null = null;
-  onabort: ((this: FileReader, ev: ProgressEvent<FileReader>) => any) | null = null;
-  onloadstart: ((this: FileReader, ev: ProgressEvent<FileReader>) => any) | null = null;
-  onloadend: ((this: FileReader, ev: ProgressEvent<FileReader>) => any) | null = null;
-  onprogress: ((this: FileReader, ev: ProgressEvent<FileReader>) => any) | null = null;
+  onload: ((this: FileReader, ev: ProgressEvent<FileReader>) => any) | null =
+    null;
+  onerror: ((this: FileReader, ev: ProgressEvent<FileReader>) => any) | null =
+    null;
+  onabort: ((this: FileReader, ev: ProgressEvent<FileReader>) => any) | null =
+    null;
+  onloadstart:
+    | ((this: FileReader, ev: ProgressEvent<FileReader>) => any)
+    | null = null;
+  onloadend: ((this: FileReader, ev: ProgressEvent<FileReader>) => any) | null =
+    null;
+  onprogress:
+    | ((this: FileReader, ev: ProgressEvent<FileReader>) => any)
+    | null = null;
 
   addEventListener = jest.fn();
   removeEventListener = jest.fn();
@@ -211,7 +221,7 @@ Object.defineProperty(navigator, 'clipboard', {
 // Create a more complete localStorage mock
 const createStorageMock = () => {
   let store: { [key: string]: string } = {};
-  
+
   return {
     getItem: jest.fn((key: string) => store[key] || null),
     setItem: jest.fn((key: string, value: string) => {
@@ -297,7 +307,7 @@ console.error = (...args: any[]) => {
   ) {
     return;
   }
-  
+
   // Allow console.error in tests that expect errors
   if (expect.getState().currentTestName?.includes('error')) {
     originalError(...args);
@@ -335,7 +345,12 @@ console.error = (...args: any[]) => {
   }),
 
   // Create mock paginated response
-  createMockPaginatedResponse: (items: any[], page = 0, size = 20, total?: number) => ({
+  createMockPaginatedResponse: (
+    items: any[],
+    page = 0,
+    size = 20,
+    total?: number
+  ) => ({
     content: items,
     page: {
       size,
@@ -346,7 +361,9 @@ console.error = (...args: any[]) => {
     _links: {
       self: { href: `/api/v1/test?page=${page}&size=${size}` },
       first: { href: `/api/v1/test?page=0&size=${size}` },
-      last: { href: `/api/v1/test?page=${Math.ceil((total ?? items.length) / size) - 1}&size=${size}` },
+      last: {
+        href: `/api/v1/test?page=${Math.ceil((total ?? items.length) / size) - 1}&size=${size}`,
+      },
     },
   }),
 
@@ -359,7 +376,11 @@ console.error = (...args: any[]) => {
   },
 
   // Mock file for file upload tests
-  createMockFile: (name = 'test.txt', type = 'text/plain', content = 'test content') => {
+  createMockFile: (
+    name = 'test.txt',
+    type = 'text/plain',
+    content = 'test content'
+  ) => {
     return new File([content], name, { type });
   },
 };
@@ -374,10 +395,19 @@ declare global {
       testUtils: {
         createMockUser: (overrides?: any) => any;
         createMockApiResponse: (data: any, overrides?: any) => any;
-        createMockPaginatedResponse: (items: any[], page?: number, size?: number, total?: number) => any;
+        createMockPaginatedResponse: (
+          items: any[],
+          page?: number,
+          size?: number,
+          total?: number
+        ) => any;
         waitFor: (ms: number) => Promise<void>;
         advanceTimers: (ms: number) => void;
-        createMockFile: (name?: string, type?: string, content?: string) => File;
+        createMockFile: (
+          name?: string,
+          type?: string,
+          content?: string
+        ) => File;
       };
     }
   }
@@ -385,7 +415,12 @@ declare global {
   const testUtils: {
     createMockUser: (overrides?: any) => any;
     createMockApiResponse: (data: any, overrides?: any) => any;
-    createMockPaginatedResponse: (items: any[], page?: number, size?: number, total?: number) => any;
+    createMockPaginatedResponse: (
+      items: any[],
+      page?: number,
+      size?: number,
+      total?: number
+    ) => any;
     waitFor: (ms: number) => Promise<void>;
     advanceTimers: (ms: number) => void;
     createMockFile: (name?: string, type?: string, content?: string) => File;

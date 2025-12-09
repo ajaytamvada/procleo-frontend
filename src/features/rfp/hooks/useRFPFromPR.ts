@@ -44,13 +44,14 @@ export const useCreateRFPFromPRs = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (request: CreateRFPFromPRsRequest) =>
-      createRFPFromPRs(request),
-    onSuccess: (data) => {
+    mutationFn: (request: CreateRFPFromPRsRequest) => createRFPFromPRs(request),
+    onSuccess: data => {
       toast.success(`RFP ${data.rfpNumber} created successfully!`);
       // Invalidate relevant queries
       queryClient.invalidateQueries({ queryKey: ['approved-prs-for-rfp'] });
-      queryClient.invalidateQueries({ queryKey: ['approved-pr-items-for-rfp'] });
+      queryClient.invalidateQueries({
+        queryKey: ['approved-pr-items-for-rfp'],
+      });
       queryClient.invalidateQueries({ queryKey: ['rfps'] });
     },
     onError: (error: any) => {

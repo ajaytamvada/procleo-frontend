@@ -34,9 +34,7 @@ export default {
       'ts-jest',
       {
         useESM: true,
-        tsconfig: {
-          jsx: 'react-jsx',
-        },
+        tsconfig: 'tsconfig.app.json',
       },
     ],
   },
@@ -85,13 +83,6 @@ export default {
 
   // Restore mocks after each test
   restoreMocks: true,
-
-  // Globals
-  globals: {
-    'ts-jest': {
-      useESM: true,
-    },
-  },
 
   // Preset
   preset: 'ts-jest/presets/default-esm',

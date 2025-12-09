@@ -75,7 +75,7 @@ export enum POStatus {
   PARTIALLY_INVOICED = 'PARTIALLY_INVOICED',
   INVOICED = 'INVOICED',
   CLOSED = 'CLOSED',
-  CANCELLED = 'CANCELLED'
+  CANCELLED = 'CANCELLED',
 }
 
 export enum POType {
@@ -83,7 +83,7 @@ export enum POType {
   INDIRECT = 'INDIRECT',
   SERVICE = 'SERVICE',
   CAPEX = 'CAPEX',
-  OPEX = 'OPEX'
+  OPEX = 'OPEX',
 }
 
 export interface GRNItem {
@@ -155,7 +155,7 @@ export enum GRNStatus {
   QUALITY_CHECK_PASSED = 'QUALITY_CHECK_PASSED',
   QUALITY_CHECK_FAILED = 'QUALITY_CHECK_FAILED',
   CLOSED = 'CLOSED',
-  CANCELLED = 'CANCELLED'
+  CANCELLED = 'CANCELLED',
 }
 
 export enum GRNType {
@@ -163,7 +163,7 @@ export enum GRNType {
   PARTIAL = 'PARTIAL',
   RETURN = 'RETURN',
   REPLACEMENT = 'REPLACEMENT',
-  SERVICE = 'SERVICE'
+  SERVICE = 'SERVICE',
 }
 
 export interface InvoiceItem {
@@ -255,7 +255,7 @@ export enum InvoiceStatus {
   PAID = 'PAID',
   OVERDUE = 'OVERDUE',
   CANCELLED = 'CANCELLED',
-  ON_HOLD = 'ON_HOLD'
+  ON_HOLD = 'ON_HOLD',
 }
 
 export enum InvoiceType {
@@ -266,5 +266,5 @@ export enum InvoiceType {
   PARTIAL = 'PARTIAL',
   FINAL = 'FINAL',
   SERVICE = 'SERVICE',
-  PROFORMA = 'PROFORMA'
+  PROFORMA = 'PROFORMA',
 }

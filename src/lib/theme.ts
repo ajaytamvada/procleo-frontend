@@ -207,7 +207,7 @@ export const themeVariables = {
 export function applyTheme(theme: 'light' | 'dark'): void {
   const root = document.documentElement;
   const variables = themeVariables[theme];
-  
+
   Object.entries(variables).forEach(([property, value]) => {
     root.style.setProperty(property, value);
   });
@@ -218,7 +218,9 @@ export function applyTheme(theme: 'light' | 'dark'): void {
  */
 export function getSystemTheme(): 'light' | 'dark' {
   if (typeof window === 'undefined') return 'light';
-  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  return window.matchMedia('(prefers-color-scheme: dark)').matches
+    ? 'dark'
+    : 'light';
 }
 
 /**

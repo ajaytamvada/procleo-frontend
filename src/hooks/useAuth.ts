@@ -1,7 +1,13 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
-import type { User, LoginCredentials, RegisterData, UpdateProfileData, UpdatePasswordData } from '@/services/auth';
+import type {
+  User,
+  LoginCredentials,
+  RegisterData,
+  UpdateProfileData,
+  UpdatePasswordData,
+} from '@/services/auth';
 import { AuthService } from '@/services/auth';
 import { queryKeys, queryUtils } from '@/lib/query-client';
 
@@ -40,20 +46,21 @@ export function useLogin() {
 
   return useMutation({
     mutationFn: AuthService.login,
-    onSuccess: (data) => {
+    onSuccess: data => {
       // Set user data in cache
       queryClient.setQueryData(queryKeys.auth.user(), data.userInfo);
-      
+
       // Show success message
-      toast.success(`Welcome back, ${data.userInfo.employeeName || data.userInfo.username}!`);
-      
+      toast.success(
+        `Welcome back, ${data.userInfo.employeeName || data.userInfo.username}!`
+      );
+
       // Navigate to dashboard
       navigate('/dashboard');
-      
+
       // Prefetch dashboard data
-      queryUtils.prefetch(
-        queryKeys.dashboard.metrics(),
-        () => fetch('/api/dashboard/metrics').then(res => res.json())
+      queryUtils.prefetch(queryKeys.dashboard.metrics(), () =>
+        fetch('/api/dashboard/metrics').then(res => res.json())
       );
     },
     onError: (error: any) => {
@@ -68,7 +75,9 @@ export function useRegister() {
   return useMutation({
     mutationFn: AuthService.register,
     onSuccess: () => {
-      toast.success('Registration successful! Please check your email to verify your account.');
+      toast.success(
+        'Registration successful! Please check your email to verify your account.'
+      );
       navigate('/login');
     },
     onError: (error: any) => {
@@ -86,10 +95,10 @@ export function useLogout() {
     onSuccess: () => {
       // Clear all cached data
       queryClient.clear();
-      
+
       // Navigate to login page
       navigate('/login');
-      
+
       // Show success message
       toast.success('Logged out successfully');
     },
@@ -107,12 +116,14 @@ export function useUpdateProfile() {
 
   return useMutation({
     mutationFn: AuthService.updateProfile,
-    onMutate: async (newData) => {
+    onMutate: async newData => {
       // Cancel outgoing refetches
       await queryClient.cancelQueries({ queryKey: queryKeys.auth.user() });
 
       // Snapshot the previous value
-      const previousUser = queryClient.getQueryData<User>(queryKeys.auth.user());
+      const previousUser = queryClient.getQueryData<User>(
+        queryKeys.auth.user()
+      );
 
       // Optimistically update to the new value
       if (previousUser) {
@@ -131,7 +142,7 @@ export function useUpdateProfile() {
       }
       toast.error(error.message || 'Failed to update profile');
     },
-    onSuccess: (data) => {
+    onSuccess: data => {
       // Update cache with server response
       queryClient.setQueryData(queryKeys.auth.user(), data);
       toast.success('Profile updated successfully');
@@ -174,7 +185,9 @@ export function useResetPassword() {
     mutationFn: ({ token, password }: { token: string; password: string }) =>
       AuthService.resetPassword(token, password),
     onSuccess: () => {
-      toast.success('Password reset successful. Please log in with your new password.');
+      toast.success(
+        'Password reset successful. Please log in with your new password.'
+      );
       navigate('/login');
     },
     onError: (error: any) => {
@@ -199,10 +212,10 @@ export function useVerifyEmail() {
 export function useAuth() {
   // DEVELOPMENT MODE: Skip authentication
   const DEV_MODE = false; // Set to false to enable real authentication
-  
+
   const { data: user, isLoading: isLoadingUser } = useCurrentUser();
   const { data: permissions } = useUserPermissions();
-  
+
   const loginMutation = useLogin();
   const logoutMutation = useLogout();
   const updateProfileMutation = useUpdateProfile();
@@ -222,7 +235,9 @@ export function useAuth() {
   };
 
   const isAuthenticated = DEV_MODE ? true : AuthService.isAuthenticated();
-  const isLoading = DEV_MODE ? false : (isLoadingUser || loginMutation.isPending || logoutMutation.isPending);
+  const isLoading = DEV_MODE
+    ? false
+    : isLoadingUser || loginMutation.isPending || logoutMutation.isPending;
   const currentUser = DEV_MODE ? mockUser : user;
 
   // Helper functions
@@ -259,22 +274,22 @@ export function useAuth() {
     permissions: DEV_MODE ? ['*'] : permissions,
     isAuthenticated,
     isLoading,
-    
+
     // Actions
     login,
     logout,
     updateProfile,
-    
+
     // Helpers
     hasPermission,
     hasRole,
     hasAnyRole,
-    
+
     // Mutation states
     isLoggingIn: loginMutation.isPending,
     isLoggingOut: logoutMutation.isPending,
     isUpdatingProfile: updateProfileMutation.isPending,
-    
+
     // Errors
     loginError: loginMutation.error,
     logoutError: logoutMutation.error,

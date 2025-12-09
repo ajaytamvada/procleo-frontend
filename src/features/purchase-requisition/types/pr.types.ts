@@ -19,6 +19,9 @@ export interface PRListItem {
   status: string;
   sendForApproval: string;
   grandTotal?: number;
+  purchaseType?: string;
+  projectCode?: string;
+  projectName?: string;
 }
 
 /**

@@ -29,7 +29,11 @@ const uomAPI = {
     return response.data;
   },
 
-  getPaged: async (page = 0, size = 15, filters: UOMFilters = {}): Promise<PagedResponse<UOM>> => {
+  getPaged: async (
+    page = 0,
+    size = 15,
+    filters: UOMFilters = {}
+  ): Promise<PagedResponse<UOM>> => {
     const params = new URLSearchParams({
       page: page.toString(),
       size: size.toString(),

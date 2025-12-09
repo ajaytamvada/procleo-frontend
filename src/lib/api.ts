@@ -1,4 +1,9 @@
-import axios, { type AxiosInstance, type InternalAxiosRequestConfig, type AxiosResponse as AxiosResponseType, type AxiosError as AxiosErrorType } from 'axios';
+import axios, {
+  type AxiosInstance,
+  type InternalAxiosRequestConfig,
+  type AxiosResponse as AxiosResponseType,
+  type AxiosError as AxiosErrorType,
+} from 'axios';
 import { env } from '@/utils/env';
 
 // Extend axios config to support metadata
@@ -93,7 +98,7 @@ const createApiClient = (): AxiosInstance => {
 
   // Request interceptor for auth token
   client.interceptors.request.use(
-    (config) => {
+    config => {
       const token = TokenManager.getAccessToken();
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
@@ -104,7 +109,7 @@ const createApiClient = (): AxiosInstance => {
 
       return config;
     },
-    (error) => {
+    error => {
       return Promise.reject(error);
     }
   );
@@ -122,20 +127,30 @@ const createApiClient = (): AxiosInstance => {
       return response;
     },
     async (error: AxiosErrorType) => {
-      const originalRequest = error.config as (InternalAxiosRequestConfig & { _retry?: boolean }) | undefined;
+      const originalRequest = error.config as
+        | (InternalAxiosRequestConfig & { _retry?: boolean })
+        | undefined;
 
       // Handle 401 errors (unauthorized)
-      if (error.response?.status === 401 && originalRequest && !originalRequest._retry) {
+      if (
+        error.response?.status === 401 &&
+        originalRequest &&
+        !originalRequest._retry
+      ) {
         originalRequest._retry = true;
 
         try {
           const refreshToken = TokenManager.getRefreshToken();
           if (refreshToken) {
-            const response = await axios.post(`${env.VITE_API_BASE_URL}/auth/refresh`, {
-              refreshToken,
-            });
+            const response = await axios.post(
+              `${env.VITE_API_BASE_URL}/auth/refresh`,
+              {
+                refreshToken,
+              }
+            );
 
-            const { accessToken, refreshToken: newRefreshToken } = response.data.data;
+            const { accessToken, refreshToken: newRefreshToken } =
+              response.data.data;
             TokenManager.setTokens(accessToken, newRefreshToken);
 
             // Retry original request with new token
@@ -224,10 +239,12 @@ export class ApiService {
 
   // GET paginated data
   async getPaginated<T>(
-    url: string, 
+    url: string,
     params?: Record<string, any>
   ): Promise<PaginatedResponse<T>> {
-    const response = await this.client.get<PaginatedResponse<T>>(url, { params });
+    const response = await this.client.get<PaginatedResponse<T>>(url, {
+      params,
+    });
     return response.data;
   }
 
@@ -289,12 +306,12 @@ export { TokenManager };
 // Network status utilities
 export const networkUtils = {
   isOnline: (): boolean => navigator.onLine,
-  
+
   onOnline: (callback: () => void): (() => void) => {
     window.addEventListener('online', callback);
     return () => window.removeEventListener('online', callback);
   },
-  
+
   onOffline: (callback: () => void): (() => void) => {
     window.addEventListener('offline', callback);
     return () => window.removeEventListener('offline', callback);
@@ -314,7 +331,7 @@ export const retryRequest = async <T>(
       return await requestFn();
     } catch (error) {
       lastError = error as Error;
-      
+
       // Don't retry on client errors (4xx)
       if (error && typeof error === 'object' && 'status' in error) {
         const apiError = error as ApiError;
@@ -325,7 +342,9 @@ export const retryRequest = async <T>(
 
       // Wait before retrying
       if (i < maxRetries - 1) {
-        await new Promise(resolve => setTimeout(resolve, delay * Math.pow(2, i)));
+        await new Promise(resolve =>
+          setTimeout(resolve, delay * Math.pow(2, i))
+        );
       }
     }
   }

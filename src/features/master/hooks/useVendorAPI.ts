@@ -79,7 +79,11 @@ const vendorAPI = {
     return response.data;
   },
 
-  getPaged: async (page = 0, size = 15, filters: VendorFilters = {}): Promise<PagedResponse<Vendor>> => {
+  getPaged: async (
+    page = 0,
+    size = 15,
+    filters: VendorFilters = {}
+  ): Promise<PagedResponse<Vendor>> => {
     const params = new URLSearchParams({
       page: page.toString(),
       size: size.toString(),
@@ -136,7 +140,11 @@ export const useVendors = () => {
   });
 };
 
-export const useVendorsPaged = (page: number, size: number, filters: VendorFilters) => {
+export const useVendorsPaged = (
+  page: number,
+  size: number,
+  filters: VendorFilters
+) => {
   return useQuery<PagedResponse<Vendor>>({
     queryKey: ['vendors', 'paged', page, size, filters],
     queryFn: () => vendorAPI.getPaged(page, size, filters),

@@ -52,11 +52,11 @@ export function isBrowser(): boolean {
  */
 export function formatFileSize(bytes: number): string {
   if (bytes === 0) return '0 Bytes';
-  
+
   const k = 1024;
   const sizes = ['Bytes', 'KB', 'MB', 'GB'];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
-  
+
   return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 }
 
@@ -99,7 +99,9 @@ export const focusManager = {
       '[tabindex]:not([tabindex="-1"])',
     ].join(', ');
 
-    return Array.from(container.querySelectorAll(focusableSelectors)) as HTMLElement[];
+    return Array.from(
+      container.querySelectorAll(focusableSelectors)
+    ) as HTMLElement[];
   },
 
   /**
@@ -202,7 +204,10 @@ export const animation = {
 };
 
 // Currency formatting
-export function formatCurrency(amount: number, currency: string = 'USD'): string {
+export function formatCurrency(
+  amount: number,
+  currency: string = 'USD'
+): string {
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency,
@@ -236,7 +241,7 @@ export function formatRelativeTime(date: string | Date): string {
   const now = new Date();
   const diffInMs = dateObj.getTime() - now.getTime();
   const diffInDays = Math.ceil(diffInMs / (1000 * 60 * 60 * 24));
-  
+
   if (diffInDays < 0) {
     return `${Math.abs(diffInDays)} days ago`;
   } else if (diffInDays === 0) {

@@ -13,6 +13,9 @@ export interface PRApprovalListItem {
   department: string;
   createdBy: string;
   createdDate: string;
+  purchaseType?: string;
+  projectCode?: string;
+  projectName?: string;
 }
 
 /**
@@ -79,5 +82,6 @@ export interface PRApprovalRequest {
   prId: number;
   approvalStatus: 'Accepted' | 'Rejected';
   remarks?: string;
+  approvedBy?: string; // ID of the approver
   items: ApprovalItemRequest[];
 }

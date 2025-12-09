@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { toast } from 'react-hot-toast';
 import DesignationList from './DesignationList';
 import DesignationForm from './DesignationForm';
+import ExcelImportDialog from '@/components/ExcelImportDialog';
 import {
   useDesignationsPaged,
   useCreateDesignation,
@@ -13,11 +14,18 @@ import {
 
 const DesignationPage: React.FC = () => {
   const [showForm, setShowForm] = useState(false);
-  const [selectedDesignation, setSelectedDesignation] = useState<Designation | undefined>();
+  const [showImportDialog, setShowImportDialog] = useState(false);
+  const [selectedDesignation, setSelectedDesignation] = useState<
+    Designation | undefined
+  >();
   const [page, setPage] = useState(0);
   const [filters, setFilters] = useState<DesignationFilters>({});
 
-  const { data, isLoading, error, refetch } = useDesignationsPaged(page, 15, filters);
+  const { data, isLoading, error, refetch } = useDesignationsPaged(
+    page,
+    15,
+    filters
+  );
   const designations = data?.content || [];
   const totalPages = data?.totalPages || 0;
   const totalElements = data?.totalElements || 0;
@@ -76,8 +84,8 @@ const DesignationPage: React.FC = () => {
 
   if (error) {
     return (
-      <div className="p-6">
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+      <div className='p-6'>
+        <div className='bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded'>
           Error loading designations: {(error as Error).message}
         </div>
       </div>
@@ -96,19 +104,30 @@ const DesignationPage: React.FC = () => {
   }
 
   return (
-    <DesignationList
-      designations={designations}
-      onEdit={handleEdit}
-      onCreate={handleCreate}
-      onDelete={handleDelete}
-      isLoading={isLoading}
-      error={error}
-      currentPage={page}
-      totalPages={totalPages}
-      totalElements={totalElements}
-      onPageChange={setPage}
-      onFiltersChange={setFilters}
-    />
+    <>
+      <DesignationList
+        designations={designations}
+        onEdit={handleEdit}
+        onCreate={handleCreate}
+        onDelete={handleDelete}
+        onImport={() => setShowImportDialog(true)}
+        isLoading={isLoading}
+        error={error}
+        currentPage={page}
+        totalPages={totalPages}
+        totalElements={totalElements}
+        onPageChange={setPage}
+        onFiltersChange={setFilters}
+      />
+      <ExcelImportDialog
+        isOpen={showImportDialog}
+        onClose={() => setShowImportDialog(false)}
+        entityName='Designation'
+        importEndpoint='/master/designations/import'
+        templateEndpoint='/master/designations/template'
+        onImportSuccess={() => setPage(0)}
+      />
+    </>
   );
 };
 

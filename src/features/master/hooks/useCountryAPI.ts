@@ -29,7 +29,11 @@ const countryAPI = {
     return response.data;
   },
 
-  getPaged: async (page = 0, size = 15, filters: CountryFilters = {}): Promise<PagedResponse<Country>> => {
+  getPaged: async (
+    page = 0,
+    size = 15,
+    filters: CountryFilters = {}
+  ): Promise<PagedResponse<Country>> => {
     const params = new URLSearchParams({
       page: page.toString(),
       size: size.toString(),
@@ -52,7 +56,10 @@ const countryAPI = {
     return response.data;
   },
 
-  update: async (id: number, country: Omit<Country, 'id'>): Promise<Country> => {
+  update: async (
+    id: number,
+    country: Omit<Country, 'id'>
+  ): Promise<Country> => {
     const response = await apiClient.put(`/master/countries/${id}`, country);
     return response.data;
   },
@@ -81,7 +88,11 @@ export const useCountries = () => {
   });
 };
 
-export const useCountriesPaged = (page = 0, size = 15, filters: CountryFilters = {}) => {
+export const useCountriesPaged = (
+  page = 0,
+  size = 15,
+  filters: CountryFilters = {}
+) => {
   return useQuery({
     queryKey: [...COUNTRY_QUERY_KEY, 'paged', page, size, filters],
     queryFn: () => countryAPI.getPaged(page, size, filters),

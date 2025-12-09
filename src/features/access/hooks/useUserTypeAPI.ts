@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api';
+import type { UserModulePermission } from '@/types/permissions';
 
 const API_BASE_URL = '/master/user-types';
 
@@ -9,6 +10,7 @@ export interface UserType {
   code?: string;
   status: string;
   permissionClass?: string;
+  moduleCodes?: string[];
 }
 
 export interface UserTypeFilters {
@@ -40,14 +42,20 @@ export const useActiveUserTypes = () => {
   return useQuery({
     queryKey: ['userTypes', 'active'],
     queryFn: async () => {
-      const { data } = await apiClient.get<UserType[]>(`${API_BASE_URL}/active`);
+      const { data } = await apiClient.get<UserType[]>(
+        `${API_BASE_URL}/active`
+      );
       return data;
     },
   });
 };
 
 // Fetch paginated user types with filters
-export const usePagedUserTypes = (page: number, size: number, filters: UserTypeFilters) => {
+export const usePagedUserTypes = (
+  page: number,
+  size: number,
+  filters: UserTypeFilters
+) => {
   return useQuery({
     queryKey: ['userTypes', 'paged', page, size, filters],
     queryFn: async () => {
@@ -57,7 +65,7 @@ export const usePagedUserTypes = (page: number, size: number, filters: UserTypeF
         ...(filters.name && { name: filters.name }),
         ...(filters.status && { status: filters.status }),
       });
-      const { data} = await apiClient.get<PagedResponse<UserType>>(
+      const { data } = await apiClient.get<PagedResponse<UserType>>(
         `${API_BASE_URL}/paged?${params.toString()}`
       );
       return data;
@@ -98,8 +106,17 @@ export const useUpdateUserType = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ id, userType }: { id: number; userType: UserType }) => {
-      const { data } = await apiClient.put<UserType>(`${API_BASE_URL}/${id}`, userType);
+    mutationFn: async ({
+      id,
+      userType,
+    }: {
+      id: number;
+      userType: UserType;
+    }) => {
+      const { data } = await apiClient.put<UserType>(
+        `${API_BASE_URL}/${id}`,
+        userType
+      );
       return data;
     },
     onSuccess: () => {

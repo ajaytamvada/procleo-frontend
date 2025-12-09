@@ -19,7 +19,15 @@ export interface PurchaseOrder {
     department: string;
     email: string;
   };
-  status: 'draft' | 'pending_approval' | 'approved' | 'cancelled' | 'short_closed' | 'amended' | 'ordered' | 'received';
+  status:
+    | 'draft'
+    | 'pending_approval'
+    | 'approved'
+    | 'cancelled'
+    | 'short_closed'
+    | 'amended'
+    | 'ordered'
+    | 'received';
   priority: 'low' | 'medium' | 'high' | 'urgent';
   totalAmount: number;
   taxAmount: number;
@@ -128,7 +136,10 @@ export interface CreatePurchaseOrderData {
   requesterId?: string;
   priority: PurchaseOrder['priority'];
   description?: string;
-  items: Omit<PurchaseOrderItem, 'id' | 'lineNumber' | 'taxAmount' | 'totalPrice'>[];
+  items: Omit<
+    PurchaseOrderItem,
+    'id' | 'lineNumber' | 'taxAmount' | 'totalPrice'
+  >[];
   paymentTerms?: string;
   deliveryTerms?: string;
   billingAddress?: Address;
@@ -138,7 +149,8 @@ export interface CreatePurchaseOrderData {
   notes?: string;
 }
 
-export interface UpdatePurchaseOrderData extends Partial<CreatePurchaseOrderData> {
+export interface UpdatePurchaseOrderData
+  extends Partial<CreatePurchaseOrderData> {
   status?: PurchaseOrder['status'];
   approvalComments?: string;
 }

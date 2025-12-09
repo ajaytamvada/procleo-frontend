@@ -26,7 +26,10 @@ const buildingAPI = {
     return response.data;
   },
 
-  update: async (id: number, building: Omit<Building, 'id'>): Promise<Building> => {
+  update: async (
+    id: number,
+    building: Omit<Building, 'id'>
+  ): Promise<Building> => {
     const response = await apiClient.put(`/master/buildings/${id}`, building);
     return response.data;
   },

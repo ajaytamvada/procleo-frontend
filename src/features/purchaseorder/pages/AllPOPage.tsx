@@ -19,21 +19,24 @@ export const AllPOPage: React.FC = () => {
   ];
 
   return (
-    <div className="h-full flex flex-col bg-gray-50">
+    <div className='h-full flex flex-col bg-gray-50'>
       {/* Header */}
-      <div className="bg-white border-b border-gray-200 px-6 py-4">
+      <div className='bg-white border-b border-gray-200 px-6 py-4'>
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">All Purchase Orders</h1>
-          <p className="text-sm text-gray-600 mt-1">
-            Manage purchase order operations including cancellation, short close, and amendments
+          <h1 className='text-2xl font-bold text-gray-900'>
+            All Purchase Orders
+          </h1>
+          <p className='text-sm text-gray-600 mt-1'>
+            Manage purchase order operations including cancellation, short
+            close, and amendments
           </p>
         </div>
       </div>
 
       {/* Tabs */}
-      <div className="bg-white border-b border-gray-200">
-        <nav className="flex px-6" aria-label="Tabs">
-          {tabs.map((tab) => {
+      <div className='bg-white border-b border-gray-200'>
+        <nav className='flex px-6' aria-label='Tabs'>
+          {tabs.map(tab => {
             const Icon = tab.icon;
             return (
               <button
@@ -48,7 +51,7 @@ export const AllPOPage: React.FC = () => {
                   }
                 `}
               >
-                <Icon className="w-4 h-4 mr-2" />
+                <Icon className='w-4 h-4 mr-2' />
                 {tab.label}
               </button>
             );
@@ -57,25 +60,29 @@ export const AllPOPage: React.FC = () => {
       </div>
 
       {/* Tab Content */}
-      <div className="flex-1 overflow-hidden">
+      <div className='flex-1 overflow-hidden'>
         {activeTab === 'cancel' && <CancelPOTab />}
         {activeTab === 'shortClose' && (
-          <div className="h-full flex items-center justify-center">
-            <div className="text-center">
-              <MinusCircle className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">Short Close PO</h3>
-              <p className="text-gray-600 max-w-md">
+          <div className='h-full flex items-center justify-center'>
+            <div className='text-center'>
+              <MinusCircle className='w-16 h-16 text-gray-400 mx-auto mb-4' />
+              <h3 className='text-lg font-medium text-gray-900 mb-2'>
+                Short Close PO
+              </h3>
+              <p className='text-gray-600 max-w-md'>
                 Short close functionality for purchase orders coming soon...
               </p>
             </div>
           </div>
         )}
         {activeTab === 'amend' && (
-          <div className="h-full flex items-center justify-center">
-            <div className="text-center">
-              <Edit3 className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">Amend PO</h3>
-              <p className="text-gray-600 max-w-md">
+          <div className='h-full flex items-center justify-center'>
+            <div className='text-center'>
+              <Edit3 className='w-16 h-16 text-gray-400 mx-auto mb-4' />
+              <h3 className='text-lg font-medium text-gray-900 mb-2'>
+                Amend PO
+              </h3>
+              <p className='text-gray-600 max-w-md'>
                 Amendment functionality for purchase orders coming soon...
               </p>
             </div>

@@ -30,10 +30,13 @@ export const FileUpload: React.FC<FileUploadProps> = ({
 
   // Parse existing files from comma-separated paths
   const existingFiles: UploadedFile[] = value
-    ? value.split(',').filter(Boolean).map(path => ({
-        name: path.split('/').pop() || path,
-        path: path.trim(),
-      }))
+    ? value
+        .split(',')
+        .filter(Boolean)
+        .map(path => ({
+          name: path.split('/').pop() || path,
+          path: path.trim(),
+        }))
     : [];
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -51,15 +54,15 @@ export const FileUpload: React.FC<FileUploadProps> = ({
         const formData = new FormData();
         formData.append('file', file);
 
-        const response = await apiClient.post<{ data: number; upload_inv: string; message?: string }>(
-          '/files/upload',
-          formData,
-          {
-            headers: {
-              'Content-Type': 'multipart/form-data',
-            },
-          }
-        );
+        const response = await apiClient.post<{
+          data: number;
+          upload_inv: string;
+          message?: string;
+        }>('/files/upload', formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        });
 
         if (response.data.data === 1 && response.data.upload_inv !== '-') {
           uploadedPaths.push(response.data.upload_inv);
@@ -86,10 +89,14 @@ export const FileUpload: React.FC<FileUploadProps> = ({
   const handleRemoveFile = async (fileToRemove: UploadedFile) => {
     try {
       // Delete from server
-      await apiClient.delete(`/files/delete/${encodeURIComponent(fileToRemove.path)}`);
+      await apiClient.delete(
+        `/files/delete/${encodeURIComponent(fileToRemove.path)}`
+      );
 
       // Remove from local state
-      const updatedFiles = existingFiles.filter(f => f.path !== fileToRemove.path);
+      const updatedFiles = existingFiles.filter(
+        f => f.path !== fileToRemove.path
+      );
       onChange(updatedFiles.map(f => f.path).join(','));
     } catch (error) {
       console.error('Delete error:', error);
@@ -103,20 +110,20 @@ export const FileUpload: React.FC<FileUploadProps> = ({
   };
 
   return (
-    <div className="space-y-2">
-      <label className="block text-sm font-medium text-gray-700">{label}</label>
+    <div className='space-y-2'>
+      <label className='block text-sm font-medium text-gray-700'>{label}</label>
 
       {/* Upload Button */}
-      <div className="flex items-center gap-2">
+      <div className='flex items-center gap-2'>
         <input
           ref={fileInputRef}
-          type="file"
+          type='file'
           id={`file-upload-${label.replace(/\s+/g, '-')}`}
           accept={accept}
           multiple={multiple}
           onChange={handleFileSelect}
           disabled={disabled || uploading}
-          className="hidden"
+          className='hidden'
         />
         <label
           htmlFor={`file-upload-${label.replace(/\s+/g, '-')}`}
@@ -131,44 +138,48 @@ export const FileUpload: React.FC<FileUploadProps> = ({
           {uploading ? 'Uploading...' : 'Choose File'}
         </label>
         {multiple && (
-          <span className="text-xs text-gray-500">You can select multiple files</span>
+          <span className='text-xs text-gray-500'>
+            You can select multiple files
+          </span>
         )}
       </div>
 
       {/* Error Message */}
       {uploadError && (
-        <div className="text-sm text-red-600 bg-red-50 p-2 rounded">
+        <div className='text-sm text-red-600 bg-red-50 p-2 rounded'>
           {uploadError}
         </div>
       )}
 
       {/* Uploaded Files List */}
       {existingFiles.length > 0 && (
-        <div className="space-y-2">
+        <div className='space-y-2'>
           {existingFiles.map((file, index) => (
             <div
               key={index}
-              className="flex items-center justify-between p-3 bg-gray-50 rounded-md border border-gray-200"
+              className='flex items-center justify-between p-3 bg-gray-50 rounded-md border border-gray-200'
             >
-              <div className="flex items-center gap-2 flex-1 min-w-0">
-                <FileText size={18} className="text-blue-600 flex-shrink-0" />
-                <span className="text-sm text-gray-700 truncate">{file.name}</span>
+              <div className='flex items-center gap-2 flex-1 min-w-0'>
+                <FileText size={18} className='text-blue-600 flex-shrink-0' />
+                <span className='text-sm text-gray-700 truncate'>
+                  {file.name}
+                </span>
               </div>
-              <div className="flex items-center gap-2">
+              <div className='flex items-center gap-2'>
                 <button
-                  type="button"
+                  type='button'
                   onClick={() => handleDownloadFile(file)}
-                  className="p-1 text-blue-600 hover:bg-blue-100 rounded"
-                  title="Download file"
+                  className='p-1 text-blue-600 hover:bg-blue-100 rounded'
+                  title='Download file'
                 >
                   <Download size={18} />
                 </button>
                 {!disabled && (
                   <button
-                    type="button"
+                    type='button'
                     onClick={() => handleRemoveFile(file)}
-                    className="p-1 text-red-600 hover:bg-red-100 rounded"
-                    title="Remove file"
+                    className='p-1 text-red-600 hover:bg-red-100 rounded'
+                    title='Remove file'
                   >
                     <X size={18} />
                   </button>
@@ -180,7 +191,7 @@ export const FileUpload: React.FC<FileUploadProps> = ({
       )}
 
       {/* Accept types hint */}
-      <p className="text-xs text-gray-500">
+      <p className='text-xs text-gray-500'>
         Accepted formats: {accept.split(',').join(', ')}
       </p>
     </div>

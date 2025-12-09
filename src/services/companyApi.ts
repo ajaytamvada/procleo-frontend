@@ -12,7 +12,9 @@ export const companyApi = {
    * Get all active companies
    */
   getAllActiveCompanies: async (): Promise<Company[]> => {
-    const response = await apiClient.get<Company[]>(`${COMPANY_BASE_URL}/active`);
+    const response = await apiClient.get<Company[]>(
+      `${COMPANY_BASE_URL}/active`
+    );
     // Defensive programming: ensure we return an array
     return Array.isArray(response.data) ? response.data : [];
   },
@@ -36,8 +38,14 @@ export const companyApi = {
   /**
    * Update an existing company
    */
-  updateCompany: async (id: number, company: Partial<Company>): Promise<Company> => {
-    const response = await apiClient.put<Company>(`${COMPANY_BASE_URL}/${id}`, company);
+  updateCompany: async (
+    id: number,
+    company: Partial<Company>
+  ): Promise<Company> => {
+    const response = await apiClient.put<Company>(
+      `${COMPANY_BASE_URL}/${id}`,
+      company
+    );
     return response.data;
   },
 

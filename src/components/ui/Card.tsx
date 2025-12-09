@@ -36,17 +36,20 @@ export interface CardProps
 }
 
 const Card = React.forwardRef<HTMLDivElement, CardProps>(
-  ({ 
-    className, 
-    variant, 
-    size, 
-    hoverable = false,
-    clickable = false,
-    animate = false,
-    children,
-    asChild,
-    ...props 
-  }, ref) => {
+  (
+    {
+      className,
+      variant,
+      size,
+      hoverable = false,
+      clickable = false,
+      animate = false,
+      children,
+      asChild,
+      ...props
+    },
+    ref
+  ) => {
     const commonClassName = cn(
       cardVariants({ variant, size }),
       hoverable && 'transition-all duration-200 hover:shadow-md',
@@ -63,7 +66,14 @@ const Card = React.forwardRef<HTMLDivElement, CardProps>(
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 20 }}
           transition={{ duration: 0.2 }}
-          whileHover={hoverable ? { y: -2, transition: { duration: 0.15, type: 'tween' as const } } : undefined}
+          whileHover={
+            hoverable
+              ? {
+                  y: -2,
+                  transition: { duration: 0.15, type: 'tween' as const },
+                }
+              : undefined
+          }
           whileTap={clickable ? { scale: 0.98 } : undefined}
           {...(props as any)}
         >
@@ -73,11 +83,7 @@ const Card = React.forwardRef<HTMLDivElement, CardProps>(
     }
 
     return (
-      <div
-        className={commonClassName}
-        ref={ref}
-        {...props}
-      >
+      <div className={commonClassName} ref={ref} {...props}>
         {children}
       </div>
     );
@@ -143,12 +149,12 @@ const CardFooter = React.forwardRef<
 ));
 CardFooter.displayName = 'CardFooter';
 
-export { 
-  Card, 
-  CardHeader, 
-  CardFooter, 
-  CardTitle, 
-  CardDescription, 
+export {
+  Card,
+  CardHeader,
+  CardFooter,
+  CardTitle,
+  CardDescription,
   CardContent,
-  cardVariants 
+  cardVariants,
 };

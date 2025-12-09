@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { toast } from 'react-hot-toast';
 import SubCategoryList from './SubCategoryList';
 import SubCategoryForm from './SubCategoryForm';
+import ExcelImportDialog from '@/components/ExcelImportDialog';
 import {
   useSubCategoriesPaged,
   useCreateSubCategory,
@@ -13,7 +14,10 @@ import {
 
 const SubCategoryPage: React.FC = () => {
   const [showForm, setShowForm] = useState(false);
-  const [selectedSubCategory, setSelectedSubCategory] = useState<SubCategory | undefined>();
+  const [showImportDialog, setShowImportDialog] = useState(false);
+  const [selectedSubCategory, setSelectedSubCategory] = useState<
+    SubCategory | undefined
+  >();
   const [page, setPage] = useState(0);
   const [filters, setFilters] = useState<SubCategoryFilters>({});
 
@@ -40,7 +44,9 @@ const SubCategoryPage: React.FC = () => {
     setSelectedSubCategory(undefined);
   };
 
-  const handleSubmit = async (data: Omit<SubCategory, 'id' | 'categoryName'>) => {
+  const handleSubmit = async (
+    data: Omit<SubCategory, 'id' | 'categoryName'>
+  ) => {
     try {
       if (selectedSubCategory?.id) {
         await updateMutation.mutateAsync({
@@ -78,8 +84,8 @@ const SubCategoryPage: React.FC = () => {
 
   if (error) {
     return (
-      <div className="p-6">
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+      <div className='p-6'>
+        <div className='bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded'>
           Error loading sub-categories: {(error as Error).message}
         </div>
       </div>
@@ -97,19 +103,37 @@ const SubCategoryPage: React.FC = () => {
     );
   }
 
+  const handleImportSuccess = () => {
+    // Refetch data after successful import
+    setPage(0); // Reset to first page
+    // The React Query cache will automatically refetch
+  };
+
   return (
-    <SubCategoryList
-      subCategories={subCategories}
-      onEdit={handleEdit}
-      onCreate={handleCreate}
-      onDelete={handleDelete}
-      isLoading={isLoading}
-      page={page}
-      totalPages={totalPages}
-      totalElements={totalElements}
-      onPageChange={setPage}
-      onFiltersChange={setFilters}
-    />
+    <>
+      <SubCategoryList
+        subCategories={subCategories}
+        onEdit={handleEdit}
+        onCreate={handleCreate}
+        onDelete={handleDelete}
+        onImport={() => setShowImportDialog(true)}
+        isLoading={isLoading}
+        page={page}
+        totalPages={totalPages}
+        totalElements={totalElements}
+        onPageChange={setPage}
+        onFiltersChange={setFilters}
+      />
+
+      <ExcelImportDialog
+        isOpen={showImportDialog}
+        onClose={() => setShowImportDialog(false)}
+        entityName='SubCategory'
+        importEndpoint='/master/subcategories/import'
+        templateEndpoint='/master/subcategories/template'
+        onImportSuccess={handleImportSuccess}
+      />
+    </>
   );
 };
 

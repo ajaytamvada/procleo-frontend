@@ -5,7 +5,7 @@ const API_BASE_URL = '/master/login-provision';
 
 export interface LoginProvision {
   id?: number;
-  employeeId: string;
+  employeeId: string | number;
   employeeName?: string;
   loginName: string;
   email?: string;
@@ -36,7 +36,11 @@ export const useLoginProvisions = () => {
 };
 
 // Search users with pagination
-export const useSearchLoginProvisions = (searchWord: string, page: number, size: number) => {
+export const useSearchLoginProvisions = (
+  searchWord: string,
+  page: number,
+  size: number
+) => {
   return useQuery({
     queryKey: ['loginProvisions', 'search', searchWord, page, size],
     queryFn: async () => {
@@ -57,7 +61,9 @@ export const useLoginProvision = (id: number | undefined) => {
     queryKey: ['loginProvisions', id],
     queryFn: async () => {
       if (!id) throw new Error('User ID is required');
-      const { data } = await apiClient.get<LoginProvision>(`${API_BASE_URL}/${id}`);
+      const { data } = await apiClient.get<LoginProvision>(
+        `${API_BASE_URL}/${id}`
+      );
       return data;
     },
     enabled: !!id,
@@ -85,7 +91,10 @@ export const useUpdateLoginProvision = () => {
 
   return useMutation({
     mutationFn: async ({ id, user }: { id: number; user: LoginProvision }) => {
-      const { data } = await apiClient.put<LoginProvision>(`${API_BASE_URL}/${id}`, user);
+      const { data } = await apiClient.put<LoginProvision>(
+        `${API_BASE_URL}/${id}`,
+        user
+      );
       return data;
     },
     onSuccess: () => {

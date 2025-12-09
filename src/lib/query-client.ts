@@ -28,7 +28,8 @@ const defaultQueryOptions = {
     // Retry up to 3 times for server errors
     return failureCount < 3;
   },
-  retryDelay: (attemptIndex: number) => Math.min(1000 * 2 ** attemptIndex, 30000),
+  retryDelay: (attemptIndex: number) =>
+    Math.min(1000 * 2 ** attemptIndex, 30000),
 };
 
 // Create query client with global error handling
@@ -71,10 +72,11 @@ export const queryKeys = {
     list: (filters: Record<string, any>) =>
       [...queryKeys.purchaseOrders.lists(), filters] as const,
     details: () => [...queryKeys.purchaseOrders.all, 'detail'] as const,
-    detail: (id: string) => [...queryKeys.purchaseOrders.details(), id] as const,
+    detail: (id: string) =>
+      [...queryKeys.purchaseOrders.details(), id] as const,
     statistics: () => [...queryKeys.purchaseOrders.all, 'statistics'] as const,
   },
-  
+
   // Assets
   assets: {
     all: ['assets'] as const,
@@ -94,7 +96,8 @@ export const queryKeys = {
       [...queryKeys.vendors.lists(), filters] as const,
     details: () => [...queryKeys.vendors.all, 'detail'] as const,
     detail: (id: string) => [...queryKeys.vendors.details(), id] as const,
-    ratings: (id: string) => [...queryKeys.vendors.detail(id), 'ratings'] as const,
+    ratings: (id: string) =>
+      [...queryKeys.vendors.detail(id), 'ratings'] as const,
   },
 
   // Users
@@ -133,7 +136,7 @@ export const queryUtils = {
     const entityKeys = queryKeys[entity] as any;
     const allKey = entityKeys.all as readonly unknown[];
     await queryClient.invalidateQueries({
-      queryKey: allKey
+      queryKey: allKey,
     });
   },
 
@@ -151,7 +154,10 @@ export const queryUtils = {
   },
 
   // Set query data optimistically
-  setOptimisticData: <T>(queryKey: QueryKey, data: T | ((old: T | undefined) => T)) => {
+  setOptimisticData: <T>(
+    queryKey: QueryKey,
+    data: T | ((old: T | undefined) => T)
+  ) => {
     queryClient.setQueryData(queryKey, data);
   },
 
@@ -205,7 +211,11 @@ export const backgroundSync = {
 // Persistence layer integration
 export const persistenceUtils = {
   // Persist query results to localStorage
-  persistQuery: <T>(queryKey: QueryKey, data: T, ttl: number = 24 * 60 * 60 * 1000) => {
+  persistQuery: <T>(
+    queryKey: QueryKey,
+    data: T,
+    ttl: number = 24 * 60 * 60 * 1000
+  ) => {
     const item = {
       data,
       timestamp: Date.now(),
@@ -225,7 +235,7 @@ export const persistenceUtils = {
 
       const item = JSON.parse(stored);
       const isExpired = Date.now() - item.timestamp > item.ttl;
-      
+
       if (isExpired) {
         localStorage.removeItem(`query_${JSON.stringify(queryKey)}`);
         return null;
@@ -239,13 +249,15 @@ export const persistenceUtils = {
 
   // Clear expired cached queries
   clearExpiredQueries: () => {
-    const keys = Object.keys(localStorage).filter(key => key.startsWith('query_'));
-    
+    const keys = Object.keys(localStorage).filter(key =>
+      key.startsWith('query_')
+    );
+
     keys.forEach(key => {
       try {
         const item = JSON.parse(localStorage.getItem(key) || '');
         const isExpired = Date.now() - item.timestamp > item.ttl;
-        
+
         if (isExpired) {
           localStorage.removeItem(key);
         }

@@ -3,19 +3,30 @@ import type { PurchaseOrder } from '../types';
 
 export const purchaseOrderApi = {
   // Create new purchase order
-  createPurchaseOrder: async (data: Partial<PurchaseOrder>): Promise<PurchaseOrder> => {
+  createPurchaseOrder: async (
+    data: Partial<PurchaseOrder>
+  ): Promise<PurchaseOrder> => {
     const response = await apiClient.post('/purchaseorder', data);
     return response.data;
   },
 
   // Create PO from approved RFP
-  createPOFromRFP: async (rfpId: number, data: Partial<PurchaseOrder>): Promise<PurchaseOrder> => {
-    const response = await apiClient.post(`/purchaseorder/from-rfp/${rfpId}`, data);
+  createPOFromRFP: async (
+    rfpId: number,
+    data: Partial<PurchaseOrder>
+  ): Promise<PurchaseOrder> => {
+    const response = await apiClient.post(
+      `/purchaseorder/from-rfp/${rfpId}`,
+      data
+    );
     return response.data;
   },
 
   // Update purchase order
-  updatePurchaseOrder: async (id: number, data: Partial<PurchaseOrder>): Promise<PurchaseOrder> => {
+  updatePurchaseOrder: async (
+    id: number,
+    data: Partial<PurchaseOrder>
+  ): Promise<PurchaseOrder> => {
     const response = await apiClient.put(`/purchaseorder/${id}`, data);
     return response.data;
   },
@@ -27,7 +38,9 @@ export const purchaseOrderApi = {
   },
 
   // Get purchase order by PO number
-  getPurchaseOrderByNumber: async (poNumber: string): Promise<PurchaseOrder> => {
+  getPurchaseOrderByNumber: async (
+    poNumber: string
+  ): Promise<PurchaseOrder> => {
     const response = await apiClient.get(`/purchaseorder/number/${poNumber}`);
     return response.data;
   },
@@ -39,29 +52,40 @@ export const purchaseOrderApi = {
   },
 
   // Get POs by status
-  getPurchaseOrdersByStatus: async (status: string): Promise<PurchaseOrder[]> => {
+  getPurchaseOrdersByStatus: async (
+    status: string
+  ): Promise<PurchaseOrder[]> => {
     const response = await apiClient.get(`/purchaseorder/status/${status}`);
     return response.data;
   },
 
   // Get POs by supplier
-  getPurchaseOrdersBySupplierId: async (supplierId: number): Promise<PurchaseOrder[]> => {
-    const response = await apiClient.get(`/purchaseorder/supplier/${supplierId}`);
+  getPurchaseOrdersBySupplierId: async (
+    supplierId: number
+  ): Promise<PurchaseOrder[]> => {
+    const response = await apiClient.get(
+      `/purchaseorder/supplier/${supplierId}`
+    );
     return response.data;
   },
 
   // Search purchase orders
-  searchPurchaseOrders: async (searchTerm: string): Promise<PurchaseOrder[]> => {
+  searchPurchaseOrders: async (
+    searchTerm: string
+  ): Promise<PurchaseOrder[]> => {
     const response = await apiClient.get('/purchaseorder/search', {
-      params: { searchTerm }
+      params: { searchTerm },
     });
     return response.data;
   },
 
   // Get POs by date range
-  getPurchaseOrdersByDateRange: async (startDate: string, endDate: string): Promise<PurchaseOrder[]> => {
+  getPurchaseOrdersByDateRange: async (
+    startDate: string,
+    endDate: string
+  ): Promise<PurchaseOrder[]> => {
     const response = await apiClient.get('/purchaseorder/date-range', {
-      params: { startDate, endDate }
+      params: { startDate, endDate },
     });
     return response.data;
   },
@@ -79,25 +103,38 @@ export const purchaseOrderApi = {
   },
 
   // Approve purchase order
-  approvePurchaseOrder: async (id: number, approvedBy: string): Promise<PurchaseOrder> => {
-    const response = await apiClient.post(`/purchaseorder/${id}/approve`, null, {
-      params: { approvedBy }
-    });
+  approvePurchaseOrder: async (
+    id: number,
+    approvedBy: string
+  ): Promise<PurchaseOrder> => {
+    const response = await apiClient.post(
+      `/purchaseorder/${id}/approve`,
+      null,
+      {
+        params: { approvedBy },
+      }
+    );
     return response.data;
   },
 
   // Reject purchase order
-  rejectPurchaseOrder: async (id: number, reason: string): Promise<PurchaseOrder> => {
+  rejectPurchaseOrder: async (
+    id: number,
+    reason: string
+  ): Promise<PurchaseOrder> => {
     const response = await apiClient.post(`/purchaseorder/${id}/reject`, null, {
-      params: { reason }
+      params: { reason },
     });
     return response.data;
   },
 
   // Cancel purchase order
-  cancelPurchaseOrder: async (id: number, reason: string): Promise<PurchaseOrder> => {
+  cancelPurchaseOrder: async (
+    id: number,
+    reason: string
+  ): Promise<PurchaseOrder> => {
     const response = await apiClient.post(`/purchaseorder/${id}/cancel`, null, {
-      params: { reason }
+      params: { reason },
     });
     return response.data;
   },
