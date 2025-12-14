@@ -3,6 +3,55 @@
 @tailwind components;
 @tailwind utilities;
 
+/* TT Commons Pro Font Family */
+@font-face {
+  font-family: 'TT Commons Pro';
+  src: url('/fonts/tt_commons_pro_light.otf') format('opentype');
+  font-weight: 300;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'TT Commons Pro';
+  src: url('/fonts/tt_commons_pro_regular.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'TT Commons Pro';
+  src: url('/fonts/tt_commons_pro_medium.otf') format('opentype');
+  font-weight: 500;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'TT Commons Pro';
+  src: url('/fonts/tt_commons_pro_demibold.otf') format('opentype');
+  font-weight: 600;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'TT Commons Pro';
+  src: url('/fonts/tt_commons_pro_bold.otf') format('opentype');
+  font-weight: 700;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'TT Commons Pro';
+  src: url('/fonts/tt_commons_pro_extrabold.otf') format('opentype');
+  font-weight: 800;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'TT Commons Pro';
+  src: url('/fonts/tt_commons_pro_black.otf') format('opentype');
+  font-weight: 900;
+  font-style: normal;
+}
 /* Custom animations for CompanyInfoSidebar */
 @keyframes float {
   0%,
@@ -77,7 +126,7 @@
     font-feature-settings:
       'rlig' 1,
       'calt' 1;
-    font-family: var(--font-sans);
+    font-family: 'TT Commons Pro', var(--font-sans), sans-serif;
   }
 
   /* Typography with zero margins */

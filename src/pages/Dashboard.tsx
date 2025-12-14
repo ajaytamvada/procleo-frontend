@@ -10,6 +10,10 @@ import {
   Clock,
   CheckCircle,
   FileCheck,
+  ArrowUpRight,
+  ChevronRight,
+  Calendar,
+  Info,
 } from 'lucide-react';
 import {
   AreaChart,
@@ -21,7 +25,6 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
-  Legend,
   ResponsiveContainer,
 } from 'recharts';
 import { useDashboardData } from '@/features/dashboard/hooks/useDashboard';
@@ -35,29 +38,35 @@ const Dashboard: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className='flex items-center justify-center h-screen'>
-        <div className='animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600'></div>
+      <div className='flex items-center justify-center h-screen bg-slate-50'>
+        <div className='flex flex-col items-center gap-4'>
+          <div className='relative'>
+            <div className='w-16 h-16 border-4 border-indigo-100 rounded-full'></div>
+            <div className='absolute top-0 left-0 w-16 h-16 border-4 border-indigo-600 rounded-full animate-spin border-t-transparent'></div>
+          </div>
+          <p className='text-slate-500 font-medium'>Loading dashboard...</p>
+        </div>
       </div>
     );
   }
 
   if (!dashboardData) {
     return (
-      <div className='flex items-center justify-center h-screen'>
-        <div className='text-center'>
-          <AlertCircle className='w-12 h-12 text-red-500 mx-auto mb-4' />
-          <p className='text-gray-600'>Failed to load dashboard data</p>
+      <div className='flex items-center justify-center h-screen bg-slate-50'>
+        <div className='text-center bg-white p-8 rounded-2xl shadow-sm border border-slate-100'>
+          <div className='w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4'>
+            <AlertCircle className='w-8 h-8 text-red-500' />
+          </div>
+          <h3 className='text-lg font-semibold text-slate-800 mb-2'>
+            Failed to load data
+          </h3>
+          <p className='text-slate-500'>Please try refreshing the page</p>
         </div>
       </div>
     );
   }
 
-  const {
-    stats,
-    recentOrders,
-    monthlySpend,
-    categorySpend,
-  } = dashboardData;
+  const { stats, recentOrders, monthlySpend, categorySpend } = dashboardData;
 
   const getGreeting = () => {
     const hour = new Date().getHours();
@@ -74,7 +83,9 @@ const Dashboard: React.FC = () => {
       changeType: 'warning',
       icon: ShoppingCart,
       href: '/purchase-orders',
-      color: 'bg-blue-500',
+      gradient: 'from-blue-500 to-blue-600',
+      lightBg: 'bg-blue-50',
+      iconColor: 'text-blue-600',
     },
     {
       name: 'Total Vendors',
@@ -83,7 +94,9 @@ const Dashboard: React.FC = () => {
       changeType: 'increase',
       icon: Users,
       href: '/master/suppliers',
-      color: 'bg-green-500',
+      gradient: 'from-emerald-500 to-emerald-600',
+      lightBg: 'bg-emerald-50',
+      iconColor: 'text-emerald-600',
     },
     {
       name: 'Purchase Requests',
@@ -92,7 +105,9 @@ const Dashboard: React.FC = () => {
       changeType: 'warning',
       icon: FileText,
       href: '/purchase-requisition/manage',
-      color: 'bg-yellow-500',
+      gradient: 'from-amber-500 to-orange-500',
+      lightBg: 'bg-amber-50',
+      iconColor: 'text-amber-600',
     },
     {
       name: 'Total RFPs',
@@ -101,7 +116,9 @@ const Dashboard: React.FC = () => {
       changeType: 'increase',
       icon: TrendingUp,
       href: '/rfp/manage',
-      color: 'bg-purple-500',
+      gradient: 'from-violet-500 to-purple-600',
+      lightBg: 'bg-violet-50',
+      iconColor: 'text-violet-600',
     },
     {
       name: 'Total GRNs',
@@ -110,7 +127,9 @@ const Dashboard: React.FC = () => {
       changeType: 'increase',
       icon: Package,
       href: '/grn/list',
-      color: 'bg-indigo-500',
+      gradient: 'from-indigo-500 to-indigo-600',
+      lightBg: 'bg-indigo-50',
+      iconColor: 'text-indigo-600',
     },
     {
       name: 'Overdue POs',
@@ -119,20 +138,22 @@ const Dashboard: React.FC = () => {
       changeType: 'decrease',
       icon: AlertCircle,
       href: '/purchase-orders',
-      color: 'bg-red-500',
+      gradient: 'from-rose-500 to-red-600',
+      lightBg: 'bg-rose-50',
+      iconColor: 'text-rose-600',
     },
   ];
 
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'APPROVED':
-        return 'bg-green-100 text-green-800';
+        return 'bg-emerald-50 text-emerald-700 border border-emerald-200';
       case 'PENDING_APPROVAL':
-        return 'bg-yellow-100 text-yellow-800';
+        return 'bg-amber-50 text-amber-700 border border-amber-200';
       case 'REJECTED':
-        return 'bg-red-100 text-red-800';
+        return 'bg-rose-50 text-rose-700 border border-rose-200';
       default:
-        return 'bg-gray-100 text-gray-800';
+        return 'bg-slate-50 text-slate-700 border border-slate-200';
     }
   };
 
@@ -146,174 +167,349 @@ const Dashboard: React.FC = () => {
     return <FileCheck className='w-3 h-3' />;
   };
 
-  return (
-    <div className='space-y-6 p-6'>
-      {/* Header */}
-      <div>
-        <h1 className='text-2xl font-bold text-gray-900'>
-          {getGreeting()}, {user?.firstName || 'User'}
-        </h1>
-        <p className='text-sm text-gray-500 mt-1'>
-          Here's what's happening with your procurement today.
-        </p>
-      </div>
+  const getCurrentDate = () => {
+    return new Date().toLocaleDateString('en-US', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    });
+  };
 
-      {/* Stats Grid */}
-      <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
-        {statsList.map(item => (
-          <Link
-            key={item.name}
-            to={item.href}
-            className='bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-shadow duration-200 group'
-          >
-            <div className='flex items-center justify-between'>
+  return (
+    <div className='min-h-screen bg-slate-50'>
+      {/* Main Content */}
+      <div className='p-6 lg:p-8 space-y-8'>
+        {/* Header Section */}
+        <div className='flex flex-col md:flex-row md:items-center md:justify-between gap-4'>
+          <div>
+            <h1 className='text-2xl lg:text-3xl font-bold text-slate-800'>
+              {getGreeting()}, {user?.firstName || 'User'} 👋
+            </h1>
+            <p className='text-slate-500 mt-1 flex items-center gap-2'>
+              <Calendar className='w-4 h-4' />
+              {getCurrentDate()}
+            </p>
+          </div>
+          <div className='flex items-center gap-3'>
+            <select className='px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm font-medium text-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent cursor-pointer hover:border-slate-300 transition-colors'>
+              <option>Last 7 days</option>
+              <option>Last 30 days</option>
+              <option>Last 90 days</option>
+              <option>This Year</option>
+            </select>
+          </div>
+        </div>
+
+        {/* Stats Grid - Cashfree Style Cards */}
+        <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5'>
+          {statsList.map(item => (
+            <Link
+              key={item.name}
+              to={item.href}
+              className='group relative bg-white rounded-2xl border border-slate-100 p-6 hover:shadow-lg hover:shadow-slate-200/50 transition-all duration-300 hover:-translate-y-1'
+            >
+              {/* Gradient accent line */}
+              <div
+                className={`absolute top-0 left-6 right-6 h-1 bg-gradient-to-r ${item.gradient} rounded-b-full opacity-0 group-hover:opacity-100 transition-opacity`}
+              ></div>
+
+              <div className='flex items-start justify-between'>
+                <div className='flex-1'>
+                  <div className='flex items-center gap-2 mb-3'>
+                    <span className='text-sm font-medium text-slate-500'>
+                      {item.name}
+                    </span>
+                    <Info className='w-3.5 h-3.5 text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity' />
+                  </div>
+                  <p className='text-3xl font-bold text-slate-800 tracking-tight'>
+                    {item.value}
+                  </p>
+                  <div className='mt-3 flex items-center gap-2'>
+                    <span
+                      className={`inline-flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-full ${
+                        item.changeType === 'increase'
+                          ? 'bg-emerald-50 text-emerald-600'
+                          : item.changeType === 'decrease'
+                            ? 'bg-rose-50 text-rose-600'
+                            : 'bg-amber-50 text-amber-600'
+                      }`}
+                    >
+                      {item.changeType === 'increase' && (
+                        <ArrowUpRight className='w-3 h-3' />
+                      )}
+                      {item.change}
+                    </span>
+                  </div>
+                </div>
+                <div
+                  className={`p-3 rounded-xl ${item.lightBg} group-hover:scale-110 transition-transform duration-300`}
+                >
+                  <item.icon className={`w-6 h-6 ${item.iconColor}`} />
+                </div>
+              </div>
+
+              {/* Hover arrow */}
+              <div className='absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-x-2 group-hover:translate-x-0'>
+                <ChevronRight className='w-5 h-5 text-slate-400' />
+              </div>
+            </Link>
+          ))}
+        </div>
+
+        {/* Summary Cards Row */}
+        <div className='grid grid-cols-1 lg:grid-cols-2 gap-6'>
+          {/* Status Summary Card */}
+          <div className='bg-white rounded-2xl border border-slate-100 p-6 hover:shadow-lg hover:shadow-slate-200/50 transition-all duration-300'>
+            <div className='flex items-center justify-between mb-6'>
+              <h3 className='text-lg font-semibold text-slate-800'>
+                Status Summary
+              </h3>
+              <button className='text-sm text-indigo-600 hover:text-indigo-700 font-medium flex items-center gap-1'>
+                View All <ChevronRight className='w-4 h-4' />
+              </button>
+            </div>
+            <StatusSummaryCard stats={stats} />
+          </div>
+
+          {/* Recent Activity Widget */}
+          <div className='bg-white rounded-2xl border border-slate-100 p-6 hover:shadow-lg hover:shadow-slate-200/50 transition-all duration-300'>
+            <div className='flex items-center justify-between mb-6'>
+              <h3 className='text-lg font-semibold text-slate-800'>
+                Recent Activity
+              </h3>
+              <button className='text-sm text-indigo-600 hover:text-indigo-700 font-medium flex items-center gap-1'>
+                View All <ChevronRight className='w-4 h-4' />
+              </button>
+            </div>
+            <RecentActivityWidget />
+          </div>
+        </div>
+
+        {/* Charts Grid */}
+        <div className='grid grid-cols-1 lg:grid-cols-2 gap-6'>
+          {/* Monthly Spend Trend */}
+          <div className='bg-white rounded-2xl border border-slate-100 p-6 hover:shadow-lg hover:shadow-slate-200/50 transition-all duration-300'>
+            <div className='flex items-center justify-between mb-6'>
               <div>
-                <p className='text-sm font-medium text-gray-500'>{item.name}</p>
-                <p className='text-2xl font-bold text-gray-900 mt-2'>
-                  {item.value}
+                <h3 className='text-lg font-semibold text-slate-800'>
+                  Monthly Spend vs Budget
+                </h3>
+                <p className='text-sm text-slate-500 mt-1'>
+                  Track your spending patterns
                 </p>
               </div>
-              <div className={`p-3 rounded-lg ${item.color} bg-opacity-10 group-hover:bg-opacity-20 transition-colors`}>
-                <item.icon className={`w-6 h-6 ${item.color.replace('bg-', 'text-')}`} />
+              <div className='flex items-center gap-4'>
+                <div className='flex items-center gap-2'>
+                  <div className='w-3 h-3 rounded-full bg-indigo-500'></div>
+                  <span className='text-xs text-slate-500'>Spend</span>
+                </div>
+                <div className='flex items-center gap-2'>
+                  <div className='w-3 h-3 rounded-full bg-slate-200'></div>
+                  <span className='text-xs text-slate-500'>Budget</span>
+                </div>
               </div>
             </div>
-            <div className='mt-4 flex items-center'>
-              <span
-                className={`text-sm font-medium ${item.changeType === 'increase'
-                  ? 'text-green-600'
-                  : item.changeType === 'decrease'
-                    ? 'text-red-600'
-                    : 'text-yellow-600'
-                  }`}
-              >
-                {item.change}
-              </span>
-              <span className='text-sm text-gray-400 ml-2'>vs last month</span>
+            <ResponsiveContainer width='100%' height={300}>
+              <AreaChart data={monthlySpend}>
+                <defs>
+                  <linearGradient
+                    id='spendGradient'
+                    x1='0'
+                    y1='0'
+                    x2='0'
+                    y2='1'
+                  >
+                    <stop offset='5%' stopColor='#6366f1' stopOpacity={0.3} />
+                    <stop offset='95%' stopColor='#6366f1' stopOpacity={0} />
+                  </linearGradient>
+                  <linearGradient
+                    id='budgetGradient'
+                    x1='0'
+                    y1='0'
+                    x2='0'
+                    y2='1'
+                  >
+                    <stop offset='5%' stopColor='#e2e8f0' stopOpacity={0.8} />
+                    <stop offset='95%' stopColor='#e2e8f0' stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid
+                  strokeDasharray='3 3'
+                  stroke='#f1f5f9'
+                  vertical={false}
+                />
+                <XAxis
+                  dataKey='month'
+                  stroke='#94a3b8'
+                  fontSize={12}
+                  tickLine={false}
+                  axisLine={false}
+                />
+                <YAxis
+                  stroke='#94a3b8'
+                  fontSize={12}
+                  tickLine={false}
+                  axisLine={false}
+                  tickFormatter={value => `₹${(value / 1000).toFixed(0)}k`}
+                />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: 'white',
+                    border: 'none',
+                    borderRadius: '12px',
+                    boxShadow: '0 10px 40px -10px rgba(0, 0, 0, 0.15)',
+                    padding: '12px 16px',
+                  }}
+                  formatter={(value: number, name: string) => [
+                    `₹${value.toLocaleString()}`,
+                    name === 'spend' ? 'Actual Spend' : 'Budget',
+                  ]}
+                  labelStyle={{
+                    color: '#1e293b',
+                    fontWeight: 600,
+                    marginBottom: '4px',
+                  }}
+                />
+                <Area
+                  type='monotone'
+                  dataKey='budget'
+                  stroke='#e2e8f0'
+                  strokeWidth={2}
+                  fill='url(#budgetGradient)'
+                />
+                <Area
+                  type='monotone'
+                  dataKey='spend'
+                  stroke='#6366f1'
+                  strokeWidth={2}
+                  fill='url(#spendGradient)'
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+
+          {/* Category Spend Distribution */}
+          <div className='bg-white rounded-2xl border border-slate-100 p-6 hover:shadow-lg hover:shadow-slate-200/50 transition-all duration-300'>
+            <div className='flex items-center justify-between mb-6'>
+              <div>
+                <h3 className='text-lg font-semibold text-slate-800'>
+                  Spend by Category
+                </h3>
+                <p className='text-sm text-slate-500 mt-1'>
+                  Distribution overview
+                </p>
+              </div>
             </div>
-          </Link>
-        ))}
-      </div>
-
-      {/* New Widgets Grid: Status Summary & Activity Log */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-[400px]">
-        <StatusSummaryCard stats={stats} />
-        <RecentActivityWidget />
-      </div>
-
-      {/* Charts Grid */}
-      <div className='grid grid-cols-1 lg:grid-cols-2 gap-6'>
-        {/* Monthly Spend Trend */}
-        <div className='bg-white rounded-xl shadow-sm border border-gray-100 p-6'>
-          <h3 className='text-lg font-semibold text-gray-900 mb-4'>
-            Monthly Spend vs Budget
-          </h3>
-          <ResponsiveContainer width='100%' height={300}>
-            <AreaChart data={monthlySpend}>
-              <CartesianGrid strokeDasharray='3 3' stroke='#e5e7eb' />
-              <XAxis dataKey='month' stroke='#6b7280' />
-              <YAxis stroke='#6b7280' />
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: 'white',
-                  border: '1px solid #e5e7eb',
-                  borderRadius: '8px',
-                  boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
-                }}
-                formatter={(value: number, name: string) => [
-                  `₹${value.toLocaleString()}`,
-                  name === 'spend' ? 'Actual Spend' : 'Budget',
-                ]}
-              />
-              <Legend />
-              <Area
-                type='monotone'
-                dataKey='budget'
-                stackId='1'
-                stroke='#e5e7eb'
-                fill='#f3f4f6'
-              />
-              <Area
-                type='monotone'
-                dataKey='spend'
-                stackId='2'
-                stroke='#6366f1'
-                fill='#8b5cf6'
-              />
-            </AreaChart>
-          </ResponsiveContainer>
-        </div>
-
-        {/* Category Spend Distribution */}
-        <div className='bg-white rounded-xl shadow-sm border border-gray-100 p-6'>
-          <h3 className='text-lg font-semibold text-gray-900 mb-4'>
-            Spend by Category
-          </h3>
-          <ResponsiveContainer width='100%' height={300}>
-            <PieChart>
-              <Pie
-                data={categorySpend}
-                cx='50%'
-                cy='50%'
-                labelLine={false}
-                label={({ name, percent }: { name: string; percent?: number }) =>
-                  `${name} ${((percent || 0) * 100).toFixed(0)}%`
-                }
-                outerRadius={80}
-                fill='#8884d8'
-                dataKey='value'
-              >
-                {categorySpend.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.color} />
+            <div className='flex items-center'>
+              <ResponsiveContainer width='60%' height={280}>
+                <PieChart>
+                  <Pie
+                    data={categorySpend}
+                    cx='50%'
+                    cy='50%'
+                    innerRadius={60}
+                    outerRadius={100}
+                    paddingAngle={4}
+                    dataKey='value'
+                  >
+                    {categorySpend.map((entry, index) => (
+                      <Cell
+                        key={`cell-${index}`}
+                        fill={entry.color}
+                        stroke='none'
+                      />
+                    ))}
+                  </Pie>
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: 'white',
+                      border: 'none',
+                      borderRadius: '12px',
+                      boxShadow: '0 10px 40px -10px rgba(0, 0, 0, 0.15)',
+                      padding: '12px 16px',
+                    }}
+                    formatter={(value: number) => [
+                      `₹${value.toLocaleString()}`,
+                      'Amount',
+                    ]}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+              <div className='w-[40%] space-y-3'>
+                {categorySpend.map((item, index) => (
+                  <div key={index} className='flex items-center gap-3'>
+                    <div
+                      className='w-3 h-3 rounded-full flex-shrink-0'
+                      style={{ backgroundColor: item.color }}
+                    ></div>
+                    <div className='flex-1 min-w-0'>
+                      <p className='text-sm text-slate-600 truncate'>
+                        {item.name}
+                      </p>
+                      <p className='text-xs text-slate-400'>
+                        ₹{item.value.toLocaleString()}
+                      </p>
+                    </div>
+                  </div>
                 ))}
-              </Pie>
-              <Tooltip
-                formatter={(value: number) => [
-                  `₹${value.toLocaleString()}`,
-                  'Amount',
-                ]}
-              />
-            </PieChart>
-          </ResponsiveContainer>
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
 
-      {/* Recent Purchase Orders */}
-      <div className='bg-white rounded-xl shadow-sm border border-gray-100'>
-        <div className='p-6 border-b border-gray-100'>
-          <h2 className='text-lg font-semibold text-gray-900'>
-            Recent Purchase Orders
-          </h2>
-        </div>
-        <div className='p-6 space-y-4'>
+        {/* Recent Purchase Orders - Cashfree Style Table */}
+        <div className='bg-white rounded-2xl border border-slate-100 overflow-hidden hover:shadow-lg hover:shadow-slate-200/50 transition-all duration-300'>
+          <div className='p-6 border-b border-slate-100 flex items-center justify-between'>
+            <div>
+              <h2 className='text-lg font-semibold text-slate-800'>
+                Recent Purchase Orders
+              </h2>
+              <p className='text-sm text-slate-500 mt-1'>
+                Your latest procurement activities
+              </p>
+            </div>
+            <Link
+              to='/purchase-orders'
+              className='inline-flex items-center gap-2 px-4 py-2 bg-indigo-50 text-indigo-600 rounded-xl text-sm font-medium hover:bg-indigo-100 transition-colors'
+            >
+              View All
+              <ArrowUpRight className='w-4 h-4' />
+            </Link>
+          </div>
+
           {recentOrders.length > 0 ? (
-            <>
+            <div className='divide-y divide-slate-100'>
               {recentOrders.slice(0, 5).map(order => (
                 <div
                   key={order.id}
-                  className='flex justify-between items-center p-4 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors border border-gray-100'
+                  className='flex items-center justify-between p-5 hover:bg-slate-50 transition-colors group'
                 >
-                  <div className='flex items-center space-x-4'>
-                    <div className='flex items-center justify-center w-10 h-10 rounded-lg bg-indigo-100 text-indigo-600'>
-                      <ShoppingCart className='w-5 h-5' />
+                  <div className='flex items-center gap-4'>
+                    <div className='w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-semibold shadow-lg shadow-indigo-200'>
+                      {order.poNumber.slice(-2)}
                     </div>
                     <div>
-                      <p className='text-sm font-medium text-gray-900'>
+                      <p className='text-sm font-semibold text-slate-800 group-hover:text-indigo-600 transition-colors'>
                         {order.poNumber}
                       </p>
-                      <p className='text-xs text-gray-500'>
+                      <p className='text-sm text-slate-500 mt-0.5'>
                         {order.supplierName}
                       </p>
                     </div>
                   </div>
-                  <div className='flex items-center space-x-4'>
+                  <div className='flex items-center gap-6'>
                     <div className='text-right'>
-                      <p className='text-sm font-medium text-gray-900'>
+                      <p className='text-sm font-semibold text-slate-800'>
                         ₹{order.totalAmount.toLocaleString()}
                       </p>
-                      <p className='text-xs text-gray-500'>{order.poDate}</p>
+                      <p className='text-xs text-slate-400 mt-0.5 flex items-center justify-end gap-1'>
+                        <Calendar className='w-3 h-3' />
+                        {order.poDate}
+                      </p>
                     </div>
                     <div
-                      className={`px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1 ${getStatusColor(
+                      className={`px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1.5 ${getStatusColor(
                         order.status
                       )}`}
                     >
@@ -322,23 +518,32 @@ const Dashboard: React.FC = () => {
                         {order.status.replace('_', ' ')}
                       </span>
                     </div>
+                    <ChevronRight className='w-5 h-5 text-slate-300 group-hover:text-slate-500 group-hover:translate-x-1 transition-all' />
                   </div>
                 </div>
               ))}
-              <div className='mt-4 text-center'>
-                <Link
-                  to='/purchase-orders'
-                  className='text-sm font-medium text-indigo-600 hover:text-indigo-700 transition-colors'
-                >
-                  View all purchase orders
-                </Link>
-              </div>
-            </>
+            </div>
           ) : (
-            <div className='text-center py-8 text-gray-500'>
-              <p>No recent purchase orders</p>
+            <div className='p-12 text-center'>
+              <div className='w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4'>
+                <ShoppingCart className='w-8 h-8 text-slate-400' />
+              </div>
+              <p className='text-slate-500 font-medium'>
+                No recent purchase orders
+              </p>
+              <p className='text-slate-400 text-sm mt-1'>
+                New orders will appear here
+              </p>
             </div>
           )}
+        </div>
+
+        {/* Footer */}
+        <div className='flex items-center justify-between text-sm text-slate-400 pt-4'>
+          <p>Last updated: Just now</p>
+          <button className='hover:text-indigo-600 transition-colors flex items-center gap-1'>
+            <span>Need Help?</span>
+          </button>
         </div>
       </div>
     </div>

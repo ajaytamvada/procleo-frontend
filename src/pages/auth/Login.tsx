@@ -13,65 +13,68 @@ export function LoginPage() {
   }
 
   return (
-    <div className='min-h-screen w-full flex flex-row'>
-      {/* Login Form Section - Left Half */}
-      <div className='w-full lg:w-1/2 min-h-screen bg-gray-50 flex flex-col'>
-        {/* Main Content Area */}
-        <div className='flex-1 w-full flex items-center justify-center p-4 sm:p-6 lg:p-8'>
-          <div className='w-full' style={{ maxWidth: '480px' }}>
-            {/* Header */}
-            <div className='text-center mb-8'>
-              <div className='mx-auto mb-6'>
-                <img
-                  src='/riditstack-logo.png'
-                  alt='RiditStack Logo'
-                  className='h-16 w-auto mx-auto'
-                />
-              </div>
-              <h1
-                className='text-3xl font-bold mb-2'
-                style={{ color: '#1a0b2e' }}
-              >
-                Welcome Back
-              </h1>
-              <p className='text-gray-600'>Sign in to access ProcLeo P2P</p>
-            </div>
+    <div className='min-h-screen w-full flex flex-row bg-white'>
+      {/* LEFT SECTION - Login Form Area */}
+      <div className='w-full lg:flex-1 min-h-screen flex flex-col'>
+        {/* Header */}
+        <header className='flex items-center justify-between px-6 sm:px-10 lg:px-12 py-5'>
+          <a href='/' className='flex items-center'>
+            <img
+              src='/riditstack-logo.png'
+              alt='RiditStack Logo'
+              className='h-9 w-auto'
+            />
+          </a>
+          <p className='text-sm font-medium text-gray-600'>
+            Don't have an account?{' '}
+            <a
+              href='/register'
+              className='text-indigo-600 font-semibold hover:underline'
+            >
+              Sign Up
+            </a>
+          </p>
+        </header>
 
-            {/* Login Form */}
+        {/* Main Content */}
+        <main className='flex-1 flex flex-col items-center justify-center px-6 sm:px-10 lg:px-12 py-6'>
+          <div className='w-full max-w-[340px]'>
+            <h1 className='text-3xl font-semibold text-gray-800 text-center mb-8'>
+              Login
+            </h1>
             <LoginForm />
           </div>
-        </div>
+        </main>
 
         {/* Footer */}
-        <div className='w-full py-8 px-4 text-center text-sm text-gray-500 border-t border-gray-200 bg-white'>
-          <p>© 2024 ProcLeo by RiditStack Pvt Ltd. All rights reserved.</p>
-          <div className='mt-2 space-x-4'>
-            <a
-              href='/support'
-              className='hover:underline'
-              style={{ color: '#6366f1' }}
-            >
-              Support
-            </a>
-            <a
-              href='/privacy'
-              className='hover:underline'
-              style={{ color: '#6366f1' }}
-            >
-              Privacy
-            </a>
-            <a
-              href='/terms'
-              className='hover:underline'
-              style={{ color: '#6366f1' }}
-            >
-              Terms
-            </a>
+        <footer className='px-6 sm:px-10 lg:px-12 py-4'>
+          <div className='flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-gray-500 font-medium'>
+            <p>© 2024 ProcLeo by RiditStack Pvt Ltd. All rights reserved.</p>
+            <nav className='flex items-center gap-5'>
+              <a
+                href='/support'
+                className='hover:text-indigo-600 transition-colors'
+              >
+                Support
+              </a>
+              <a
+                href='/privacy'
+                className='hover:text-indigo-600 transition-colors'
+              >
+                Privacy
+              </a>
+              <a
+                href='/terms'
+                className='hover:text-indigo-600 transition-colors'
+              >
+                Terms
+              </a>
+            </nav>
           </div>
-        </div>
+        </footer>
       </div>
 
-      {/* Company Info Sidebar - Right Half */}
+      {/* RIGHT SECTION - Sidebar */}
       <CompanyInfoSidebar variant='login' />
     </div>
   );

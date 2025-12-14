@@ -1,9 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import {
-  Bell,
   User,
   Menu,
-  Plus,
   FileText,
   ShoppingCart,
   Users,
@@ -138,10 +136,10 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
 
         <div className='flex items-center gap-3'>
           <div className='w-8 h-8 bg-gradient-to-br from-purple-400 to-pink-400 rounded-lg flex items-center justify-center shadow-lg'>
-            <span className='text-white font-bold text-base'>A</span>
+            <span className='text-white font-bold text-base'>P</span>
           </div>
           <div className='hidden sm:block'>
-            <h1 className='text-lg font-semibold text-white'>Autovitica P2P</h1>
+            <h1 className='text-lg font-semibold text-white'>Procleo</h1>
           </div>
         </div>
       </div>
@@ -152,18 +150,14 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
         <div className='relative' ref={dropdownRef}>
           <button
             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-            className='flex items-center gap-2 px-3 py-2 rounded-md text-white/90 hover:text-white hover:bg-white/10 transition-all duration-200 group'
+            className='flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-transparent border border-indigo-400/60 text-white text-xs font-medium hover:bg-indigo-500/20 hover:border-indigo-400 transition-all duration-200 group'
             title='Quick Actions'
           >
-            <div className='w-6 h-6 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-md flex items-center justify-center group-hover:scale-110 transition-transform duration-200'>
-              <Plus className='w-4 h-4 text-white' />
-            </div>
-            <span className='text-sm font-medium hidden sm:block'>Create</span>
+            <span>+ Create</span>
             <ChevronDown
-              className={`w-4 h-4 transition-transform duration-200 ${isDropdownOpen ? 'rotate-180' : ''}`}
+              className={`w-3 h-3 transition-transform duration-200 ${isDropdownOpen ? 'rotate-180' : ''}`}
             />
           </button>
-
           {/* Dropdown Menu */}
           {isDropdownOpen && (
             <div className='absolute right-0 mt-2 w-72 bg-white rounded-lg shadow-xl border border-gray-200 py-2 z-50 animate-in slide-in-from-top-2 duration-200'>
@@ -210,18 +204,18 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
         <div className='relative' ref={userMenuRef}>
           <button
             onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-            className='flex items-center gap-3 hover:bg-white/10 rounded-lg px-2 py-1 transition-colors duration-200'
+            className='flex items-center gap-2 hover:bg-indigo-500/20 rounded-lg px-2 py-1 transition-colors duration-200'
           >
             <div className='hidden sm:block text-right'>
-              <div className='text-sm font-medium text-white'>
+              <div className='text-xs font-medium text-white'>
                 {currentUser.employeeName || currentUser.username}
               </div>
-              <div className='text-xs text-white/60'>
+              <div className='text-[10px] text-white/60'>
                 {currentUser.roles?.[0] || 'User'}
               </div>
             </div>
-            <div className='p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors'>
-              <User className='w-5 h-5 text-white' />
+            <div className='p-1.5 rounded-full bg-white/10 hover:bg-white/20 transition-colors'>
+              <User className='w-4 h-4 text-white' />
             </div>
           </button>
 
