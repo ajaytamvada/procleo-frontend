@@ -63,9 +63,15 @@ export const rfpApi = {
     return response.data;
   },
 
-  // Float RFP to suppliers
-  floatRFP: async (id: number, supplierIds: number[]): Promise<RFP> => {
-    const response = await apiClient.post(`/rfp/${id}/float`, supplierIds);
+  // Float RFP to suppliers (registered and unregistered)
+  floatRFP: async (
+    id: number,
+    request: {
+      supplierIds?: number[];
+      unregisteredVendors?: { email: string; name?: string; contactPerson?: string }[];
+    }
+  ): Promise<RFP> => {
+    const response = await apiClient.post(`/rfp/${id}/float`, request);
     return response.data;
   },
 

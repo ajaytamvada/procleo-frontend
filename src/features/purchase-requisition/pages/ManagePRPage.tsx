@@ -31,7 +31,7 @@ export const ManagePRPage: React.FC = () => {
       (pr.requestedByName || pr.requestedBy)
         .toLowerCase()
         .includes(searchTerm.toLowerCase()) ||
-      pr.department.toLowerCase().includes(searchTerm.toLowerCase())
+      (pr.departmentName || '').toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   // Pagination calculations
@@ -217,9 +217,6 @@ export const ManagePRPage: React.FC = () => {
                         className='rounded border-gray-300 text-blue-600 focus:ring-blue-500'
                       />
                     </th>
-                    <th className='px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-16'>
-                      S.No
-                    </th>
                     <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
                       Request Number
                     </th>
@@ -233,10 +230,7 @@ export const ManagePRPage: React.FC = () => {
                       Department
                     </th>
                     <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
-                      Created By
-                    </th>
-                    <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
-                      Created Date
+                      Project Name
                     </th>
                     <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
                       Status
@@ -257,9 +251,6 @@ export const ManagePRPage: React.FC = () => {
                           className='rounded border-gray-300 text-blue-600 focus:ring-blue-500'
                         />
                       </td>
-                      <td className='px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-center'>
-                        {startIndex + index + 1}
-                      </td>
                       <td className='px-4 py-4 whitespace-nowrap'>
                         <button
                           onClick={() => handleEdit(pr.id)}
@@ -275,13 +266,10 @@ export const ManagePRPage: React.FC = () => {
                         {pr.requestedByName || pr.requestedBy}
                       </td>
                       <td className='px-4 py-4 whitespace-nowrap text-sm text-gray-900'>
-                        {pr.department}
+                        {pr.departmentName || '-'}
                       </td>
                       <td className='px-4 py-4 whitespace-nowrap text-sm text-gray-900'>
-                        {pr.createdByName || pr.createdBy}
-                      </td>
-                      <td className='px-4 py-4 whitespace-nowrap text-sm text-gray-900'>
-                        {new Date(pr.createdDate).toLocaleDateString()}
+                        {pr.projectName || '-'}
                       </td>
                       <td className='px-4 py-4 whitespace-nowrap'>
                         <Badge className={getStatusColor(pr.status)}>

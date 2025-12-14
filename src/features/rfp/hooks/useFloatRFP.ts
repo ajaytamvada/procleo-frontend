@@ -39,13 +39,15 @@ export const useFloatRFP = () => {
     mutationFn: ({
       rfpId,
       supplierIds,
+      unregisteredVendors,
     }: {
       rfpId: number;
-      supplierIds: number[];
-    }) => rfpApi.floatRFP(rfpId, supplierIds),
+      supplierIds?: number[];
+      unregisteredVendors?: { email: string; name?: string; contactPerson?: string }[];
+    }) => rfpApi.floatRFP(rfpId, { supplierIds, unregisteredVendors }),
     onSuccess: data => {
       toast.success(
-        `RFP ${data.rfpNumber} floated successfully to ${data.totalSuppliers} suppliers!`
+        `RFP ${data.rfpNumber} floated successfully to ${data.totalSuppliers || 0} suppliers!`
       );
       // Invalidate relevant queries
       queryClient.invalidateQueries({ queryKey: ['rfp', data.id] });

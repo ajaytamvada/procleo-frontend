@@ -32,6 +32,8 @@ import { QueryProvider } from '@/components/providers/QueryProvider';
 import {
   RFPActivityHub,
   RFPListPage,
+  ManageRFPPage,
+  EditRFPPage,
   CreateRFPPage,
   FloatRFPPage,
   RFPPreviewListPage,
@@ -223,13 +225,13 @@ const App: React.FC = () => {
                 />
                 <Route
                   path='rfp/:id/edit'
-                  element={<CreateRFPFromPRPage />}
+                  element={<EditRFPPage />}
                 />
                 <Route path='rfp/create' element={<CreateRFPFromPRPage />} />
                 <Route path='rfp/create-manual' element={<CreateRFPPage />} />
                 <Route path='rfp/float' element={<FloatRFPListPage />} />
                 <Route path='rfp/:id/float' element={<FloatRFPPage />} />
-                <Route path='rfp/manage' element={<RFPListPage />} />
+                <Route path='rfp/manage' element={<ManageRFPPage />} />
                 <Route path='rfp/preview' element={<RFPPreviewListPage />} />
                 <Route
                   path='rfp/:rfpId/preview/:supplierId'

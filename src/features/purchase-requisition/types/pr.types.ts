@@ -11,8 +11,9 @@ export interface PRListItem {
   requestDate: string;
   requestedBy: string;
   requestedByName?: string;
-  department: string;
+  department?: string;
   departmentId: number;
+  departmentName?: string;
   createdBy: number;
   createdByName?: string;
   createdDate: string;

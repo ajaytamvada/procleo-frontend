@@ -9,8 +9,6 @@ interface PRListItem {
   requestDate: string;
   requestedBy: string;
   department: string;
-  createdBy: string;
-  createdDate: string;
   status: 'draft' | 'pending' | 'approved' | 'rejected' | 'waiting';
   purchaseType?: string;
   projectCode?: string;
@@ -157,12 +155,6 @@ export const PRList: React.FC<PRListProps> = ({
                   Department
                 </th>
                 <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
-                  Created By
-                </th>
-                <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
-                  Created Date
-                </th>
-                <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
                   Purchase Type
                 </th>
                 <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
@@ -203,12 +195,6 @@ export const PRList: React.FC<PRListProps> = ({
                   </td>
                   <td className='px-4 py-4 whitespace-nowrap text-sm text-gray-900'>
                     {item.department}
-                  </td>
-                  <td className='px-4 py-4 whitespace-nowrap text-sm text-gray-900'>
-                    {item.createdBy}
-                  </td>
-                  <td className='px-4 py-4 whitespace-nowrap text-sm text-gray-900'>
-                    {new Date(item.createdDate).toLocaleDateString()}
                   </td>
                   <td className='px-4 py-4 whitespace-nowrap text-sm text-gray-900'>
                     {item.purchaseType || '-'}

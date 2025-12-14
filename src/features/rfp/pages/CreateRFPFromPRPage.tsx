@@ -7,7 +7,7 @@
 
 import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, FileText, CheckSquare, Plus } from 'lucide-react';
+import { ArrowLeft, FileText, CheckSquare, Plus, Save } from 'lucide-react';
 import toast from 'react-hot-toast';
 import {
   useApprovedPRsForRFPCreation,
@@ -153,27 +153,8 @@ export const CreateRFPFromPRPage = () => {
     );
   }, [selectedItems]);
 
-  // Handle RFP creation
-  const handleCreateRFP = async () => {
-    // Validation
-    if (!rfpNumber.trim()) {
-      toast.error('RFP Number is required');
-      return;
-    }
-    if (!rfpDate) {
-      toast.error('RFP Date is required');
-      return;
-    }
-    if (!closingDate) {
-      toast.error('Closing Date is required');
-      return;
-    }
-    if (selectedItems.size === 0) {
-      toast.error('Please select at least one item');
-      return;
-    }
-
-    // Build request
+  // Build RFP request from current form state
+  const buildRFPRequest = (isDraft: boolean): CreateRFPFromPRsRequest => {
     const items: RFPItemFromPR[] = Array.from(selectedItems.values()).map(
       item => ({
         prItemId: item.itemId,
@@ -191,17 +172,60 @@ export const CreateRFPFromPRPage = () => {
       })
     );
 
-    const request: CreateRFPFromPRsRequest = {
+    return {
       rfpNumber,
       rfpDate,
       closingDate,
       remarks,
       paymentTerms,
+      isDraft,
       selectedItems: items,
     };
+  };
+
+  // Handle Save as Draft
+  const handleSaveAsDraft = async () => {
+    // Minimal validation for draft
+    if (!rfpNumber.trim()) {
+      toast.error('RFP Number is required');
+      return;
+    }
+    if (selectedItems.size === 0) {
+      toast.error('Please select at least one item');
+      return;
+    }
 
     try {
-      const newRfp = await createRFPMutation.mutateAsync(request);
+      await createRFPMutation.mutateAsync(buildRFPRequest(true));
+      toast.success('RFP saved as draft successfully!');
+      navigate('/rfp/manage');
+    } catch (error) {
+      // Error handled by mutation
+    }
+  };
+
+  // Handle RFP creation (submit)
+  const handleCreateRFP = async () => {
+    // Full validation for submission
+    if (!rfpNumber.trim()) {
+      toast.error('RFP Number is required');
+      return;
+    }
+    if (!rfpDate) {
+      toast.error('RFP Date is required');
+      return;
+    }
+    if (!closingDate) {
+      toast.error('Closing Date is required');
+      return;
+    }
+    if (selectedItems.size === 0) {
+      toast.error('Please select at least one item');
+      return;
+    }
+
+    try {
+      const newRfp = await createRFPMutation.mutateAsync(buildRFPRequest(false));
       if (newRfp && newRfp.id) {
         navigate('/rfp/float');
       } else {
@@ -257,14 +281,24 @@ export const CreateRFPFromPRPage = () => {
         )}
 
         {phase === 'create-rfp' && (
-          <button
-            onClick={handleCreateRFP}
-            disabled={createRFPMutation.isPending || selectedItems.size === 0}
-            className='px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2'
-          >
-            <FileText className='w-4 h-4' />
-            {createRFPMutation.isPending ? 'Creating...' : 'Create RFP'}
-          </button>
+          <div className='flex items-center gap-3'>
+            <button
+              onClick={handleSaveAsDraft}
+              disabled={createRFPMutation.isPending || selectedItems.size === 0}
+              className='px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2'
+            >
+              <Save className='w-4 h-4' />
+              Save as Draft
+            </button>
+            <button
+              onClick={handleCreateRFP}
+              disabled={createRFPMutation.isPending || selectedItems.size === 0}
+              className='px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2'
+            >
+              <FileText className='w-4 h-4' />
+              {createRFPMutation.isPending ? 'Creating...' : 'Create RFP'}
+            </button>
+          </div>
         )}
       </div>
 
@@ -515,7 +549,7 @@ export const CreateRFPFromPRPage = () => {
                       Indicative Price
                     </th>
                     <th className='px-4 py-3 text-right text-sm font-semibold text-gray-700'>
-                      Target Unit Price <span className='text-red-500'>*</span>
+                      Target Unit Price
                     </th>
                     <th className='px-4 py-3 text-right text-sm font-semibold text-gray-700'>
                       Grand Total

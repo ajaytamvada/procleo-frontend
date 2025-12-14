@@ -17,8 +17,8 @@ const NotificationBell: React.FC = () => {
         try {
             const user = AuthService.getStoredUser();
             if (user) {
-                // Use employeeId since notifications are created with employee ID, not login provision ID
-                const userId = String(user.employeeId || user.id);
+                // Use user.id (Login ID) as backend now expects Long recipientId
+                const userId = String(user.id);
                 const count = await notificationService.getUnreadCount(userId);
                 setUnreadCount(count);
 
@@ -77,8 +77,8 @@ const NotificationBell: React.FC = () => {
         try {
             const user = AuthService.getStoredUser();
             if (user) {
-                // Use employeeId since notifications are created with employee ID
-                await notificationService.markAllAsRead(String(user.employeeId || user.id));
+                // Use user.id (Login ID)
+                await notificationService.markAllAsRead(String(user.id));
                 setUnreadCount(0);
                 setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
             }

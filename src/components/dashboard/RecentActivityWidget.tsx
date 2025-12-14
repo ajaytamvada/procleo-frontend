@@ -14,8 +14,8 @@ const RecentActivityWidget: React.FC = () => {
             try {
                 const user = AuthService.getStoredUser();
                 if (user) {
-                    // Use employeeId since activities are logged with employee ID, not login provision ID
-                    const data = await activityService.getRecentActivities(String(user.employeeId || user.id));
+                    // Use user.id (Login ID) as backend now expects Long userId
+                    const data = await activityService.getRecentActivities(String(user.id));
                     setActivities(Array.isArray(data) ? data : []);
                 }
             } catch (error) {

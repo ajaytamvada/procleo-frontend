@@ -23,9 +23,9 @@ const purchaseRequestSchema = z.object({
   requestedBy: z.string().min(1, 'Requestor is required'),
   departmentId: z.number().min(1, 'Department is required'),
   locationId: z.number().min(1, 'Location is required'),
-  purchaseType: z.string().optional(),
-  projectCode: z.string().optional(),
-  projectName: z.string().optional(),
+  purchaseType: z.string().min(1, 'Purchase Type is required'),
+  projectCode: z.string().min(1, 'Project Code is required'),
+  projectName: z.string().min(1, 'Project Name is required'),
   remarks: z.string().optional(),
   items: z
     .array(
@@ -194,6 +194,36 @@ const PurchaseRequestForm: React.FC<PurchaseRequestFormProps> = ({
       }
     }
   }, [purchaseRequest, reset, replace]);
+
+  // Auto-fill Location and Department for new PRs
+  useEffect(() => {
+    if (!purchaseRequest) { // Only for new PRs
+      const user = AuthService.getStoredUser();
+      console.log("Auto-fill Debug: User Data:", user);
+      console.log("Auto-fill Debug: Departments:", departments);
+      console.log("Auto-fill Debug: Locations:", floors);
+      if (user) {
+        // Auto-fill Department
+        if (user.departmentName && departments.length > 0) {
+          const matchedDept = departments.find(
+            d => d.name.toLowerCase() === user.departmentName?.toLowerCase()
+          );
+          if (matchedDept && matchedDept.id) {
+            setValue('departmentId', matchedDept.id);
+          }
+        }
+        // Auto-fill Location
+        if (user.locationName && floors.length > 0) {
+          const matchedLoc = floors.find(
+            f => f.name.toLowerCase() === user.locationName?.toLowerCase()
+          );
+          if (matchedLoc && matchedLoc.id) {
+            setValue('locationId', matchedLoc.id);
+          }
+        }
+      }
+    }
+  }, [departments, floors, setValue, purchaseRequest]);
 
   const items = watch('items');
 
@@ -524,6 +554,7 @@ const PurchaseRequestForm: React.FC<PurchaseRequestFormProps> = ({
             <input
               type='date'
               {...register('requestDate')}
+              min={new Date().toISOString().split('T')[0]}
               className={inputClass(!!errors.requestDate)}
               disabled={isSubmitting}
             />
@@ -623,7 +654,7 @@ const PurchaseRequestForm: React.FC<PurchaseRequestFormProps> = ({
 
           <div>
             <label className='block text-sm font-medium text-gray-700 mb-2'>
-              Purchase Type
+              <span className='text-red-500'>*</span> Purchase Type
             </label>
             <input
               {...register('purchaseType')}
@@ -635,7 +666,7 @@ const PurchaseRequestForm: React.FC<PurchaseRequestFormProps> = ({
 
           <div>
             <label className='block text-sm font-medium text-gray-700 mb-2'>
-              Project Code
+              <span className='text-red-500'>*</span> Project Code
             </label>
             <input
               {...register('projectCode')}
@@ -647,7 +678,7 @@ const PurchaseRequestForm: React.FC<PurchaseRequestFormProps> = ({
 
           <div>
             <label className='block text-sm font-medium text-gray-700 mb-2'>
-              Project Name
+              <span className='text-red-500'>*</span> Project Name
             </label>
             <input
               {...register('projectName')}
