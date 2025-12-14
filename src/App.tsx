@@ -30,8 +30,8 @@ import ErrorBoundary from '@/components/common/ErrorBoundary';
 import { ThemeProvider } from '@/components/providers/ThemeProvider';
 import { QueryProvider } from '@/components/providers/QueryProvider';
 import {
-  RFPActivityHub,
-  RFPListPage,
+  ManageRFPPage,
+  EditRFPPage,
   CreateRFPPage,
   FloatRFPPage,
   RFPPreviewListPage,
@@ -71,7 +71,6 @@ import CreateGRNPage from '@/features/grn/pages/CreateGRNPage';
 import ModifyGRNPage from '@/features/grn/pages/ModifyGRNPage';
 import GRNApprovalPage from '@/features/grn/pages/GRNApprovalPage';
 import InvoiceListPage from '@/features/invoice/pages/InvoiceListPage';
-import CreateInvoicePage from '@/features/invoice/pages/CreateInvoicePage';
 import InvoiceEntryPage from '@/features/invoice/pages/InvoiceEntryPage';
 import DirectInvoicePage from '@/features/invoice/pages/DirectInvoicePage';
 import DownloadInvoicePage from '@/features/invoice/pages/DownloadInvoicePage';
@@ -87,7 +86,6 @@ import SubmittedRFPReportPage from '@/features/reports/pages/SubmittedRFPReportP
 // Import Master Configuration Components
 import {
   MasterDashboard,
-  MasterConfigurationLayout,
   CompanyPage,
   DepartmentPage,
   CurrencyPage,
@@ -217,19 +215,13 @@ const App: React.FC = () => {
                   path='rfp'
                   element={<Navigate to='/rfp/manage' replace />}
                 />
-                <Route
-                  path='rfp/:id'
-                  element={<RFPSummaryDetailPage />}
-                />
-                <Route
-                  path='rfp/:id/edit'
-                  element={<CreateRFPFromPRPage />}
-                />
+                <Route path='rfp/:id' element={<RFPSummaryDetailPage />} />
+                <Route path='rfp/:id/edit' element={<EditRFPPage />} />
                 <Route path='rfp/create' element={<CreateRFPFromPRPage />} />
                 <Route path='rfp/create-manual' element={<CreateRFPPage />} />
                 <Route path='rfp/float' element={<FloatRFPListPage />} />
                 <Route path='rfp/:id/float' element={<FloatRFPPage />} />
-                <Route path='rfp/manage' element={<RFPListPage />} />
+                <Route path='rfp/manage' element={<ManageRFPPage />} />
                 <Route path='rfp/preview' element={<RFPPreviewListPage />} />
                 <Route
                   path='rfp/:rfpId/preview/:supplierId'

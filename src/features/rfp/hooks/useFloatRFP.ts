@@ -4,8 +4,13 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
+import { AxiosError } from 'axios';
 import { rfpApi } from '../services/rfpApi';
 import { vendorApi } from '@/services/vendorApi';
+
+interface ErrorResponse {
+  message: string;
+}
 
 /**
  * Hook to get RFP by ID
@@ -39,21 +44,28 @@ export const useFloatRFP = () => {
     mutationFn: ({
       rfpId,
       supplierIds,
+      unregisteredVendors,
     }: {
       rfpId: number;
-      supplierIds: number[];
-    }) => rfpApi.floatRFP(rfpId, supplierIds),
+      supplierIds?: number[];
+      unregisteredVendors?: {
+        email: string;
+        name?: string;
+        contactPerson?: string;
+      }[];
+    }) => rfpApi.floatRFP(rfpId, { supplierIds, unregisteredVendors }),
     onSuccess: data => {
       toast.success(
-        `RFP ${data.rfpNumber} floated successfully to ${data.totalSuppliers} suppliers!`
+        `RFP ${data.rfpNumber} floated successfully to ${data.totalSuppliers || 0} suppliers!`
       );
       // Invalidate relevant queries
       queryClient.invalidateQueries({ queryKey: ['rfp', data.id] });
       queryClient.invalidateQueries({ queryKey: ['rfps'] });
     },
-    onError: (error: any) => {
+    onError: (error: AxiosError) => {
       const errorMessage =
-        error?.response?.data?.message || 'Failed to float RFP';
+        (error?.response?.data as ErrorResponse)?.message ||
+        'Failed to float RFP';
       toast.error(errorMessage);
     },
   });
@@ -77,9 +89,10 @@ export const useAddSuppliers = () => {
       toast.success(`Added suppliers to RFP ${data.rfpNumber}`);
       queryClient.invalidateQueries({ queryKey: ['rfp', data.id] });
     },
-    onError: (error: any) => {
+    onError: (error: AxiosError) => {
       const errorMessage =
-        error?.response?.data?.message || 'Failed to add suppliers';
+        (error?.response?.data as ErrorResponse)?.message ||
+        'Failed to add suppliers';
       toast.error(errorMessage);
     },
   });
@@ -103,9 +116,10 @@ export const useRemoveSuppliers = () => {
       toast.success(`Removed suppliers from RFP ${data.rfpNumber}`);
       queryClient.invalidateQueries({ queryKey: ['rfp', data.id] });
     },
-    onError: (error: any) => {
+    onError: (error: AxiosError) => {
       const errorMessage =
-        error?.response?.data?.message || 'Failed to remove suppliers';
+        (error?.response?.data as ErrorResponse)?.message ||
+        'Failed to remove suppliers';
       toast.error(errorMessage);
     },
   });

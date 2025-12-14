@@ -18,14 +18,27 @@ import {
 } from '../utils/excelUtils';
 import { apiClient } from '@/lib/api';
 
+type PurchaseRequestItemFormData = {
+  id: number;
+  categoryId: number;
+  categoryName: string;
+  subCategoryId: number;
+  subCategoryName: string;
+  displayName: string;
+  modelName?: string;
+  make: string;
+  uomId: number;
+  uomName: string;
+};
+
 const purchaseRequestSchema = z.object({
   requestDate: z.string().min(1, 'Request date is required'),
   requestedBy: z.string().min(1, 'Requestor is required'),
   departmentId: z.number().min(1, 'Department is required'),
   locationId: z.number().min(1, 'Location is required'),
-  purchaseType: z.string().optional(),
-  projectCode: z.string().optional(),
-  projectName: z.string().optional(),
+  purchaseType: z.string().min(1, 'Purchase Type is required'),
+  projectCode: z.string().min(1, 'Project Code is required'),
+  projectName: z.string().min(1, 'Project Name is required'),
   remarks: z.string().optional(),
   items: z
     .array(
@@ -130,6 +143,7 @@ const PurchaseRequestForm: React.FC<PurchaseRequestFormProps> = ({
     name: 'items',
   });
 
+  console.log(pendingSubmission);
   // Reset form when purchaseRequest prop changes
   useEffect(() => {
     if (purchaseRequest) {
@@ -144,8 +158,10 @@ const PurchaseRequestForm: React.FC<PurchaseRequestFormProps> = ({
 
       // Reset only header fields (not items)
       const headerValues = {
-        requestDate: purchaseRequest.requestDate || new Date().toISOString().split('T')[0],
-        requestedBy: purchaseRequest.requestedBy || AuthService.getUserFullName(),
+        requestDate:
+          purchaseRequest.requestDate || new Date().toISOString().split('T')[0],
+        requestedBy:
+          purchaseRequest.requestedBy || AuthService.getUserFullName(),
         departmentId: purchaseRequest.departmentId,
         locationId: purchaseRequest.locationId,
         purchaseType: purchaseRequest.purchaseType || '',
@@ -176,7 +192,8 @@ const PurchaseRequestForm: React.FC<PurchaseRequestFormProps> = ({
           uomName: item.uomName || '',
           quantity: item.quantity || 1,
           unitPrice: item.unitPrice || 0,
-          totalPrice: item.totalPrice || (item.quantity || 0) * (item.unitPrice || 0),
+          totalPrice:
+            item.totalPrice || (item.quantity || 0) * (item.unitPrice || 0),
           description: item.description || '',
           rmApprovalStatus: item.rmApprovalStatus,
           approvalRemarks: item.approvalRemarks,
@@ -195,6 +212,37 @@ const PurchaseRequestForm: React.FC<PurchaseRequestFormProps> = ({
     }
   }, [purchaseRequest, reset, replace]);
 
+  // Auto-fill Location and Department for new PRs
+  useEffect(() => {
+    if (!purchaseRequest) {
+      // Only for new PRs
+      const user = AuthService.getStoredUser();
+      console.log('Auto-fill Debug: User Data:', user);
+      console.log('Auto-fill Debug: Departments:', departments);
+      console.log('Auto-fill Debug: Locations:', floors);
+      if (user) {
+        // Auto-fill Department
+        if (user.departmentName && departments.length > 0) {
+          const matchedDept = departments.find(
+            d => d.name.toLowerCase() === user.departmentName?.toLowerCase()
+          );
+          if (matchedDept && matchedDept.id) {
+            setValue('departmentId', matchedDept.id);
+          }
+        }
+        // Auto-fill Location
+        if (user.locationName && floors.length > 0) {
+          const matchedLoc = floors.find(
+            f => f.name.toLowerCase() === user.locationName?.toLowerCase()
+          );
+          if (matchedLoc && matchedLoc.id) {
+            setValue('locationId', matchedLoc.id);
+          }
+        }
+      }
+    }
+  }, [departments, floors, setValue, purchaseRequest]);
+
   const items = watch('items');
 
   // Calculate grand total
@@ -211,7 +259,10 @@ const PurchaseRequestForm: React.FC<PurchaseRequestFormProps> = ({
   };
 
   // Handle item selection from dropdown
-  const handleItemSelect = (index: number, item: any) => {
+  const handleItemSelect = (
+    index: number,
+    item: PurchaseRequestItemFormData
+  ) => {
     setValue(`items.${index}.itemId`, item.id);
     setValue(`items.${index}.categoryId`, item.categoryId);
     setValue(`items.${index}.categoryName`, item.categoryName);
@@ -390,13 +441,13 @@ const PurchaseRequestForm: React.FC<PurchaseRequestFormProps> = ({
           const searchResults = response.data;
 
           // Find exact or best match
-          let matchedItem: any = null;
+          let matchedItem: PurchaseRequestItem | null = null;
           if (searchResults && searchResults.length > 0) {
             // Try to find exact match first (case-insensitive)
             matchedItem = searchResults.find(
-              (item: any) =>
+              (item: PurchaseRequestItemFormData) =>
                 item.displayName?.toLowerCase() ===
-                excelItem.model.toLowerCase() ||
+                  excelItem.model.toLowerCase() ||
                 item.modelName?.toLowerCase() === excelItem.model.toLowerCase()
             );
 
@@ -414,7 +465,7 @@ const PurchaseRequestForm: React.FC<PurchaseRequestFormProps> = ({
               categoryName: matchedItem.categoryName || '',
               subCategoryId: matchedItem.subCategoryId || 0,
               subCategoryName: matchedItem.subCategoryName || '',
-              modelName: matchedItem.displayName || '',
+              modelName: matchedItem.modelName || '',
               make: matchedItem.make || '',
               uomId: matchedItem.uomId || 0,
               uomName: matchedItem.uomName || '',
@@ -474,7 +525,8 @@ const PurchaseRequestForm: React.FC<PurchaseRequestFormProps> = ({
   };
 
   const inputClass = (hasError: boolean) =>
-    `w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${hasError ? 'border-red-500' : 'border-gray-300'
+    `w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+      hasError ? 'border-red-500' : 'border-gray-300'
     }`;
 
   return (
@@ -514,7 +566,12 @@ const PurchaseRequestForm: React.FC<PurchaseRequestFormProps> = ({
         </div>
       </div>
 
-      <form className='p-6' onSubmit={(e) => { e.preventDefault(); /* Form submission is handled by buttons */ }}>
+      <form
+        className='p-6'
+        onSubmit={e => {
+          e.preventDefault(); /* Form submission is handled by buttons */
+        }}
+      >
         {/* Header Information */}
         <div className='grid grid-cols-1 md:grid-cols-2 gap-6 mb-6'>
           <div>
@@ -524,6 +581,7 @@ const PurchaseRequestForm: React.FC<PurchaseRequestFormProps> = ({
             <input
               type='date'
               {...register('requestDate')}
+              min={new Date().toISOString().split('T')[0]}
               className={inputClass(!!errors.requestDate)}
               disabled={isSubmitting}
             />
@@ -623,7 +681,7 @@ const PurchaseRequestForm: React.FC<PurchaseRequestFormProps> = ({
 
           <div>
             <label className='block text-sm font-medium text-gray-700 mb-2'>
-              Purchase Type
+              <span className='text-red-500'>*</span> Purchase Type
             </label>
             <input
               {...register('purchaseType')}
@@ -635,7 +693,7 @@ const PurchaseRequestForm: React.FC<PurchaseRequestFormProps> = ({
 
           <div>
             <label className='block text-sm font-medium text-gray-700 mb-2'>
-              Project Code
+              <span className='text-red-500'>*</span> Project Code
             </label>
             <input
               {...register('projectCode')}
@@ -647,7 +705,7 @@ const PurchaseRequestForm: React.FC<PurchaseRequestFormProps> = ({
 
           <div>
             <label className='block text-sm font-medium text-gray-700 mb-2'>
-              Project Name
+              <span className='text-red-500'>*</span> Project Name
             </label>
             <input
               {...register('projectName')}
@@ -782,9 +840,16 @@ const PurchaseRequestForm: React.FC<PurchaseRequestFormProps> = ({
               </thead>
               <tbody>
                 {fields.map((field, index) => {
-                  const isAccepted = purchaseRequest?.items?.[index]?.rmApprovalStatus === 'Accepted';
+                  const isAccepted =
+                    purchaseRequest?.items?.[index]?.rmApprovalStatus ===
+                    'Accepted';
                   return (
-                    <tr key={field.id} className={isAccepted ? 'bg-gray-100' : 'hover:bg-gray-50'}>
+                    <tr
+                      key={field.id}
+                      className={
+                        isAccepted ? 'bg-gray-100' : 'hover:bg-gray-50'
+                      }
+                    >
                       <td className='border border-gray-300 px-4 py-2 text-center font-medium text-gray-700'>
                         {index + 1}
                       </td>
@@ -916,12 +981,15 @@ const PurchaseRequestForm: React.FC<PurchaseRequestFormProps> = ({
                         {purchaseRequest?.items?.[index]?.rmApprovalStatus && (
                           <div className='flex flex-col'>
                             <span
-                              className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${purchaseRequest.items[index].rmApprovalStatus === 'Accepted'
-                                ? 'bg-green-100 text-green-800'
-                                : purchaseRequest.items[index].rmApprovalStatus === 'Rejected'
-                                  ? 'bg-red-100 text-red-800'
-                                  : 'bg-yellow-100 text-yellow-800'
-                                }`}
+                              className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                                purchaseRequest.items[index]
+                                  .rmApprovalStatus === 'Accepted'
+                                  ? 'bg-green-100 text-green-800'
+                                  : purchaseRequest.items[index]
+                                        .rmApprovalStatus === 'Rejected'
+                                    ? 'bg-red-100 text-red-800'
+                                    : 'bg-yellow-100 text-yellow-800'
+                              }`}
                             >
                               {purchaseRequest.items[index].rmApprovalStatus}
                             </span>
@@ -939,7 +1007,11 @@ const PurchaseRequestForm: React.FC<PurchaseRequestFormProps> = ({
                           onClick={() => handleDeleteItem(index)}
                           className='text-red-600 hover:text-red-800 disabled:text-gray-400 disabled:cursor-not-allowed'
                           disabled={isSubmitting || isAccepted}
-                          title={isAccepted ? 'Cannot delete accepted items' : 'Delete item'}
+                          title={
+                            isAccepted
+                              ? 'Cannot delete accepted items'
+                              : 'Delete item'
+                          }
                         >
                           <Trash2 size={18} />
                         </button>

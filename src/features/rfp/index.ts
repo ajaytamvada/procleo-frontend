@@ -1,6 +1,8 @@
 // Pages
 export { default as RFPActivityHub } from './pages/RFPActivityHub';
 export { default as RFPListPage } from './pages/RFPListPage';
+export { default as ManageRFPPage } from './pages/ManageRFPPage';
+export { default as EditRFPPage } from './pages/EditRFPPage';
 export { default as CreateRFPPage } from './pages/CreateRFPPage';
 export { CreateRFPFromPRPage } from './pages/CreateRFPFromPRPage';
 export { FloatRFPPage } from './pages/FloatRFPPage';

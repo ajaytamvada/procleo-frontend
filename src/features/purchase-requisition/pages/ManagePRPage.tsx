@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Search, Edit, Trash2, Plus, FileText } from 'lucide-react';
+import { Search, Edit, Trash2 } from 'lucide-react';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
@@ -8,7 +7,6 @@ import { useAllDrafts, useDeletePR, useDeletePRs } from '../hooks/usePR';
 import { PREditDialog } from '../components/PREditDialog';
 
 export const ManagePRPage: React.FC = () => {
-  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedItems, setSelectedItems] = useState<Set<number>>(new Set());
@@ -31,7 +29,7 @@ export const ManagePRPage: React.FC = () => {
       (pr.requestedByName || pr.requestedBy)
         .toLowerCase()
         .includes(searchTerm.toLowerCase()) ||
-      pr.department.toLowerCase().includes(searchTerm.toLowerCase())
+      (pr.departmentName || '').toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   // Pagination calculations
@@ -217,9 +215,6 @@ export const ManagePRPage: React.FC = () => {
                         className='rounded border-gray-300 text-blue-600 focus:ring-blue-500'
                       />
                     </th>
-                    <th className='px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-16'>
-                      S.No
-                    </th>
                     <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
                       Request Number
                     </th>
@@ -233,10 +228,7 @@ export const ManagePRPage: React.FC = () => {
                       Department
                     </th>
                     <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
-                      Created By
-                    </th>
-                    <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
-                      Created Date
+                      Project Name
                     </th>
                     <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
                       Status
@@ -247,7 +239,7 @@ export const ManagePRPage: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody className='bg-white divide-y divide-gray-200'>
-                  {paginatedPRs.map((pr, index) => (
+                  {paginatedPRs.map(pr => (
                     <tr key={pr.id} className='hover:bg-gray-50'>
                       <td className='px-4 py-4 text-center'>
                         <input
@@ -256,9 +248,6 @@ export const ManagePRPage: React.FC = () => {
                           onChange={() => handleTogglePR(pr.id)}
                           className='rounded border-gray-300 text-blue-600 focus:ring-blue-500'
                         />
-                      </td>
-                      <td className='px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-center'>
-                        {startIndex + index + 1}
                       </td>
                       <td className='px-4 py-4 whitespace-nowrap'>
                         <button
@@ -275,13 +264,10 @@ export const ManagePRPage: React.FC = () => {
                         {pr.requestedByName || pr.requestedBy}
                       </td>
                       <td className='px-4 py-4 whitespace-nowrap text-sm text-gray-900'>
-                        {pr.department}
+                        {pr.departmentName || '-'}
                       </td>
                       <td className='px-4 py-4 whitespace-nowrap text-sm text-gray-900'>
-                        {pr.createdByName || pr.createdBy}
-                      </td>
-                      <td className='px-4 py-4 whitespace-nowrap text-sm text-gray-900'>
-                        {new Date(pr.createdDate).toLocaleDateString()}
+                        {pr.projectName || '-'}
                       </td>
                       <td className='px-4 py-4 whitespace-nowrap'>
                         <Badge className={getStatusColor(pr.status)}>
@@ -367,10 +353,11 @@ export const ManagePRPage: React.FC = () => {
                         <button
                           key={page}
                           onClick={() => setCurrentPage(page)}
-                          className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${currentPage === page
-                            ? 'z-10 bg-blue-50 border-blue-500 text-blue-600'
-                            : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
-                            }`}
+                          className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
+                            currentPage === page
+                              ? 'z-10 bg-blue-50 border-blue-500 text-blue-600'
+                              : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
+                          }`}
                         >
                           {page}
                         </button>
@@ -403,10 +390,7 @@ export const ManagePRPage: React.FC = () => {
 
       {/* Edit Dialog */}
       {editingPrId && (
-        <PREditDialog
-          prId={editingPrId}
-          onClose={() => setEditingPrId(null)}
-        />
+        <PREditDialog prId={editingPrId} onClose={() => setEditingPrId(null)} />
       )}
     </div>
   );

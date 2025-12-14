@@ -53,5 +53,6 @@ export interface CreateRFPFromPRsRequest {
   remarks?: string;
   paymentTerms?: string;
   locationId?: number;
+  isDraft?: boolean; // If true, saves as draft; otherwise creates with CREATED status
   selectedItems: RFPItemFromPR[];
 }

@@ -15,9 +15,11 @@ import {
   Package,
   Calendar,
   AlertCircle,
+  Mail,
+  Plus,
+  X,
 } from 'lucide-react';
 import { useRFPById, useAllVendors, useFloatRFP } from '../hooks/useFloatRFP';
-import type { Vendor } from '@/types/vendor';
 
 export const FloatRFPPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -46,6 +48,14 @@ export const FloatRFPPage: React.FC = () => {
   const [selectedListSelected, setSelectedListSelected] = useState<Set<number>>(
     new Set()
   );
+
+  // State for unregistered vendor emails
+  const [unregisteredEmails, setUnregisteredEmails] = useState<
+    { email: string; name?: string }[]
+  >([]);
+  const [newEmail, setNewEmail] = useState('');
+  const [newName, setNewName] = useState('');
+  const [emailError, setEmailError] = useState('');
 
   // Filter vendors based on search
   const availableVendors = useMemo(() => {
@@ -92,14 +102,19 @@ export const FloatRFPPage: React.FC = () => {
 
   // Handle float RFP submission
   const handleFloatRFP = () => {
-    if (selectedSuppliers.size === 0) {
+    if (selectedSuppliers.size === 0 && unregisteredEmails.length === 0) {
       return;
     }
 
     floatRFPMutation.mutate(
       {
         rfpId,
-        supplierIds: Array.from(selectedSuppliers),
+        supplierIds:
+          selectedSuppliers.size > 0
+            ? Array.from(selectedSuppliers)
+            : undefined,
+        unregisteredVendors:
+          unregisteredEmails.length > 0 ? unregisteredEmails : undefined,
       },
       {
         onSuccess: () => {
@@ -107,6 +122,42 @@ export const FloatRFPPage: React.FC = () => {
         },
       }
     );
+  };
+
+  // Validate and add unregistered vendor email
+  const handleAddEmail = () => {
+    if (!newEmail.trim()) {
+      setEmailError('Email is required');
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(newEmail.trim())) {
+      setEmailError('Invalid email format');
+      return;
+    }
+
+    if (
+      unregisteredEmails.some(
+        e => e.email.toLowerCase() === newEmail.trim().toLowerCase()
+      )
+    ) {
+      setEmailError('Email already added');
+      return;
+    }
+
+    setUnregisteredEmails(prev => [
+      ...prev,
+      { email: newEmail.trim(), name: newName.trim() || undefined },
+    ]);
+    setNewEmail('');
+    setNewName('');
+    setEmailError('');
+  };
+
+  // Remove unregistered vendor email
+  const handleRemoveEmail = (email: string) => {
+    setUnregisteredEmails(prev => prev.filter(e => e.email !== email));
   };
 
   // Toggle vendor selection in available list
@@ -184,7 +235,9 @@ export const FloatRFPPage: React.FC = () => {
           <button
             onClick={handleFloatRFP}
             disabled={
-              selectedSuppliers.size === 0 || floatRFPMutation.isPending
+              (selectedSuppliers.size === 0 &&
+                unregisteredEmails.length === 0) ||
+              floatRFPMutation.isPending
             }
             className='px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed'
           >
@@ -196,11 +249,77 @@ export const FloatRFPPage: React.FC = () => {
             ) : (
               <>
                 <Send size={16} />
-                <span>Float RFP ({selectedSuppliers.size})</span>
+                <span>
+                  Float RFP (
+                  {selectedSuppliers.size + unregisteredEmails.length})
+                </span>
               </>
             )}
           </button>
         </div>
+      </div>
+
+      {/* Unregistered Vendor Emails Section */}
+      <div className='bg-white border-b border-gray-200 px-6 py-4'>
+        <h3 className='text-sm font-medium text-gray-700 mb-3'>
+          <Mail size={16} className='inline mr-2' />
+          Invite Unregistered Vendors (via Email)
+        </h3>
+        <div className='flex flex-wrap gap-3 items-start'>
+          <div className='flex-1 min-w-0'>
+            <input
+              type='email'
+              placeholder='Vendor Email *'
+              value={newEmail}
+              onChange={e => {
+                setNewEmail(e.target.value);
+                setEmailError('');
+              }}
+              className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 ${
+                emailError ? 'border-red-500' : 'border-gray-300'
+              }`}
+            />
+            {emailError && (
+              <p className='text-red-500 text-xs mt-1'>{emailError}</p>
+            )}
+          </div>
+          <input
+            type='text'
+            placeholder='Company Name (Optional)'
+            value={newName}
+            onChange={e => setNewName(e.target.value)}
+            className='flex-1 min-w-0 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500'
+          />
+          <button
+            onClick={handleAddEmail}
+            className='px-4 py-2 bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 transition-colors flex items-center'
+          >
+            <Plus size={16} className='mr-1' />
+            Add
+          </button>
+        </div>
+        {unregisteredEmails.length > 0 && (
+          <div className='mt-3 flex flex-wrap gap-2'>
+            {unregisteredEmails.map(vendor => (
+              <div
+                key={vendor.email}
+                className='flex items-center bg-purple-50 border border-purple-200 rounded-full px-3 py-1 text-sm'
+              >
+                <span className='text-purple-800'>
+                  {vendor.name
+                    ? `${vendor.name} (${vendor.email})`
+                    : vendor.email}
+                </span>
+                <button
+                  onClick={() => handleRemoveEmail(vendor.email)}
+                  className='ml-2 text-purple-600 hover:text-purple-800'
+                >
+                  <X size={14} />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* RFP Details Summary */}

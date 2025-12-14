@@ -59,13 +59,25 @@ export const rfpApi = {
 
   // Search RFPs
   searchRFPs: async (searchTerm: string): Promise<RFP[]> => {
-    const response = await apiClient.get('/rfp/search', { params: { searchTerm } });
+    const response = await apiClient.get('/rfp/search', {
+      params: { searchTerm },
+    });
     return response.data;
   },
 
-  // Float RFP to suppliers
-  floatRFP: async (id: number, supplierIds: number[]): Promise<RFP> => {
-    const response = await apiClient.post(`/rfp/${id}/float`, supplierIds);
+  // Float RFP to suppliers (registered and unregistered)
+  floatRFP: async (
+    id: number,
+    request: {
+      supplierIds?: number[];
+      unregisteredVendors?: {
+        email: string;
+        name?: string;
+        contactPerson?: string;
+      }[];
+    }
+  ): Promise<RFP> => {
+    const response = await apiClient.post(`/rfp/${id}/float`, request);
     return response.data;
   },
 
@@ -100,7 +112,10 @@ export const rfpApi = {
     rfpId: number,
     quotation: RFPQuotation
   ): Promise<RFP> => {
-    const response = await apiClient.post(`/rfp/${rfpId}/quotations`, quotation);
+    const response = await apiClient.post(
+      `/rfp/${rfpId}/quotations`,
+      quotation
+    );
     return response.data;
   },
 
@@ -145,7 +160,10 @@ export const rfpApi = {
   },
 
   // Send RFP for approval
-  sendForApproval: async (request: any): Promise<RFP> => {
+  sendForApproval: async (request: {
+    rfpId: number;
+    remarks?: string;
+  }): Promise<RFP> => {
     const response = await apiClient.post('/rfp/send-for-approval', request);
     return response.data;
   },
@@ -167,7 +185,7 @@ export const rfpApi = {
   },
 
   // Get RFP Summary
-  getRFPSummary: async (rfpId: number): Promise<any> => {
+  getRFPSummary: async (rfpId: number): Promise<RFP> => {
     const response = await apiClient.get(`/rfp/${rfpId}/summary`);
     return response.data;
   },
