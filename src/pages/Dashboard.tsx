@@ -2,7 +2,6 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import {
   ShoppingCart,
-  Package,
   Users,
   FileText,
   TrendingUp,
@@ -13,7 +12,6 @@ import {
   ArrowUpRight,
   ChevronRight,
   Calendar,
-  Info,
 } from 'lucide-react';
 import {
   AreaChart,
@@ -31,6 +29,7 @@ import { useDashboardData } from '@/features/dashboard/hooks/useDashboard';
 import { useAuth } from '@/hooks/useAuth';
 import RecentActivityWidget from '@/components/dashboard/RecentActivityWidget';
 import StatusSummaryCard from '@/components/dashboard/StatusSummaryCard';
+// import LiveSourcingEvents from './LiveSourcingEvents';
 
 const Dashboard: React.FC = () => {
   const { data: dashboardData, isLoading } = useDashboardData();
@@ -120,28 +119,6 @@ const Dashboard: React.FC = () => {
       lightBg: 'bg-violet-50',
       iconColor: 'text-violet-600',
     },
-    {
-      name: 'Total GRNs',
-      value: stats.totalGRNs.toString(),
-      change: 'Received',
-      changeType: 'increase',
-      icon: Package,
-      href: '/grn/list',
-      gradient: 'from-indigo-500 to-indigo-600',
-      lightBg: 'bg-indigo-50',
-      iconColor: 'text-indigo-600',
-    },
-    {
-      name: 'Overdue POs',
-      value: stats.overduePOs.toString(),
-      change: 'Action Required',
-      changeType: 'decrease',
-      icon: AlertCircle,
-      href: '/purchase-orders',
-      gradient: 'from-rose-500 to-red-600',
-      lightBg: 'bg-rose-50',
-      iconColor: 'text-rose-600',
-    },
   ];
 
   const getStatusColor = (status: string) => {
@@ -179,20 +156,20 @@ const Dashboard: React.FC = () => {
   return (
     <div className='min-h-screen bg-slate-50'>
       {/* Main Content */}
-      <div className='p-6 lg:p-8 space-y-8'>
+      <div className='lg:p-3 space-y-8'>
         {/* Header Section */}
         <div className='flex flex-col md:flex-row md:items-center md:justify-between gap-4'>
           <div>
-            <h1 className='text-2xl lg:text-3xl font-bold text-slate-800'>
+            <h1 className='text-xl lg:text-xl font-bold text-slate-800'>
               {getGreeting()}, {user?.firstName || 'User'} 👋
             </h1>
-            <p className='text-slate-500 mt-1 flex items-center gap-2'>
+            <p className='text-slate-500 mt-1 flex items-center font-medium gap-2 text-sm'>
               <Calendar className='w-4 h-4' />
               {getCurrentDate()}
             </p>
           </div>
           <div className='flex items-center gap-3'>
-            <select className='px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm font-medium text-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent cursor-pointer hover:border-slate-300 transition-colors'>
+            <select className='px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-medium text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent cursor-pointer hover:border-slate-300 transition-colors'>
               <option>Last 7 days</option>
               <option>Last 30 days</option>
               <option>Last 90 days</option>
@@ -202,61 +179,232 @@ const Dashboard: React.FC = () => {
         </div>
 
         {/* Stats Grid - Cashfree Style Cards */}
-        <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5'>
+        {/* 
+  Stats Cards Grid - Count & Status on Same Line
+  Replace your existing stats grid section in Dashboard.tsx with this code
+*/}
+
+        {/* Stats Grid */}
+        <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5'>
           {statsList.map(item => (
             <Link
               key={item.name}
               to={item.href}
-              className='group relative bg-white rounded-2xl border border-slate-100 p-6 hover:shadow-lg hover:shadow-slate-200/50 transition-all duration-300 hover:-translate-y-1'
+              className='group relative bg-white rounded-2xl border border-slate-100 p-5 hover:shadow-lg hover:shadow-slate-200/50 transition-all duration-300 hover:-translate-y-1'
             >
               {/* Gradient accent line */}
               <div
                 className={`absolute top-0 left-6 right-6 h-1 bg-gradient-to-r ${item.gradient} rounded-b-full opacity-0 group-hover:opacity-100 transition-opacity`}
-              ></div>
+              />
 
-              <div className='flex items-start justify-between'>
-                <div className='flex-1'>
-                  <div className='flex items-center gap-2 mb-3'>
-                    <span className='text-sm font-medium text-slate-500'>
-                      {item.name}
-                    </span>
-                    <Info className='w-3.5 h-3.5 text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity' />
-                  </div>
-                  <p className='text-3xl font-bold text-slate-800 tracking-tight'>
-                    {item.value}
-                  </p>
-                  <div className='mt-3 flex items-center gap-2'>
-                    <span
-                      className={`inline-flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-full ${
-                        item.changeType === 'increase'
-                          ? 'bg-emerald-50 text-emerald-600'
-                          : item.changeType === 'decrease'
-                            ? 'bg-rose-50 text-rose-600'
-                            : 'bg-amber-50 text-amber-600'
-                      }`}
-                    >
-                      {item.changeType === 'increase' && (
-                        <ArrowUpRight className='w-3 h-3' />
-                      )}
-                      {item.change}
-                    </span>
-                  </div>
-                </div>
+              {/* Header Row - Title & Icon */}
+              <div className='flex items-start justify-between gap-3 mb-4'>
+                <span className='text-sm font-medium text-slate-500 leading-snug'>
+                  {item.name}
+                </span>
                 <div
-                  className={`p-3 rounded-xl ${item.lightBg} group-hover:scale-110 transition-transform duration-300`}
+                  className={`p-2.5 rounded-xl ${item.lightBg} group-hover:scale-110 transition-transform duration-300 flex-shrink-0`}
                 >
-                  <item.icon className={`w-6 h-6 ${item.iconColor}`} />
+                  <item.icon className={`w-5 h-5 ${item.iconColor}`} />
                 </div>
+              </div>
+
+              {/* Value & Status - Same Line */}
+              <div className='flex items-center justify-between'>
+                <p className='text-xl font-bold text-slate-800 tracking-tight'>
+                  {item.value}
+                </p>
+                <span
+                  className={`inline-flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-full ${
+                    item.changeType === 'increase'
+                      ? 'bg-emerald-50 text-emerald-600'
+                      : item.changeType === 'decrease'
+                        ? 'bg-rose-50 text-rose-600'
+                        : 'bg-amber-50 text-amber-600'
+                  }`}
+                >
+                  {item.changeType === 'increase' && (
+                    <ArrowUpRight className='w-3 h-3' />
+                  )}
+                  {item.change}
+                </span>
               </div>
 
               {/* Hover arrow */}
               <div className='absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-x-2 group-hover:translate-x-0'>
-                <ChevronRight className='w-5 h-5 text-slate-400' />
+                <ChevronRight className='w-4 h-4 text-slate-400' />
               </div>
             </Link>
           ))}
         </div>
 
+        {/* 
+  Live Sourcing Events Cards - Smaller & Lighter
+  Color: #7C3AED (Violet-600)
+*/}
+
+        <div className='space-y-4'>
+          {/* Section Header */}
+          <h2 className='text-lg font-semibold text-slate-800'>
+            Live Sourcing Events
+          </h2>
+
+          {/* Cards Grid */}
+          <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
+            {/* Card 1 */}
+            <div className='bg-white rounded-lg border border-slate-200 shadow-sm hover:shadow-md transition-all duration-200 relative overflow-hidden group cursor-pointer'>
+              {/* Left Accent Border - Violet */}
+              <div
+                className='absolute top-0 left-0 w-[3px] h-full'
+                style={{ backgroundColor: '#7C3AED' }}
+              />
+
+              <div className='p-4 pl-5'>
+                {/* Header - Live Badge & Timer */}
+                <div className='flex items-center justify-between mb-3'>
+                  <span className='inline-flex items-center px-2 py-0.5 rounded bg-red-50 border border-red-100'>
+                    <span className='w-1 h-1 bg-red-500 rounded-full mr-1 animate-pulse'></span>
+                    <span className='text-[10px] font-semibold text-red-500 uppercase'>
+                      Live
+                    </span>
+                  </span>
+                  <span className='text-xs text-slate-400'>
+                    <span className='font-mono text-slate-500'>00:42:15</span>
+                    <span className='ml-1'>left</span>
+                  </span>
+                </div>
+
+                {/* Title & Start Price */}
+                <div className='mb-4'>
+                  <h4 className='font-semibold text-slate-700 text-sm leading-snug mb-1 group-hover:text-violet-600 transition-colors'>
+                    Packaging Material - Corrugated Boxes
+                  </h4>
+                  <p className='text-xs text-slate-400'>
+                    Start Price:{' '}
+                    <span className='font-medium text-slate-500'>
+                      ₹12,00,000
+                    </span>
+                  </p>
+                </div>
+
+                {/* Current Lowest & Saved */}
+                <div className='flex items-end justify-between'>
+                  <div>
+                    <p className='text-[10px] font-medium text-slate-400 uppercase tracking-wider mb-0.5'>
+                      Current Lowest
+                    </p>
+                    <p className='text-lg font-bold text-slate-700'>₹10.5L</p>
+                  </div>
+                  <span className='text-xs font-semibold text-emerald-500'>
+                    12.5% Saved
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Card 2 */}
+            <div className='bg-white rounded-lg border border-slate-200 shadow-sm hover:shadow-md transition-all duration-200 relative overflow-hidden group cursor-pointer'>
+              {/* Left Accent Border - Violet */}
+              <div
+                className='absolute top-0 left-0 w-[3px] h-full'
+                style={{ backgroundColor: '#7C3AED' }}
+              />
+
+              <div className='p-4 pl-5'>
+                {/* Header - Live Badge & Timer */}
+                <div className='flex items-center justify-between mb-3'>
+                  <span className='inline-flex items-center px-2 py-0.5 rounded bg-red-50 border border-red-100'>
+                    <span className='w-1 h-1 bg-red-500 rounded-full mr-1 animate-pulse'></span>
+                    <span className='text-[10px] font-semibold text-red-500 uppercase'>
+                      Live
+                    </span>
+                  </span>
+                  <span className='text-xs text-slate-400'>
+                    <span className='font-mono text-slate-500'>01:15:00</span>
+                    <span className='ml-1'>left</span>
+                  </span>
+                </div>
+
+                {/* Title & Start Price */}
+                <div className='mb-4'>
+                  <h4 className='font-semibold text-slate-700 text-sm leading-snug mb-1 group-hover:text-violet-600 transition-colors'>
+                    Logistics Contract - North Zone
+                  </h4>
+                  <p className='text-xs text-slate-400'>
+                    Start Price:{' '}
+                    <span className='font-medium text-slate-500'>
+                      ₹12,00,000
+                    </span>
+                  </p>
+                </div>
+
+                {/* Current Lowest & Saved */}
+                <div className='flex items-end justify-between'>
+                  <div>
+                    <p className='text-[10px] font-medium text-slate-400 uppercase tracking-wider mb-0.5'>
+                      Current Lowest
+                    </p>
+                    <p className='text-lg font-bold text-slate-700'>₹10.5L</p>
+                  </div>
+                  <span className='text-xs font-semibold text-emerald-500'>
+                    8.2% Saved
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Card 3 */}
+            <div className='bg-white rounded-lg border border-slate-200 shadow-sm hover:shadow-md transition-all duration-200 relative overflow-hidden group cursor-pointer'>
+              {/* Left Accent Border - Violet */}
+              <div
+                className='absolute top-0 left-0 w-[3px] h-full'
+                style={{ backgroundColor: '#7C3AED' }}
+              />
+
+              <div className='p-4 pl-5'>
+                {/* Header - Live Badge & Timer */}
+                <div className='flex items-center justify-between mb-3'>
+                  <span className='inline-flex items-center px-2 py-0.5 rounded bg-red-50 border border-red-100'>
+                    <span className='w-1 h-1 bg-red-500 rounded-full mr-1 animate-pulse'></span>
+                    <span className='text-[10px] font-semibold text-red-500 uppercase'>
+                      Live
+                    </span>
+                  </span>
+                  <span className='text-xs text-slate-400'>
+                    <span className='font-mono text-slate-500'>02:30:00</span>
+                    <span className='ml-1'>left</span>
+                  </span>
+                </div>
+
+                {/* Title & Start Price */}
+                <div className='mb-4'>
+                  <h4 className='font-semibold text-slate-700 text-sm leading-snug mb-1 group-hover:text-violet-600 transition-colors'>
+                    Office Supplies - Annual Contract
+                  </h4>
+                  <p className='text-xs text-slate-400'>
+                    Start Price:{' '}
+                    <span className='font-medium text-slate-500'>
+                      ₹8,50,000
+                    </span>
+                  </p>
+                </div>
+
+                {/* Current Lowest & Saved */}
+                <div className='flex items-end justify-between'>
+                  <div>
+                    <p className='text-[10px] font-medium text-slate-400 uppercase tracking-wider mb-0.5'>
+                      Current Lowest
+                    </p>
+                    <p className='text-lg font-bold text-slate-700'>₹7.2L</p>
+                  </div>
+                  <span className='text-xs font-semibold text-emerald-500'>
+                    15.3% Saved
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
         {/* Summary Cards Row */}
         <div className='grid grid-cols-1 lg:grid-cols-2 gap-6'>
           {/* Status Summary Card */}

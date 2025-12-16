@@ -117,7 +117,7 @@ import LoginProvisionPage from '@/features/access/components/loginprovision/Logi
 import '@/styles/globals.css';
 
 // Placeholder components for remaining routes
-import SettingsPage from '@/pages/SettingsPage';
+import Settings from './pages/Settings';
 
 const Documents: React.FC = () => (
   <div className='space-y-6'>
@@ -688,7 +688,7 @@ const App: React.FC = () => {
                 />
 
                 <Route path='documents' element={<Documents />} />
-                <Route path='settings' element={<SettingsPage />} />
+                <Route path='settings' element={<Settings />} />
                 <Route path='components' element={<ComponentShowcase />} />
                 <Route path='cache-debug' element={<CacheManagerDebug />} />
 

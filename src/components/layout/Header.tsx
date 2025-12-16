@@ -84,7 +84,6 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
       navigate('/login');
     } catch (error) {
       console.error('Logout error:', error);
-      // Still navigate to login even if logout API fails
       navigate('/login');
     }
     setIsUserMenuOpen(false);
@@ -104,7 +103,11 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
     setIsUserMenuOpen(false);
   };
 
-  // Get current user info (you might want to get this from context/store)
+  const handleSettingsClick = () => {
+    navigate('/settings');
+  };
+
+  // Get current user info
   const currentUser = AuthService.getStoredUser() || {
     employeeName: 'System Administrator',
     username: 'admin',
@@ -115,7 +118,7 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
   return (
     <header
       style={{
-        backgroundColor: '#1a0b2e',
+        backgroundColor: 'rgb(19, 9, 81)',
         height: '56px',
         display: 'flex',
         alignItems: 'center',
@@ -145,12 +148,12 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
       </div>
 
       {/* Right side */}
-      <div className='flex items-center gap-3'>
+      <div className='flex items-center gap-2'>
         {/* Quick Actions Dropdown */}
         <div className='relative' ref={dropdownRef}>
           <button
             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-            className='flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-transparent border border-indigo-400/60 text-white text-xs font-medium hover:bg-indigo-500/20 hover:border-indigo-400 transition-all duration-200 group'
+            className='flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-transparent border border-indigo-400/60 text-white text-xs font-semibold hover:bg-indigo-500/20 hover:border-indigo-400 transition-all duration-200 group'
             title='Quick Actions'
           >
             <span>+ Create</span>
@@ -197,8 +200,18 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
             </div>
           )}
         </div>
+
         {/* Notifications */}
         <NotificationBell />
+
+        {/* Settings Icon */}
+        <button
+          onClick={handleSettingsClick}
+          className='p-2 rounded-lg text-white/80 hover:text-white hover:bg-white/10 transition-all duration-200'
+          title='Settings'
+        >
+          <Settings className='w-4 h-4' />
+        </button>
 
         {/* User menu */}
         <div className='relative' ref={userMenuRef}>
