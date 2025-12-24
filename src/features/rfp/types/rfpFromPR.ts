@@ -29,6 +29,7 @@ export interface ApprovedPRItemForRFP {
   categoryId: number;
   subCategoryId: number;
   description: string;
+  unitOfMeasurement: string;
 }
 
 export interface RFPItemFromPR {
@@ -44,6 +45,7 @@ export interface RFPItemFromPR {
   targetUnitPrice: number;
   remarks: string;
   description: string;
+  unitOfMeasurement: string;
 }
 
 export interface CreateRFPFromPRsRequest {

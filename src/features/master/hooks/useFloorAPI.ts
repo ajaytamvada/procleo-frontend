@@ -3,12 +3,8 @@ import { apiClient } from '@/lib/api';
 
 export interface Floor {
   id?: number;
-  countryId: number;
-  countryName?: string;
-  stateId: number;
-  stateName?: string;
-  cityId: number;
-  cityName?: string;
+  buildingId: number;
+  buildingName?: string;
   name: string;
   code?: string;
   zipCode?: number;
@@ -17,9 +13,7 @@ export interface Floor {
 export interface FloorFilters {
   name?: string;
   code?: string;
-  cityName?: string;
-  stateName?: string;
-  countryName?: string;
+  buildingName?: string;
 }
 
 export interface PagedResponse<T> {
@@ -51,9 +45,8 @@ const floorAPI = {
 
     if (filters.name) params.append('name', filters.name);
     if (filters.code) params.append('code', filters.code);
-    if (filters.cityName) params.append('cityName', filters.cityName);
-    if (filters.stateName) params.append('stateName', filters.stateName);
-    if (filters.countryName) params.append('countryName', filters.countryName);
+    if (filters.buildingName)
+      params.append('buildingName', filters.buildingName);
 
     const response = await apiClient.get(`/master/floors?${params}`);
     return response.data;
@@ -64,18 +57,10 @@ const floorAPI = {
     return response.data;
   },
 
-  getByCityId: async (cityId: number): Promise<Floor[]> => {
-    const response = await apiClient.get(`/master/floors/city/${cityId}`);
-    return response.data;
-  },
-
-  getByStateId: async (stateId: number): Promise<Floor[]> => {
-    const response = await apiClient.get(`/master/floors/state/${stateId}`);
-    return response.data;
-  },
-
-  getByCountryId: async (countryId: number): Promise<Floor[]> => {
-    const response = await apiClient.get(`/master/floors/country/${countryId}`);
+  getByBuildingId: async (buildingId: number): Promise<Floor[]> => {
+    const response = await apiClient.get(
+      `/master/floors/building/${buildingId}`
+    );
     return response.data;
   },
 
@@ -97,9 +82,8 @@ const floorAPI = {
     const params = new URLSearchParams();
     if (filters.name) params.append('name', filters.name);
     if (filters.code) params.append('code', filters.code);
-    if (filters.cityName) params.append('cityName', filters.cityName);
-    if (filters.stateName) params.append('stateName', filters.stateName);
-    if (filters.countryName) params.append('countryName', filters.countryName);
+    if (filters.buildingName)
+      params.append('buildingName', filters.buildingName);
 
     const response = await apiClient.get(`/master/floors/export?${params}`, {
       responseType: 'blob',
@@ -135,27 +119,11 @@ export const useFloor = (id: number) => {
   });
 };
 
-export const useFloorsByCity = (cityId: number) => {
+export const useFloorsByBuilding = (buildingId: number) => {
   return useQuery({
-    queryKey: [...FLOOR_QUERY_KEY, 'city', cityId],
-    queryFn: () => floorAPI.getByCityId(cityId),
-    enabled: !!cityId,
-  });
-};
-
-export const useFloorsByState = (stateId: number) => {
-  return useQuery({
-    queryKey: [...FLOOR_QUERY_KEY, 'state', stateId],
-    queryFn: () => floorAPI.getByStateId(stateId),
-    enabled: !!stateId,
-  });
-};
-
-export const useFloorsByCountry = (countryId: number) => {
-  return useQuery({
-    queryKey: [...FLOOR_QUERY_KEY, 'country', countryId],
-    queryFn: () => floorAPI.getByCountryId(countryId),
-    enabled: !!countryId,
+    queryKey: [...FLOOR_QUERY_KEY, 'building', buildingId],
+    queryFn: () => floorAPI.getByBuildingId(buildingId),
+    enabled: !!buildingId,
   });
 };
 

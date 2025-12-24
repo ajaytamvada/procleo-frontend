@@ -309,9 +309,6 @@ const EditRFPPage: React.FC = () => {
                     Quantity
                   </th>
                   <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
-                    Indicative Price
-                  </th>
-                  <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
                     Target Unit Price
                   </th>
                   <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
@@ -340,9 +337,6 @@ const EditRFPPage: React.FC = () => {
                       </td>
                       <td className='px-4 py-3 text-sm text-gray-900'>
                         {item.quantity}
-                      </td>
-                      <td className='px-4 py-3 text-sm text-gray-900'>
-                        {item.indicativePrice?.toFixed(2) || '0.00'}
                       </td>
                       <td className='px-4 py-3 text-sm text-gray-900'>
                         {item.unitPrice?.toFixed(2) || '0.00'}

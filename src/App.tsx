@@ -70,10 +70,12 @@ import GRNListPage from '@/features/grn/pages/GRNListPage';
 import CreateGRNPage from '@/features/grn/pages/CreateGRNPage';
 import ModifyGRNPage from '@/features/grn/pages/ModifyGRNPage';
 import GRNApprovalPage from '@/features/grn/pages/GRNApprovalPage';
+import GRNPreviewPage from '@/features/grn/pages/GRNPreviewPage';
 import InvoiceListPage from '@/features/invoice/pages/InvoiceListPage';
 import InvoiceEntryPage from '@/features/invoice/pages/InvoiceEntryPage';
 import DirectInvoicePage from '@/features/invoice/pages/DirectInvoicePage';
 import DownloadInvoicePage from '@/features/invoice/pages/DownloadInvoicePage';
+import InvoicePreviewPage from '@/features/invoice/pages/InvoicePreviewPage';
 // Import Report Pages
 import PRReportPage from '@/features/reports/pages/PRReportPage';
 import InvoiceReportPage from '@/features/reports/pages/InvoiceReportPage';
@@ -114,6 +116,9 @@ import TermsAndConditionsPage from '@/features/master/components/termsandconditi
 import UserTypePage from '@/features/access/components/usertype/UserTypePage';
 import UserPermissionPage from '@/features/access/components/userpermission/UserPermissionPage';
 import LoginProvisionPage from '@/features/access/components/loginprovision/LoginProvisionPage';
+// Vendor Portal Pages
+import VendorDashboard from '@/features/vendor/pages/VendorDashboard';
+import VendorRFPList from '@/features/vendor/pages/VendorRFPList';
 import '@/styles/globals.css';
 
 // Placeholder components for remaining routes
@@ -419,6 +424,7 @@ const App: React.FC = () => {
                 <Route path='grn/list' element={<GRNListPage />} />
                 <Route path='grn/:id' element={<GRNListPage />} />
                 <Route path='grn/:id/edit' element={<CreateGRNPage />} />
+                <Route path='grn/preview/:id' element={<GRNPreviewPage />} />
 
                 {/* Invoice Routes */}
                 <Route
@@ -433,6 +439,10 @@ const App: React.FC = () => {
                   element={<DownloadInvoicePage />}
                 />
                 <Route path='invoice/:id' element={<DownloadInvoicePage />} />
+                <Route
+                  path='invoice/preview/:id'
+                  element={<InvoicePreviewPage />}
+                />
 
                 {/* Legacy invoice routes for backward compatibility */}
                 <Route
@@ -707,6 +717,92 @@ const App: React.FC = () => {
                 {/* TODO: Add PurchaseOrderDetail component */}
 
                 {/* TODO: Add VendorDetail component */}
+              </Route>
+
+              {/* ========== VENDOR PORTAL ROUTES ========== */}
+              {/* These routes use the same Layout but show vendor-specific content */}
+              <Route
+                element={
+                  <ProtectedRoute>
+                    <Layout />
+                  </ProtectedRoute>
+                }
+              >
+                <Route path='vendor/dashboard' element={<VendorDashboard />} />
+                <Route path='vendor/rfps' element={<VendorRFPList />} />
+                <Route
+                  path='vendor/rfps/:id'
+                  element={
+                    <div className='p-6'>
+                      <h1 className='text-2xl font-bold'>RFP Details</h1>
+                      <p className='text-gray-600'>
+                        RFP detail view coming soon...
+                      </p>
+                    </div>
+                  }
+                />
+                <Route
+                  path='vendor/quotations'
+                  element={
+                    <div className='p-6'>
+                      <h1 className='text-2xl font-bold'>My Quotations</h1>
+                      <p className='text-gray-600'>
+                        Quotation list coming soon...
+                      </p>
+                    </div>
+                  }
+                />
+                <Route
+                  path='vendor/quotations/submit/:rfpId'
+                  element={
+                    <div className='p-6'>
+                      <h1 className='text-2xl font-bold'>Submit Quotation</h1>
+                      <p className='text-gray-600'>
+                        Quotation form coming soon...
+                      </p>
+                    </div>
+                  }
+                />
+                <Route
+                  path='vendor/orders'
+                  element={
+                    <div className='p-6'>
+                      <h1 className='text-2xl font-bold'>Purchase Orders</h1>
+                      <p className='text-gray-600'>PO list coming soon...</p>
+                    </div>
+                  }
+                />
+                <Route
+                  path='vendor/invoices'
+                  element={
+                    <div className='p-6'>
+                      <h1 className='text-2xl font-bold'>My Invoices</h1>
+                      <p className='text-gray-600'>
+                        Invoice list coming soon...
+                      </p>
+                    </div>
+                  }
+                />
+                <Route
+                  path='vendor/deliveries'
+                  element={
+                    <div className='p-6'>
+                      <h1 className='text-2xl font-bold'>Delivery Status</h1>
+                      <p className='text-gray-600'>GRN status coming soon...</p>
+                    </div>
+                  }
+                />
+                <Route
+                  path='vendor/profile'
+                  element={
+                    <div className='p-6'>
+                      <h1 className='text-2xl font-bold'>Company Profile</h1>
+                      <p className='text-gray-600'>
+                        Profile view coming soon...
+                      </p>
+                    </div>
+                  }
+                />
               </Route>
 
               {/* Fallback route */}

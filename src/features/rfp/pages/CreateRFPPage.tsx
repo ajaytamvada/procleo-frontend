@@ -422,20 +422,6 @@ const CreateRFPPage: React.FC = () => {
                       <option value='CHAIR'>CHAIR</option>
                     </select>
                   </div>
-                  <div>
-                    <label className='block text-sm font-medium text-gray-700 mb-1'>
-                      Indicative Price
-                    </label>
-                    <input
-                      type='number'
-                      name='indicativePrice'
-                      value={newItem.indicativePrice}
-                      onChange={handleItemChange}
-                      min='0'
-                      step='0.01'
-                      className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent'
-                    />
-                  </div>
                 </div>
                 <div className='mb-4'>
                   <label className='block text-sm font-medium text-gray-700 mb-1'>
@@ -478,9 +464,6 @@ const CreateRFPPage: React.FC = () => {
                         Quantity
                       </th>
                       <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
-                        Indicative Price
-                      </th>
-                      <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
                         Unit Price
                       </th>
                       <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
@@ -515,9 +498,6 @@ const CreateRFPPage: React.FC = () => {
                           </td>
                           <td className='px-4 py-3 text-sm text-gray-900'>
                             {item.quantity}
-                          </td>
-                          <td className='px-4 py-3 text-sm text-gray-900'>
-                            {item.indicativePrice?.toFixed(2) || '0.00'}
                           </td>
                           <td className='px-4 py-3 text-sm text-gray-900'>
                             {item.unitPrice?.toFixed(2) || '0.00'}

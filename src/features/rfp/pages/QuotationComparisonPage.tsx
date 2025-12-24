@@ -18,6 +18,8 @@ import {
   useRFPForComparison,
   useNegotiateQuotation,
 } from '../hooks/useNegotiateQuotation';
+import { ExtendRFPDialog } from '../components/ExtendRFPDialog';
+import { Calendar as CalendarIcon } from 'lucide-react';
 
 export const QuotationComparisonPage: React.FC = () => {
   const { rfpId } = useParams<{ rfpId: string }>();
@@ -30,6 +32,7 @@ export const QuotationComparisonPage: React.FC = () => {
   const [negotiationNotes, setNegotiationNotes] = useState<{
     [key: number]: string;
   }>({});
+  const [isExtendDialogOpen, setIsExtendDialogOpen] = useState(false);
 
   const handleNegotiate = (quotationId: number) => {
     negotiateMutation.mutate({
@@ -77,6 +80,12 @@ export const QuotationComparisonPage: React.FC = () => {
   // Group quotations by supplier
   const quotations = rfp.quotations || [];
 
+  // Check if all quotations are received
+  const totalSuppliers = rfp.totalSuppliers || 0;
+  const respondedSuppliers = rfp.respondedSuppliers || 0;
+  const allQuotationsReceived =
+    respondedSuppliers >= totalSuppliers && totalSuppliers > 0;
+
   return (
     <div className='h-full flex flex-col bg-gray-50'>
       {/* Header */}
@@ -96,6 +105,15 @@ export const QuotationComparisonPage: React.FC = () => {
               <p className='text-sm text-gray-600'>{rfp.rfpNumber}</p>
             </div>
           </div>
+          {rfp.status === 'FLOATED' && (
+            <button
+              onClick={() => setIsExtendDialogOpen(true)}
+              className='flex items-center px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 shadow-sm'
+            >
+              <CalendarIcon className='w-4 h-4 mr-2 text-gray-500' />
+              Extend Date
+            </button>
+          )}
         </div>
       </div>
 
@@ -136,6 +154,29 @@ export const QuotationComparisonPage: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Info Alert if prices are hidden */}
+      {!allQuotationsReceived && (
+        <div className='bg-blue-50 border-l-4 border-blue-400 p-4 mx-6 mt-4'>
+          <div className='flex'>
+            <div className='flex-shrink-0'>
+              <AlertCircle
+                className='h-5 w-5 text-blue-400'
+                aria-hidden='true'
+              />
+            </div>
+            <div className='ml-3'>
+              <p className='text-sm text-blue-700'>
+                Prices are hidden because not all invited suppliers have
+                submitted their quotations yet ({respondedSuppliers}/
+                {totalSuppliers}).
+                <br />
+                Wait for all suppliers to respond to compare prices.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Quotations List */}
       <div className='flex-1 overflow-auto p-6'>
@@ -210,15 +251,21 @@ export const QuotationComparisonPage: React.FC = () => {
                       <div>
                         <p className='text-xs text-gray-500'>Total Amount</p>
                         <p className='text-sm font-bold text-purple-600'>
-                          ₹
-                          {(
-                            quotation.netAmount ||
-                            quotation.totalAmount ||
-                            0
-                          ).toLocaleString('en-IN', {
-                            minimumFractionDigits: 2,
-                            maximumFractionDigits: 2,
-                          })}
+                          {allQuotationsReceived ? (
+                            <>
+                              ₹
+                              {(
+                                quotation.netAmount ||
+                                quotation.totalAmount ||
+                                0
+                              ).toLocaleString('en-IN', {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2,
+                              })}
+                            </>
+                          ) : (
+                            <span className='text-gray-400'>*****</span>
+                          )}
                         </p>
                       </div>
                     </div>
@@ -266,25 +313,49 @@ export const QuotationComparisonPage: React.FC = () => {
                               {item.quantity}
                             </td>
                             <td className='px-4 py-2 text-right text-sm text-gray-900'>
-                              ₹
-                              {item.unitPrice.toLocaleString('en-IN', {
-                                minimumFractionDigits: 2,
-                              })}
+                              {allQuotationsReceived ? (
+                                <>
+                                  ₹
+                                  {item.unitPrice.toLocaleString('en-IN', {
+                                    minimumFractionDigits: 2,
+                                  })}
+                                </>
+                              ) : (
+                                '*****'
+                              )}
                             </td>
                             <td className='px-4 py-2 text-center text-sm text-gray-600'>
                               {item.taxRate || 0}%
                             </td>
                             <td className='px-4 py-2 text-right text-sm text-gray-900'>
-                              ₹
-                              {(item.taxAmount || 0).toLocaleString('en-IN', {
-                                minimumFractionDigits: 2,
-                              })}
+                              {allQuotationsReceived ? (
+                                <>
+                                  ₹
+                                  {(item.taxAmount || 0).toLocaleString(
+                                    'en-IN',
+                                    {
+                                      minimumFractionDigits: 2,
+                                    }
+                                  )}
+                                </>
+                              ) : (
+                                '*****'
+                              )}
                             </td>
                             <td className='px-4 py-2 text-right text-sm font-medium text-gray-900'>
-                              ₹
-                              {(item.totalPrice || 0).toLocaleString('en-IN', {
-                                minimumFractionDigits: 2,
-                              })}
+                              {allQuotationsReceived ? (
+                                <>
+                                  ₹
+                                  {(item.totalPrice || 0).toLocaleString(
+                                    'en-IN',
+                                    {
+                                      minimumFractionDigits: 2,
+                                    }
+                                  )}
+                                </>
+                              ) : (
+                                '*****'
+                              )}
                             </td>
                           </tr>
                         ))
@@ -308,15 +379,21 @@ export const QuotationComparisonPage: React.FC = () => {
                           Grand Total:
                         </td>
                         <td className='px-4 py-2 text-right text-sm font-bold text-purple-600'>
-                          ₹
-                          {(
-                            quotation.netAmount ||
-                            quotation.totalAmount ||
-                            0
-                          ).toLocaleString('en-IN', {
-                            minimumFractionDigits: 2,
-                            maximumFractionDigits: 2,
-                          })}
+                          {allQuotationsReceived ? (
+                            <>
+                              ₹
+                              {(
+                                quotation.netAmount ||
+                                quotation.totalAmount ||
+                                0
+                              ).toLocaleString('en-IN', {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2,
+                              })}
+                            </>
+                          ) : (
+                            '*****'
+                          )}
                         </td>
                       </tr>
                     </tfoot>
@@ -375,6 +452,15 @@ export const QuotationComparisonPage: React.FC = () => {
           ))}
         </div>
       </div>
+
+      {rfp && (
+        <ExtendRFPDialog
+          isOpen={isExtendDialogOpen}
+          onClose={() => setIsExtendDialogOpen(false)}
+          rfpId={rfp.id!}
+          currentClosingDate={rfp.closingDate}
+        />
+      )}
     </div>
   );
 };

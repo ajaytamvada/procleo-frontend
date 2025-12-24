@@ -5,6 +5,8 @@ export interface Building {
   id?: number;
   name: string;
   code: string;
+  cityId?: number;
+  cityName?: string;
 }
 
 const BUILDING_QUERY_KEY = ['buildings'];

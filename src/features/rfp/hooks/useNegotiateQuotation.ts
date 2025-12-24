@@ -17,12 +17,10 @@ export const useRFPsForEvaluation = () => {
       // Get all FLOATED and NEGOTIATION RFPs
       const rfps = await rfpApi.getRFPsByStatus('FLOATED,NEGOTIATION');
 
-      // Filter to only RFPs with submitted quotations
-      const rfpsWithQuotations = rfps.filter(
-        rfp => rfp.quotations && rfp.quotations.length > 0
-      );
-
-      return rfpsWithQuotations;
+      // Retrieve all FLOATED and NEGOTIATION RFPs without filtering by quotations
+      // The requirement for "Evaluation" usually implies comparing quotes,
+      // but for "Negotiation" page management (where Extension happens), we need to see all active RFPs.
+      return rfps;
     },
     staleTime: 30000, // 30 seconds
   });
@@ -38,8 +36,8 @@ export const useRFPForComparison = (rfpId: number) => {
       const rfp = await rfpApi.getRFPById(rfpId);
 
       // Ensure we have quotations
-      if (!rfp.quotations || rfp.quotations.length === 0) {
-        throw new Error('No quotations found for this RFP');
+      if (!rfp.quotations) {
+        rfp.quotations = [];
       }
 
       return rfp;

@@ -8,7 +8,7 @@ import { AlertDialog } from '@/components/ui/Dialog';
 import type { PurchaseRequest, PurchaseRequestItem } from '../types';
 import { useItemSearch } from '../hooks/useItemSearch';
 import { useDepartmentsList } from '@/features/master/hooks/useDepartmentAPI';
-import { useFloors } from '@/features/master/hooks/useFloorAPI';
+import { useCities } from '@/features/master/hooks/useCityAPI';
 import { AuthService } from '@/services/auth';
 import {
   downloadExcelTemplate,
@@ -17,6 +17,7 @@ import {
   type ExcelLineItem,
 } from '../utils/excelUtils';
 import { apiClient } from '@/lib/api';
+import ExcelImportDialog from '@/components/ExcelImportDialog';
 
 type PurchaseRequestItemFormData = {
   id: number;
@@ -37,24 +38,73 @@ const purchaseRequestSchema = z.object({
   departmentId: z.number().min(1, 'Department is required'),
   locationId: z.number().min(1, 'Location is required'),
   purchaseType: z.string().min(1, 'Purchase Type is required'),
-  projectCode: z.string().min(1, 'Project Code is required'),
+  projectCode: z.string().optional(),
   projectName: z.string().min(1, 'Project Name is required'),
   remarks: z.string().optional(),
   items: z
     .array(
       z.object({
-        itemId: z.number().min(0, 'Item ID must be valid'),
-        categoryId: z.number(),
-        categoryName: z.string().optional(),
-        subCategoryId: z.number(),
-        subCategoryName: z.string().optional(),
-        modelName: z.string().optional(),
-        make: z.string().optional(),
-        uomId: z.number().optional(),
-        uomName: z.string().optional(),
-        quantity: z.number().min(1, 'Quantity must be at least 1'),
-        unitPrice: z.number().optional(),
-        description: z.string().optional(),
+        itemId: z
+          .number()
+          .nullable()
+          .optional()
+          .transform(v => v ?? 0),
+        categoryId: z
+          .number()
+          .nullable()
+          .optional()
+          .transform(v => v ?? 0),
+        categoryName: z
+          .string()
+          .nullable()
+          .optional()
+          .transform(v => v ?? ''),
+        subCategoryId: z
+          .number()
+          .nullable()
+          .optional()
+          .transform(v => v ?? 0),
+        subCategoryName: z
+          .string()
+          .nullable()
+          .optional()
+          .transform(v => v ?? ''),
+        modelName: z
+          .string()
+          .nullable()
+          .optional()
+          .transform(v => v ?? ''),
+        make: z
+          .string()
+          .nullable()
+          .optional()
+          .transform(v => v ?? ''),
+        uomId: z
+          .number()
+          .nullable()
+          .optional()
+          .transform(v => v ?? 0),
+        uomName: z
+          .string()
+          .nullable()
+          .optional()
+          .transform(v => v ?? ''),
+        quantity: z
+          .number()
+          .nullable()
+          .optional()
+          .transform(v => v ?? 1)
+          .pipe(z.number().min(1, 'Quantity must be at least 1')),
+        unitPrice: z
+          .number()
+          .nullable()
+          .optional()
+          .transform(v => v ?? 0),
+        description: z
+          .string()
+          .nullable()
+          .optional()
+          .transform(v => v ?? ''),
       })
     )
     .min(1, 'At least one item is required'),
@@ -83,17 +133,15 @@ const PurchaseRequestForm: React.FC<PurchaseRequestFormProps> = ({
   );
   const [showDropdown, setShowDropdown] = useState<Record<number, boolean>>({});
   const dropdownRefs = useRef<Record<number, HTMLDivElement | null>>({});
-  const [isUploadingExcel, setIsUploadingExcel] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState({
-    current: 0,
-    total: 0,
-  });
-  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Excel Import State
+  const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
+
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [pendingSubmission, setPendingSubmission] = useState<boolean>(false);
 
   const { data: departments = [] } = useDepartmentsList();
-  const { data: floors = [] } = useFloors();
+  const { data: cities = [], isLoading: citiesLoading } = useCities();
 
   const currentSearchQuery =
     activeSearchIndex !== null ? searchQueries[activeSearchIndex] || '' : '';
@@ -128,6 +176,8 @@ const PurchaseRequestForm: React.FC<PurchaseRequestFormProps> = ({
           categoryName: '',
           subCategoryId: 0,
           subCategoryName: '',
+          modelName: '',
+          make: '',
           uomId: 0,
           uomName: '',
           quantity: 1,
@@ -219,7 +269,7 @@ const PurchaseRequestForm: React.FC<PurchaseRequestFormProps> = ({
       const user = AuthService.getStoredUser();
       console.log('Auto-fill Debug: User Data:', user);
       console.log('Auto-fill Debug: Departments:', departments);
-      console.log('Auto-fill Debug: Locations:', floors);
+      console.log('Auto-fill Debug: Locations:', cities);
       if (user) {
         // Auto-fill Department
         if (user.departmentName && departments.length > 0) {
@@ -231,9 +281,9 @@ const PurchaseRequestForm: React.FC<PurchaseRequestFormProps> = ({
           }
         }
         // Auto-fill Location
-        if (user.locationName && floors.length > 0) {
-          const matchedLoc = floors.find(
-            f => f.name.toLowerCase() === user.locationName?.toLowerCase()
+        if (user.locationName && cities.length > 0) {
+          const matchedLoc = cities.find(
+            c => c.name.toLowerCase() === user.locationName?.toLowerCase()
           );
           if (matchedLoc && matchedLoc.id) {
             setValue('locationId', matchedLoc.id);
@@ -241,7 +291,7 @@ const PurchaseRequestForm: React.FC<PurchaseRequestFormProps> = ({
         }
       }
     }
-  }, [departments, floors, setValue, purchaseRequest]);
+  }, [departments, cities, setValue, purchaseRequest]);
 
   const items = watch('items');
 
@@ -325,20 +375,57 @@ const PurchaseRequestForm: React.FC<PurchaseRequestFormProps> = ({
   }, []);
 
   const handleFormSubmit = (sendForApproval: boolean) => {
-    if (sendForApproval) {
-      // Show confirmation dialog for submit
-      setPendingSubmission(true);
-      setShowConfirmDialog(true);
-    } else {
-      // No confirmation needed for draft
-      handleSubmit(data => onSubmit(data, sendForApproval))();
-    }
+    handleSubmit(
+      data => {
+        if (sendForApproval) {
+          // Show confirmation dialog for submit
+          setPendingSubmission(true);
+          setShowConfirmDialog(true);
+        } else {
+          // No confirmation needed for draft
+          onSubmit(data, sendForApproval);
+        }
+      },
+      errors => {
+        // Show validation errors with detailed logging
+        console.error('Validation errors:', JSON.stringify(errors, null, 2));
+        console.error('Items array errors:', errors.items);
+        if (errors.items?.root) {
+          toast.error(
+            errors.items.root.message || 'At least one item is required'
+          );
+        } else if (errors.items?.message) {
+          toast.error(errors.items.message);
+        } else if (errors.items) {
+          // Check for individual item errors
+          const itemErrors = Object.entries(errors.items)
+            .filter(([key]) => !isNaN(Number(key)))
+            .map(([idx, err]: [string, any]) => {
+              const fieldErrors = Object.entries(err || {})
+                .map(([field, e]: [string, any]) => `${field}: ${e?.message}`)
+                .join(', ');
+              return `Item ${Number(idx) + 1}: ${fieldErrors}`;
+            });
+          if (itemErrors.length > 0) {
+            toast.error(itemErrors[0]);
+          } else {
+            toast.error('Please check the items for errors');
+          }
+        } else {
+          const firstError = Object.values(errors)[0];
+          toast.error(
+            firstError?.message?.toString() ||
+              'Please check the form for errors'
+          );
+        }
+      }
+    )();
   };
 
   const handleConfirmSubmit = () => {
     // Close dialog first
     setShowConfirmDialog(false);
-    // Then submit the form
+    // Then submit the form - we know it's valid because handleFormSubmit checked it
     setTimeout(() => {
       handleSubmit(data => onSubmit(data, true))();
     }, 100);
@@ -360,24 +447,16 @@ const PurchaseRequestForm: React.FC<PurchaseRequestFormProps> = ({
     downloadExcelTemplate();
   };
 
-  // Handle Excel file upload
-  const handleExcelUpload = async (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
+  // Handle Excel file processing (via Dialog)
+  const processExcelFile = async (file: File) => {
     // Validate file type
     const validTypes = [
       'application/vnd.ms-excel',
       'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
     ];
     if (!validTypes.includes(file.type)) {
-      toast.error('Please upload a valid Excel file (.xls or .xlsx)');
-      return;
+      throw new Error('Please upload a valid Excel file (.xls or .xlsx)');
     }
-
-    setIsUploadingExcel(true);
 
     try {
       // Parse Excel file
@@ -386,12 +465,12 @@ const PurchaseRequestForm: React.FC<PurchaseRequestFormProps> = ({
       // Validate items
       const validation = validateLineItems(excelItems);
       if (!validation.valid) {
-        validation.errors.forEach(error => toast.error(error));
-        setIsUploadingExcel(false);
-        return;
+        throw new Error(validation.errors.join('\n'));
       }
 
       // Search and map items with progress
+      // Note: We might want to pass setUploadProgress to the dialog if we want to show detailed progress there
+      // For now, the dialog shows a generic spinner which is fine.
       const mappedItems = await searchAndMapExcelItemsInBatch(excelItems);
 
       // Replace all existing items with new Excel items
@@ -405,18 +484,10 @@ const PurchaseRequestForm: React.FC<PurchaseRequestFormProps> = ({
       });
       setSearchQueries(newSearchQueries);
 
-      toast.success(
-        `Successfully imported ${mappedItems.length} line items from Excel!`
-      );
+      return mappedItems;
     } catch (error) {
-      console.error('Excel upload error:', error);
-      toast.error(`Failed to process Excel file: ${error}`);
-    } finally {
-      setIsUploadingExcel(false);
-      // Reset file input
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
-      }
+      console.error('Excel processing error:', error);
+      throw error; // Re-throw to be handled by the dialog
     }
   };
 
@@ -425,7 +496,7 @@ const PurchaseRequestForm: React.FC<PurchaseRequestFormProps> = ({
     const BATCH_SIZE = 10; // Process 10 items in parallel
     const mappedItems: PurchaseRequestItem[] = [];
 
-    setUploadProgress({ current: 0, total: excelItems.length });
+    // setUploadProgress({ current: 0, total: excelItems.length }); // Progress tracking disabled for simplicity in dialog mode for now
 
     // Process items in batches
     for (let i = 0; i < excelItems.length; i += BATCH_SIZE) {
@@ -515,10 +586,10 @@ const PurchaseRequestForm: React.FC<PurchaseRequestFormProps> = ({
       mappedItems.push(...batchResults);
 
       // Update progress
-      setUploadProgress({
-        current: mappedItems.length,
-        total: excelItems.length,
-      });
+      // setUploadProgress({ // Progress tracking disabled
+      //   current: mappedItems.length,
+      //   total: excelItems.length,
+      // });
     }
 
     return mappedItems;
@@ -626,12 +697,14 @@ const PurchaseRequestForm: React.FC<PurchaseRequestFormProps> = ({
                     )
                   }
                   className={inputClass(!!errors.locationId)}
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || citiesLoading}
                 >
-                  <option value=''>Select Location</option>
-                  {floors.map(floor => (
-                    <option key={floor.id} value={floor.id}>
-                      {floor.name}
+                  <option value=''>
+                    {citiesLoading ? 'Loading cities...' : 'Select Location'}
+                  </option>
+                  {cities.map(city => (
+                    <option key={city.id} value={city.id}>
+                      {city.name}
                     </option>
                   ))}
                 </select>
@@ -683,15 +756,19 @@ const PurchaseRequestForm: React.FC<PurchaseRequestFormProps> = ({
             <label className='block text-sm font-medium text-gray-700 mb-2'>
               <span className='text-red-500'>*</span> Purchase Type
             </label>
-            <input
+            <select
               {...register('purchaseType')}
               className={inputClass(!!errors.purchaseType)}
               disabled={isSubmitting}
-              placeholder='Enter purchase type'
-            />
+            >
+              <option value=''>Select Purchase Type</option>
+              <option value='Product'>Product</option>
+              <option value='Service'>Service</option>
+            </select>
           </div>
 
-          <div>
+          {/* Project Code hidden as per requirement */}
+          {/* <div>
             <label className='block text-sm font-medium text-gray-700 mb-2'>
               <span className='text-red-500'>*</span> Project Code
             </label>
@@ -701,7 +778,7 @@ const PurchaseRequestForm: React.FC<PurchaseRequestFormProps> = ({
               disabled={isSubmitting}
               placeholder='Enter project code'
             />
-          </div>
+          </div> */}
 
           <div>
             <label className='block text-sm font-medium text-gray-700 mb-2'>
@@ -750,25 +827,14 @@ const PurchaseRequestForm: React.FC<PurchaseRequestFormProps> = ({
               {/* Upload Excel Button */}
               <button
                 type='button'
-                onClick={() => fileInputRef.current?.click()}
-                disabled={isSubmitting || isUploadingExcel}
+                onClick={() => setIsImportDialogOpen(true)}
+                disabled={isSubmitting}
                 className='flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors disabled:bg-gray-400'
                 title='Upload Excel File'
               >
                 <Upload size={18} />
-                {isUploadingExcel
-                  ? `Processing ${uploadProgress.current}/${uploadProgress.total}...`
-                  : 'Upload Excel'}
+                Upload Excel
               </button>
-
-              {/* Hidden File Input */}
-              <input
-                ref={fileInputRef}
-                type='file'
-                accept='.xlsx,.xls'
-                onChange={handleExcelUpload}
-                className='hidden'
-              />
 
               {/* Add Line Item Button */}
               <button
@@ -780,6 +846,8 @@ const PurchaseRequestForm: React.FC<PurchaseRequestFormProps> = ({
                     categoryName: '',
                     subCategoryId: 0,
                     subCategoryName: '',
+                    modelName: '',
+                    make: '',
                     uomId: 0,
                     uomName: '',
                     quantity: 1,
@@ -830,9 +898,7 @@ const PurchaseRequestForm: React.FC<PurchaseRequestFormProps> = ({
                   <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24'>
                     Total
                   </th>
-                  <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32'>
-                    Status
-                  </th>
+
                   <th className='px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-16'>
                     Action
                   </th>
@@ -976,31 +1042,7 @@ const PurchaseRequestForm: React.FC<PurchaseRequestFormProps> = ({
                       <td className='px-4 py-2 whitespace-nowrap text-sm text-gray-900'>
                         {calculateLineTotal(index)}
                       </td>
-                      <td className='px-4 py-2 whitespace-nowrap text-sm'>
-                        {/* Display status if available (from existing PR) */}
-                        {purchaseRequest?.items?.[index]?.rmApprovalStatus && (
-                          <div className='flex flex-col'>
-                            <span
-                              className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                                purchaseRequest.items[index]
-                                  .rmApprovalStatus === 'Accepted'
-                                  ? 'bg-green-100 text-green-800'
-                                  : purchaseRequest.items[index]
-                                        .rmApprovalStatus === 'Rejected'
-                                    ? 'bg-red-100 text-red-800'
-                                    : 'bg-yellow-100 text-yellow-800'
-                              }`}
-                            >
-                              {purchaseRequest.items[index].rmApprovalStatus}
-                            </span>
-                            {purchaseRequest.items[index].approvalRemarks && (
-                              <span className='text-xs text-red-600 mt-1'>
-                                {purchaseRequest.items[index].approvalRemarks}
-                              </span>
-                            )}
-                          </div>
-                        )}
-                      </td>
+
                       <td className='px-4 py-2 whitespace-nowrap text-center'>
                         <button
                           type='button'
@@ -1023,7 +1065,7 @@ const PurchaseRequestForm: React.FC<PurchaseRequestFormProps> = ({
               <tfoot>
                 <tr className='bg-gray-100'>
                   <td
-                    colSpan={8}
+                    colSpan={9}
                     className='border border-gray-300 px-4 py-2 text-right font-semibold'
                   >
                     Grand Total
@@ -1035,6 +1077,17 @@ const PurchaseRequestForm: React.FC<PurchaseRequestFormProps> = ({
                 </tr>
               </tfoot>
             </table>
+            <div className='mt-6 pt-4 border-t border-gray-200'>
+              <div className='flex justify-end'>
+                <div className='text-xl font-semibold text-gray-800'>
+                  Total Amount:{' '}
+                  {grandTotal.toLocaleString('en-IN', {
+                    style: 'currency',
+                    currency: 'INR',
+                  })}
+                </div>
+              </div>
+            </div>
           </div>
           {errors.items && (
             <p className='mt-2 text-sm text-red-600'>{errors.items.message}</p>
@@ -1045,14 +1098,22 @@ const PurchaseRequestForm: React.FC<PurchaseRequestFormProps> = ({
       {/* Confirmation Dialog */}
       <AlertDialog
         open={showConfirmDialog}
-        onOpenChange={handleDialogOpenChange}
+        onOpenChange={open => setShowConfirmDialog(open)}
         title='Confirm Submission'
-        description='Are you sure you want to submit this Purchase Requisition?'
-        confirmText='Yes, Submit'
-        cancelText='Cancel'
+        description='Are you sure you want to submit this purchase request for approval?'
+        confirmText='Submit'
         onConfirm={handleConfirmSubmit}
-        onCancel={handleCancelSubmit}
         loading={isSubmitting}
+      />
+
+      {/* Excel Import Dialog */}
+      <ExcelImportDialog
+        isOpen={isImportDialogOpen}
+        onClose={() => setIsImportDialogOpen(false)}
+        entityName='Line Items'
+        onFileData={processExcelFile}
+        onTemplateDownload={handleDownloadTemplate}
+        onImportSuccess={() => {}} // No extra action needed after success
       />
     </div>
   );

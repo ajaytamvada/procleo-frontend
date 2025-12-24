@@ -68,7 +68,8 @@ const masterConfigSections: MenuSection[] = [
       { id: 'countries', title: 'Countries', path: '/master/countries' },
       { id: 'states', title: 'States', path: '/master/states' },
       { id: 'cities', title: 'Cities', path: '/master/cities' },
-      { id: 'locations', title: 'Locations', path: '/master/locations' },
+      { id: 'buildings', title: 'Buildings', path: '/master/buildings' },
+      { id: 'floors', title: 'Floors', path: '/master/floors' },
     ],
   },
   {

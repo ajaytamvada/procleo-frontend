@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Plus, Trash2, Save, FileText } from 'lucide-react';
+import { ArrowLeft, Plus, Trash2, Save, FileText, Scan } from 'lucide-react';
 import toast from 'react-hot-toast';
 import {
   useCreateDirectInvoice,
@@ -10,6 +10,8 @@ import type {
   CreateDirectInvoiceRequest,
   DirectInvoiceItemRequest,
 } from '../types';
+import OcrUploadModal from '../components/OcrUploadModal';
+import type { ExtractedInvoiceData } from '../api/ocrApi';
 
 interface DirectInvoiceItemForm extends DirectInvoiceItemRequest {
   baseAmount: number;
@@ -36,6 +38,7 @@ const DirectInvoicePage: React.FC = () => {
   const [locationId, setLocationId] = useState<number>(0);
   const [remarks, setRemarks] = useState('');
   const [items, setItems] = useState<DirectInvoiceItemForm[]>([]);
+  const [showOcrModal, setShowOcrModal] = useState(false);
 
   // Queries
   const { data: generatedNumber } = useGenerateInvoiceNumber();
@@ -249,6 +252,14 @@ const DirectInvoicePage: React.FC = () => {
           </div>
         </div>
         <div className='flex items-center space-x-3'>
+          <button
+            type='button'
+            onClick={() => setShowOcrModal(true)}
+            className='flex items-center px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors'
+          >
+            <Scan className='w-4 h-4 mr-2' />
+            Scan Invoice
+          </button>
           <button
             type='button'
             onClick={() => navigate('/invoice/list')}
@@ -604,6 +615,86 @@ const DirectInvoicePage: React.FC = () => {
           />
         </div>
       </div>
+
+      {/* OCR Modal */}
+      <OcrUploadModal
+        isOpen={showOcrModal}
+        onClose={() => setShowOcrModal(false)}
+        onApplyData={(data: ExtractedInvoiceData) => {
+          // Apply extracted data to form fields
+          let fieldsApplied = 0;
+
+          // Invoice date
+          if (data.invoiceDate) {
+            setInvoiceDate(data.invoiceDate);
+            fieldsApplied++;
+          }
+
+          // Supplier name
+          if (data.supplierName) {
+            setSupplierName(data.supplierName);
+            fieldsApplied++;
+          }
+
+          // Remarks - add billing address as note
+          if (data.billingAddress) {
+            setRemarks(prev =>
+              prev
+                ? `${prev}\nBilled to: ${data.billingAddress}`
+                : `Billed to: ${data.billingAddress}`
+            );
+          }
+
+          // Line items
+          if (data.lineItems && data.lineItems.length > 0) {
+            const newItems: DirectInvoiceItemForm[] = data.lineItems.map(
+              (item, idx) => ({
+                itemName: item.description || `Item ${idx + 1}`,
+                itemCode: '',
+                manufacturer: '',
+                categoryId: undefined,
+                subCategoryId: undefined,
+                assetType: '',
+                uomId: undefined,
+                quantity: item.quantity || 1,
+                unitPrice: item.unitPrice || 0,
+                cgstRate: 0, // No tax info from OCR for international invoices
+                sgstRate: 0,
+                igstRate: 0,
+                otherTaxRate: 0,
+                otherCharges: 0,
+                buyback: 0,
+                remarks: '',
+                baseAmount: item.amount || 0,
+                taxableAmount: item.amount || 0,
+                cgstAmount: 0,
+                sgstAmount: 0,
+                igstAmount: 0,
+                totalTaxAmount: 0,
+                totalAmount: item.amount || 0,
+              })
+            );
+            setItems(newItems);
+            fieldsApplied += newItems.length;
+          }
+
+          // Show success notification with summary
+          const currency =
+            data.currency === 'USD'
+              ? '$'
+              : data.currency === 'EUR'
+                ? '€'
+                : data.currency === 'GBP'
+                  ? '£'
+                  : '₹';
+          toast.success(
+            `Extracted: ${data.lineItems?.length || 0} items, Total: ${currency}${data.grandTotal?.toLocaleString() || 0}`,
+            { duration: 4000 }
+          );
+
+          setShowOcrModal(false);
+        }}
+      />
     </div>
   );
 };

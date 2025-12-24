@@ -176,7 +176,8 @@ export const NegotiateQuotationListPage: React.FC = () => {
                       </td>
                       <td className='px-6 py-4 whitespace-nowrap'>
                         <span className='inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800'>
-                          {rfp.quotations?.length || 0} Received
+                          {rfp.respondedSuppliers || 0}/
+                          {rfp.totalSuppliers || 0} Received
                         </span>
                       </td>
                       <td className='px-6 py-4 whitespace-nowrap text-right text-sm font-medium'>

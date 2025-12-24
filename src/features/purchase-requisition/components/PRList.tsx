@@ -157,9 +157,9 @@ export const PRList: React.FC<PRListProps> = ({
                 <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
                   Purchase Type
                 </th>
-                <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
+                {/* <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
                   Project Code
-                </th>
+                </th> */}
                 <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
                   Project Name
                 </th>
@@ -199,9 +199,9 @@ export const PRList: React.FC<PRListProps> = ({
                   <td className='px-4 py-4 whitespace-nowrap text-sm text-gray-900'>
                     {item.purchaseType || '-'}
                   </td>
-                  <td className='px-4 py-4 whitespace-nowrap text-sm text-gray-900'>
+                  {/* <td className='px-4 py-4 whitespace-nowrap text-sm text-gray-900'>
                     {item.projectCode || '-'}
-                  </td>
+                  </td> */}
                   <td className='px-4 py-4 whitespace-nowrap text-sm text-gray-900'>
                     {item.projectName || '-'}
                   </td>

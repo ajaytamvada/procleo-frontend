@@ -7,18 +7,17 @@ import type { Floor } from '../../hooks/useFloorAPI';
 import { useCountries } from '../../hooks/useCountryAPI';
 import { useStatesByCountry } from '../../hooks/useStateAPI';
 import { useCitiesByState } from '../../hooks/useCityAPI';
+import { useBuildings } from '../../hooks/useBuildingAPI';
 
 const floorSchema = z.object({
-  countryId: z.number().min(1, 'Country is required'),
-  stateId: z.number().min(1, 'State is required'),
-  cityId: z.number().min(1, 'City is required'),
+  buildingId: z.number().min(1, 'Building is required'),
   name: z
     .string()
-    .min(1, 'Location name is required')
-    .max(255, 'Location name cannot exceed 255 characters'),
+    .min(1, 'Floor name is required')
+    .max(255, 'Floor name cannot exceed 255 characters'),
   code: z
     .string()
-    .max(50, 'Location code cannot exceed 50 characters')
+    .max(50, 'Floor code cannot exceed 50 characters')
     .optional()
     .or(z.literal('')),
   zipCode: z.number().optional(),
@@ -39,16 +38,19 @@ const FloorForm: React.FC<FloorFormProps> = ({
   onCancel,
   isSubmitting = false,
 }) => {
-  const [selectedCountryId, setSelectedCountryId] = useState<number>(
-    floor?.countryId || 0
-  );
-  const [selectedStateId, setSelectedStateId] = useState<number>(
-    floor?.stateId || 0
-  );
+  const [selectedCountryId, setSelectedCountryId] = useState<number>(0);
+  const [selectedStateId, setSelectedStateId] = useState<number>(0);
+  const [selectedCityId, setSelectedCityId] = useState<number>(0);
 
   const { data: countries = [] } = useCountries();
   const { data: states = [] } = useStatesByCountry(selectedCountryId);
   const { data: cities = [] } = useCitiesByState(selectedStateId);
+  const { data: buildings = [] } = useBuildings();
+
+  // Filter buildings by city if a city is selected
+  const filteredBuildings = selectedCityId
+    ? buildings.filter((b: { cityId?: number }) => b.cityId === selectedCityId)
+    : buildings;
 
   const {
     register,
@@ -59,9 +61,7 @@ const FloorForm: React.FC<FloorFormProps> = ({
   } = useForm<FloorFormData>({
     resolver: zodResolver(floorSchema),
     defaultValues: floor || {
-      countryId: 0,
-      stateId: 0,
-      cityId: 0,
+      buildingId: 0,
       name: '',
       code: '',
       zipCode: undefined,
@@ -70,9 +70,11 @@ const FloorForm: React.FC<FloorFormProps> = ({
 
   React.useEffect(() => {
     if (floor) {
-      reset(floor);
-      setSelectedCountryId(floor.countryId);
-      setSelectedStateId(floor.stateId);
+      reset({
+        buildingId: floor.buildingId,
+        name: floor.name,
+        code: floor.code,
+      });
     }
   }, [floor, reset]);
 
@@ -80,16 +82,21 @@ const FloorForm: React.FC<FloorFormProps> = ({
     const countryId = Number(e.target.value);
     setSelectedCountryId(countryId);
     setSelectedStateId(0);
-    setValue('countryId', countryId);
-    setValue('stateId', 0);
-    setValue('cityId', 0);
+    setSelectedCityId(0);
+    setValue('buildingId', 0);
   };
 
   const handleStateChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const stateId = Number(e.target.value);
     setSelectedStateId(stateId);
-    setValue('stateId', stateId);
-    setValue('cityId', 0);
+    setSelectedCityId(0);
+    setValue('buildingId', 0);
+  };
+
+  const handleCityChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const cityId = Number(e.target.value);
+    setSelectedCityId(cityId);
+    setValue('buildingId', 0);
   };
 
   return (
@@ -104,59 +111,50 @@ const FloorForm: React.FC<FloorFormProps> = ({
             <ArrowLeft size={24} />
           </button>
           <h2 className='text-2xl font-bold text-gray-800'>
-            {floor?.id ? 'Edit Location' : 'New Location'}
+            {floor?.id ? 'Edit Floor' : 'New Floor'}
           </h2>
         </div>
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className='p-6'>
         <div className='space-y-6 max-w-2xl'>
-          {/* Country Selection */}
+          {/* Country Selection (filter only) */}
           <div>
             <label
               htmlFor='countryId'
               className='block text-sm font-medium text-gray-700 mb-2'
             >
-              Country <span className='text-red-500'>*</span>
+              Country
             </label>
             <select
-              {...register('countryId', { valueAsNumber: true })}
               id='countryId'
+              value={selectedCountryId}
               onChange={handleCountryChange}
-              className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                errors.countryId ? 'border-red-500' : 'border-gray-300'
-              }`}
+              className='w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent border-gray-300'
               disabled={isSubmitting}
             >
-              <option value={0}>Select a country</option>
+              <option value={0}>Select a country (optional filter)</option>
               {countries.map(country => (
                 <option key={country.id} value={country.id}>
                   {country.name}
                 </option>
               ))}
             </select>
-            {errors.countryId && (
-              <p className='mt-1 text-sm text-red-600'>
-                {errors.countryId.message}
-              </p>
-            )}
           </div>
 
-          {/* State Selection */}
+          {/* State Selection (filter only) */}
           <div>
             <label
               htmlFor='stateId'
               className='block text-sm font-medium text-gray-700 mb-2'
             >
-              State <span className='text-red-500'>*</span>
+              State
             </label>
             <select
-              {...register('stateId', { valueAsNumber: true })}
               id='stateId'
+              value={selectedStateId}
               onChange={handleStateChange}
-              className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                errors.stateId ? 'border-red-500' : 'border-gray-300'
-              }`}
+              className='w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent border-gray-300'
               disabled={isSubmitting || !selectedCountryId}
             >
               <option value={0}>
@@ -170,27 +168,21 @@ const FloorForm: React.FC<FloorFormProps> = ({
                 </option>
               ))}
             </select>
-            {errors.stateId && (
-              <p className='mt-1 text-sm text-red-600'>
-                {errors.stateId.message}
-              </p>
-            )}
           </div>
 
-          {/* City Selection */}
+          {/* City Selection (filter only) */}
           <div>
             <label
               htmlFor='cityId'
               className='block text-sm font-medium text-gray-700 mb-2'
             >
-              City <span className='text-red-500'>*</span>
+              City
             </label>
             <select
-              {...register('cityId', { valueAsNumber: true })}
               id='cityId'
-              className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                errors.cityId ? 'border-red-500' : 'border-gray-300'
-              }`}
+              value={selectedCityId}
+              onChange={handleCityChange}
+              className='w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent border-gray-300'
               disabled={isSubmitting || !selectedStateId}
             >
               <option value={0}>
@@ -202,20 +194,47 @@ const FloorForm: React.FC<FloorFormProps> = ({
                 </option>
               ))}
             </select>
-            {errors.cityId && (
+          </div>
+
+          {/* Building Selection */}
+          <div>
+            <label
+              htmlFor='buildingId'
+              className='block text-sm font-medium text-gray-700 mb-2'
+            >
+              Building <span className='text-red-500'>*</span>
+            </label>
+            <select
+              {...register('buildingId', { valueAsNumber: true })}
+              id='buildingId'
+              className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                errors.buildingId ? 'border-red-500' : 'border-gray-300'
+              }`}
+              disabled={isSubmitting}
+            >
+              <option value={0}>Select a building</option>
+              {filteredBuildings.map(
+                (building: { id?: number; name: string }) => (
+                  <option key={building.id} value={building.id}>
+                    {building.name}
+                  </option>
+                )
+              )}
+            </select>
+            {errors.buildingId && (
               <p className='mt-1 text-sm text-red-600'>
-                {errors.cityId.message}
+                {errors.buildingId.message}
               </p>
             )}
           </div>
 
-          {/* Location Name */}
+          {/* Floor Name */}
           <div>
             <label
               htmlFor='name'
               className='block text-sm font-medium text-gray-700 mb-2'
             >
-              Location Name <span className='text-red-500'>*</span>
+              Floor Name <span className='text-red-500'>*</span>
             </label>
             <input
               {...register('name')}
@@ -224,7 +243,7 @@ const FloorForm: React.FC<FloorFormProps> = ({
               className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
                 errors.name ? 'border-red-500' : 'border-gray-300'
               }`}
-              placeholder='Enter location name (e.g., Main Office, Floor 1)'
+              placeholder='Enter floor name (e.g., Floor 1, Ground Floor)'
               disabled={isSubmitting}
             />
             {errors.name && (
@@ -232,13 +251,13 @@ const FloorForm: React.FC<FloorFormProps> = ({
             )}
           </div>
 
-          {/* Location Code */}
+          {/* Floor Code */}
           <div>
             <label
               htmlFor='code'
               className='block text-sm font-medium text-gray-700 mb-2'
             >
-              Location Code
+              Floor Code
             </label>
             <input
               {...register('code')}
@@ -247,36 +266,11 @@ const FloorForm: React.FC<FloorFormProps> = ({
               className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
                 errors.code ? 'border-red-500' : 'border-gray-300'
               }`}
-              placeholder='Enter location code (optional)'
+              placeholder='Enter floor code (optional)'
               disabled={isSubmitting}
             />
             {errors.code && (
               <p className='mt-1 text-sm text-red-600'>{errors.code.message}</p>
-            )}
-          </div>
-
-          {/* Zip Code */}
-          <div>
-            <label
-              htmlFor='zipCode'
-              className='block text-sm font-medium text-gray-700 mb-2'
-            >
-              Zip Code
-            </label>
-            <input
-              {...register('zipCode', { valueAsNumber: true })}
-              type='number'
-              id='zipCode'
-              className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                errors.zipCode ? 'border-red-500' : 'border-gray-300'
-              }`}
-              placeholder='Enter zip code (optional)'
-              disabled={isSubmitting}
-            />
-            {errors.zipCode && (
-              <p className='mt-1 text-sm text-red-600'>
-                {errors.zipCode.message}
-              </p>
             )}
           </div>
 

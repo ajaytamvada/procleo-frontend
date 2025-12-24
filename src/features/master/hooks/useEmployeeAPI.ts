@@ -13,8 +13,8 @@ export interface Employee {
   designationName?: string;
   departmentId?: number;
   departmentName?: string;
-  locationId?: number;
-  locationName?: string;
+  stateId?: number;
+  stateName?: string;
   reportingManagerId?: number;
   reportingManagerName?: string;
   employeeType: string; // "Employee" or "Contract"

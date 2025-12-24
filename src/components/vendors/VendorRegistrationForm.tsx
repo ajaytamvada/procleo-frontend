@@ -14,6 +14,7 @@ import {
   Globe,
   Loader2,
   Check,
+  CheckCircle,
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
@@ -22,6 +23,7 @@ import { Textarea } from '@/components/ui/Textarea';
 import { Alert } from '@/components/ui/Alert';
 import { Card } from '@/components/ui/Card';
 import toast from 'react-hot-toast';
+import axios from 'axios';
 
 // Validation schema for vendor registration
 const vendorRegistrationSchema = z.object({
@@ -68,6 +70,9 @@ export function VendorRegistrationForm() {
   const [currentStep, setCurrentStep] = useState(1);
   const totalSteps = 4;
 
+  const [registrationComplete, setRegistrationComplete] = useState(false);
+  const [registrationData, setRegistrationData] = useState<any>(null);
+
   const {
     register,
     handleSubmit,
@@ -84,15 +89,49 @@ export function VendorRegistrationForm() {
 
   const onSubmit = async (data: VendorRegistrationData) => {
     try {
-      // TODO: Implement vendor registration API call
-      console.log('Vendor registration data:', data);
+      // Map form data to API DTO
+      const registrationDto = {
+        companyName: data.companyName,
+        companyCode: data.registrationNumber,
+        companyEmail: data.email,
+        phone: data.phone,
+        mobile: data.alternatePhone,
+        website: data.website,
+        address1: data.address,
+        city: data.city,
+        state: data.state,
+        country: data.country,
+        pinCode: data.postalCode,
+        gst: data.taxId,
+        contactFirstName:
+          data.contactPerson?.split(' ')[0] || data.contactPerson,
+        contactLastName:
+          data.contactPerson?.split(' ').slice(1).join(' ') || '',
+        contactEmail: data.email,
+        contactPhone: data.phone,
+        industry: data.vendorType,
+        businessDescription: data.description,
+      };
 
-      toast.success(
-        'Vendor registration submitted successfully! We will review your application.'
+      const response = await axios.post(
+        '/api/public/vendor/register',
+        registrationDto
       );
-      navigate('/vendors');
-    } catch (error) {
-      toast.error('Failed to submit vendor registration. Please try again.');
+
+      if (response.data.success) {
+        setRegistrationData(response.data);
+        setRegistrationComplete(true);
+        toast.success(
+          'Registration successful! Check your email for login credentials.'
+        );
+      } else {
+        toast.error(response.data.message || 'Registration failed');
+      }
+    } catch (error: any) {
+      const message =
+        error.response?.data?.message ||
+        'Failed to submit vendor registration. Please try again.';
+      toast.error(message);
     }
   };
 
@@ -135,6 +174,58 @@ export function VendorRegistrationForm() {
   const prevStep = () => {
     setCurrentStep(prev => Math.max(prev - 1, 1));
   };
+
+  // Show success screen after registration
+  if (registrationComplete) {
+    return (
+      <div className='max-w-4xl mx-auto p-6'>
+        <Card>
+          <div className='p-8 text-center'>
+            <div className='mx-auto mb-6 h-20 w-20 rounded-full bg-green-100 flex items-center justify-center'>
+              <CheckCircle className='h-10 w-10 text-green-600' />
+            </div>
+            <h2
+              className='text-3xl font-bold mb-4'
+              style={{ color: '#1a0b2e' }}
+            >
+              Registration Successful!
+            </h2>
+            <p className='text-gray-600 mb-6 max-w-md mx-auto'>
+              Your vendor account has been created. Login credentials have been
+              sent to your email address.
+            </p>
+            <div className='bg-purple-50 rounded-lg p-6 mb-6 max-w-sm mx-auto text-left'>
+              <h3 className='font-semibold text-purple-900 mb-3'>
+                Your Account Details:
+              </h3>
+              <div className='space-y-2 text-sm'>
+                <div>
+                  <span className='text-purple-600'>Vendor Code:</span>
+                  <span className='ml-2 font-mono font-bold'>
+                    {registrationData?.vendorCode}
+                  </span>
+                </div>
+                <div>
+                  <span className='text-purple-600'>Login Email:</span>
+                  <span className='ml-2 font-mono font-bold'>
+                    {registrationData?.loginEmail}
+                  </span>
+                </div>
+                <div className='pt-2 border-t border-purple-200 mt-2'>
+                  <span className='text-purple-700 text-xs'>
+                    Password sent to your email
+                  </span>
+                </div>
+              </div>
+            </div>
+            <Button onClick={() => navigate('/auth/login')} className='px-8'>
+              Go to Login
+            </Button>
+          </div>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className='max-w-4xl mx-auto p-6'>

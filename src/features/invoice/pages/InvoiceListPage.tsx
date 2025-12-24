@@ -306,7 +306,9 @@ const InvoiceListPage: React.FC = () => {
                     <td className='px-6 py-4 whitespace-nowrap text-sm'>
                       <div className='flex items-center space-x-2'>
                         <button
-                          onClick={() => navigate(`/invoices/${invoice.id}`)}
+                          onClick={() =>
+                            navigate(`/invoice/preview/${invoice.id}`)
+                          }
                           className='text-blue-600 hover:text-blue-800 transition-colors'
                           title='View'
                         >
@@ -346,14 +348,14 @@ const InvoiceListPage: React.FC = () => {
                         {(invoice.status === InvoiceStatus.APPROVED ||
                           invoice.status === InvoiceStatus.THREE_WAY_MATCHED ||
                           invoice.status === InvoiceStatus.PARTIALLY_PAID) && (
-                            <button
-                              onClick={() => handleRecordPayment(invoice.id!)}
-                              className='text-green-600 hover:text-green-800 transition-colors'
-                              title='Record Payment'
-                            >
-                              <DollarSign className='w-4 h-4' />
-                            </button>
-                          )}
+                          <button
+                            onClick={() => handleRecordPayment(invoice.id!)}
+                            className='text-green-600 hover:text-green-800 transition-colors'
+                            title='Record Payment'
+                          >
+                            <DollarSign className='w-4 h-4' />
+                          </button>
+                        )}
                       </div>
                     </td>
                   </tr>

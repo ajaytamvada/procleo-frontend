@@ -30,9 +30,11 @@ interface ExcelImportDialogProps {
   isOpen: boolean;
   onClose: () => void;
   entityName: string; // e.g., "Category", "SubCategory"
-  importEndpoint: string; // e.g., "/master/categories/import"
-  templateEndpoint: string; // e.g., "/master/categories/template"
-  onImportSuccess: () => void; // Callback to refresh list
+  importEndpoint?: string; // e.g., "/master/categories/import"
+  templateEndpoint?: string; // e.g., "/master/categories/template"
+  onImportSuccess: (data?: any) => void; // Callback to refresh list
+  onFileData?: (file: File) => Promise<any>; // Optional: Handle file client-side
+  onTemplateDownload?: () => void; // Optional: Handle template download client-side
 }
 
 const ExcelImportDialog: React.FC<ExcelImportDialogProps> = ({
@@ -42,6 +44,8 @@ const ExcelImportDialog: React.FC<ExcelImportDialogProps> = ({
   importEndpoint,
   templateEndpoint,
   onImportSuccess,
+  onFileData,
+  onTemplateDownload,
 }) => {
   const [file, setFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
@@ -90,6 +94,16 @@ const ExcelImportDialog: React.FC<ExcelImportDialogProps> = ({
 
   const downloadTemplate = async () => {
     try {
+      if (onTemplateDownload) {
+        onTemplateDownload();
+        return;
+      }
+
+      if (!templateEndpoint) {
+        console.error('No template endpoint provided');
+        return;
+      }
+
       const response = await apiClient.get(templateEndpoint, {
         responseType: 'blob',
       });
@@ -118,32 +132,56 @@ const ExcelImportDialog: React.FC<ExcelImportDialogProps> = ({
     }
 
     setUploading(true);
-    const formData = new FormData();
-    formData.append('file', file);
-
     try {
-      const response = await apiClient.post(importEndpoint, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
+      if (onFileData) {
+        // Client-side handling
+        const data = await onFileData(file);
+        const count = Array.isArray(data) ? data.length : 0;
 
-      setResult(response.data);
+        setResult({
+          status: 'SUCCESS',
+          totalRows: count,
+          successCount: count,
+          failureCount: 0,
+          successfulImports: data,
+          errors: [],
+          message: 'Import processed successfully',
+        });
+        toast.success(`Successfully imported ${count} records!`);
+        onImportSuccess(data);
 
-      if (response.data.status === 'SUCCESS') {
-        toast.success(
-          `Successfully imported all ${response.data.successCount} records!`
-        );
-        onImportSuccess();
-      } else if (response.data.status === 'PARTIAL_SUCCESS') {
-        toast.success(
-          `Imported ${response.data.successCount} records. ${response.data.failureCount} failed.`
-        );
-        onImportSuccess();
-      } else if (response.data.status === 'FAILED') {
-        toast.error('Import failed. Please check the errors below.');
-      } else {
-        toast.error('No data found in the file');
+        // Auto-close after short delay
+        setTimeout(() => {
+          handleClose();
+        }, 1500);
+      } else if (importEndpoint) {
+        // Server-side hadling
+        const formData = new FormData();
+        formData.append('file', file);
+
+        const response = await apiClient.post(importEndpoint, formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        });
+
+        setResult(response.data);
+
+        if (response.data.status === 'SUCCESS') {
+          toast.success(
+            `Successfully imported all ${response.data.successCount} records!`
+          );
+          onImportSuccess();
+        } else if (response.data.status === 'PARTIAL_SUCCESS') {
+          toast.success(
+            `Imported ${response.data.successCount} records. ${response.data.failureCount} failed.`
+          );
+          onImportSuccess();
+        } else if (response.data.status === 'FAILED') {
+          toast.error('Import failed. Please check the errors below.');
+        } else {
+          toast.error('No data found in the file');
+        }
       }
     } catch (error: any) {
       console.error('Error uploading file:', error);

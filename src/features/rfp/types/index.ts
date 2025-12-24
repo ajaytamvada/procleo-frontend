@@ -48,7 +48,10 @@ export interface RFPQuotation {
   totalAmount?: number;
   taxAmount?: number;
   discountAmount?: number;
+  supplierCode?: string;
   netAmount?: number;
+  otherCharges?: number;
+  grandTotal?: number;
   currency?: string;
   status?: QuotationStatus;
   technicalScore?: number;
@@ -168,4 +171,33 @@ export interface RFPFilterParams {
   size?: number;
   sortBy?: string;
   sortDirection?: 'ASC' | 'DESC';
+}
+
+export interface BidEvaluation {
+  supplierName: string;
+  totalBidAmount: number;
+  lowestBidRank: number;
+}
+
+export interface NegotiationHistory {
+  supplierName: string;
+  itemName: string;
+  oldTotalPrice: number;
+  newTotalPrice: number;
+  negotiationNotes?: string;
+}
+
+export interface SelectedVendor {
+  supplierName: string;
+  itemName: string;
+  selectionRemarks?: string;
+}
+
+export interface RFPSummary extends RFP {
+  rfpDate: string;
+  priority?: string;
+  description?: string;
+  bidEvaluations?: BidEvaluation[];
+  negotiations?: NegotiationHistory[];
+  selectedVendors?: SelectedVendor[];
 }

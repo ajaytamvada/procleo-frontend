@@ -5,6 +5,7 @@ import LocationForm from './LocationForm';
 import ExcelImportDialog from '@/components/ExcelImportDialog';
 import {
   useLocations,
+  useLocationsPaged,
   useCreateLocation,
   useUpdateLocation,
   useDeleteLocation,
@@ -17,8 +18,15 @@ const LocationPage: React.FC = () => {
   const [selectedLocation, setSelectedLocation] = useState<
     Location | undefined
   >();
+  const [page, setPage] = useState(0);
+  const [filters, setFilters] = useState({});
 
-  const { data: locations = [], isLoading, error } = useLocations();
+  const { data, isLoading, error } = useLocationsPaged(page, 15, filters);
+
+  const locations = data?.content || [];
+  const totalPages = data?.totalPages || 0;
+  const totalElements = data?.totalElements || 0;
+
   const createMutation = useCreateLocation();
   const updateMutation = useUpdateLocation();
   const deleteMutation = useDeleteLocation();
@@ -106,6 +114,14 @@ const LocationPage: React.FC = () => {
         onDelete={handleDelete}
         onImport={() => setShowImportDialog(true)}
         isLoading={isLoading}
+        page={page}
+        totalPages={totalPages}
+        totalElements={totalElements}
+        onPageChange={setPage}
+        onFiltersChange={newFilters => {
+          setPage(0);
+          setFilters(newFilters);
+        }}
       />
       <ExcelImportDialog
         isOpen={showImportDialog}

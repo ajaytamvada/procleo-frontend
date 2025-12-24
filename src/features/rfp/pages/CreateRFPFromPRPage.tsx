@@ -168,6 +168,7 @@ export const CreateRFPFromPRPage = () => {
         targetUnitPrice: item.targetUnitPrice,
         remarks: item.remarks,
         description: item.description,
+        unitOfMeasurement: item.unitOfMeasurement,
       })
     );
 
@@ -549,9 +550,6 @@ export const CreateRFPFromPRPage = () => {
                       Quantity
                     </th>
                     <th className='px-4 py-3 text-right text-sm font-semibold text-gray-700'>
-                      Indicative Price
-                    </th>
-                    <th className='px-4 py-3 text-right text-sm font-semibold text-gray-700'>
                       Target Unit Price
                     </th>
                     <th className='px-4 py-3 text-right text-sm font-semibold text-gray-700'>
@@ -611,13 +609,6 @@ export const CreateRFPFromPRPage = () => {
                           </td>
                           <td className='px-4 py-3 text-center text-sm text-gray-900'>
                             {item.quantity}
-                          </td>
-                          <td className='px-4 py-3 text-right text-sm text-gray-900'>
-                            ₹
-                            {item.indicativePrice.toLocaleString('en-IN', {
-                              minimumFractionDigits: 2,
-                              maximumFractionDigits: 2,
-                            })}
                           </td>
                           <td className='px-4 py-3 text-right'>
                             <input

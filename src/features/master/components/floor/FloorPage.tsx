@@ -49,10 +49,10 @@ const FloorPage: React.FC = () => {
           id: selectedFloor.id,
           data,
         });
-        toast.success('Location updated successfully');
+        toast.success('Floor updated successfully');
       } else {
         await createMutation.mutateAsync(data);
-        toast.success('Location created successfully');
+        toast.success('Floor created successfully');
       }
       setShowForm(false);
       setSelectedFloor(undefined);
@@ -60,7 +60,7 @@ const FloorPage: React.FC = () => {
       const errorMessage =
         error?.response?.data?.message ||
         error?.message ||
-        'An error occurred while saving the location';
+        'An error occurred while saving the floor';
       toast.error(errorMessage);
     }
   };
@@ -68,12 +68,12 @@ const FloorPage: React.FC = () => {
   const handleDelete = async (id: number) => {
     try {
       await deleteMutation.mutateAsync(id);
-      toast.success('Location deleted successfully');
+      toast.success('Floor deleted successfully');
     } catch (error: any) {
       const errorMessage =
         error?.response?.data?.message ||
         error?.message ||
-        'An error occurred while deleting the location';
+        'An error occurred while deleting the floor';
       toast.error(errorMessage);
     }
   };
@@ -82,7 +82,7 @@ const FloorPage: React.FC = () => {
     return (
       <div className='p-6'>
         <div className='bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded'>
-          Error loading locations: {(error as Error).message}
+          Error loading floors: {(error as Error).message}
         </div>
       </div>
     );

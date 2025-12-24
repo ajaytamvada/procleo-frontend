@@ -15,6 +15,8 @@ export interface User {
   companyName?: string;
   userTypeId?: number;
   userTypeName?: string;
+  vendorId?: number; // Vendor ID if this is a vendor user
+  vendorName?: string; // Vendor company name
   permissions: string[]; // Deprecated: keeping for backward compatibility
   modules: UserModulePermission[]; // New: module-based permissions
   lastLoginAt?: string;
@@ -22,6 +24,11 @@ export interface User {
   username?: string;
   roles?: string[];
 }
+
+// Helper function to check if user is a vendor
+export const isVendorUser = (user: User | null): boolean => {
+  return user?.vendorId != null;
+};
 
 export interface LoginCredentials {
   username: string; // Can be username or email

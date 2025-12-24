@@ -5,6 +5,7 @@ import type {
   RFPFilterParams,
   RFPQuotation,
   RFPSupplier,
+  RFPSummary,
 } from '../types';
 
 export const rfpApi = {
@@ -185,7 +186,7 @@ export const rfpApi = {
   },
 
   // Get RFP Summary
-  getRFPSummary: async (rfpId: number): Promise<RFP> => {
+  getRFPSummary: async (rfpId: number): Promise<RFPSummary> => {
     const response = await apiClient.get(`/rfp/${rfpId}/summary`);
     return response.data;
   },
@@ -222,6 +223,19 @@ export const rfpApi = {
   cancelRFP: async (id: number, reason: string): Promise<RFP> => {
     const response = await apiClient.post(`/rfp/${id}/cancel`, null, {
       params: { reason },
+    });
+    return response.data;
+  },
+
+  // Extend RFP
+  extendRFP: async (
+    id: number,
+    newClosingDate: string,
+    reason?: string
+  ): Promise<RFP> => {
+    const response = await apiClient.post(`/rfp/${id}/extend`, {
+      newClosingDate,
+      reason,
     });
     return response.data;
   },

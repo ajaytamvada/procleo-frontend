@@ -6,7 +6,7 @@ export const emailSchema = z
   .email('Please enter a valid email address');
 export const phoneSchema = z
   .string()
-  .regex(/^\+?[\d\s\-\(\)]+$/, 'Please enter a valid phone number');
+  .regex(/^\+?[\d\s\-()]+$/, 'Please enter a valid phone number');
 export const gstSchema = z
   .string()
   .regex(

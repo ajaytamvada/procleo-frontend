@@ -46,10 +46,22 @@ export interface OrderStatusDistribution {
   color: string;
 }
 
+export interface SourcingEvent {
+  id: string;
+  title: string;
+  startPrice: number;
+  currentLowest: number;
+  savedPercentage: number;
+  timeLeftSeconds: number;
+  isLive: boolean;
+  rfpNumber: string;
+}
+
 export interface DashboardData {
   stats: DashboardStats;
   recentOrders: RecentPurchaseOrder[];
   monthlySpend: MonthlySpend[];
   categorySpend: CategorySpend[];
   orderStatusDistribution: OrderStatusDistribution[];
+  sourcingEvents: SourcingEvent[];
 }

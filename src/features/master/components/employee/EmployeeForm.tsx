@@ -7,7 +7,7 @@ import {
 } from '../../hooks/useEmployeeAPI';
 import { useDepartmentsList } from '../../hooks/useDepartmentAPI';
 import { useDesignations } from '../../hooks/useDesignationAPI';
-import { useLocations } from '../../hooks/useLocationAPI';
+import { useStates } from '../../hooks/useStateAPI';
 import { useWorkingEmployees } from '../../hooks/useEmployeeAPI';
 
 interface EmployeeFormProps {
@@ -27,7 +27,7 @@ const EmployeeForm: React.FC<EmployeeFormProps> = ({
   const [contactNumber, setContactNumber] = useState('');
   const [designationId, setDesignationId] = useState<number | ''>('');
   const [departmentId, setDepartmentId] = useState<number | ''>('');
-  const [locationId, setLocationId] = useState<number | ''>('');
+  const [stateId, setStateId] = useState<number | ''>('');
   const [reportingManagerId, setReportingManagerId] = useState<number | ''>('');
   const [employeeType, setEmployeeType] = useState('');
   const [status, setStatus] = useState('');
@@ -39,7 +39,7 @@ const EmployeeForm: React.FC<EmployeeFormProps> = ({
     useDepartmentsList();
   const { data: designations = [], isLoading: loadingDesignations } =
     useDesignations();
-  const { data: locations = [], isLoading: loadingLocations } = useLocations();
+  const { data: states = [], isLoading: loadingStates } = useStates();
   const { data: employees = [], isLoading: loadingEmployees } =
     useWorkingEmployees();
 
@@ -51,7 +51,7 @@ const EmployeeForm: React.FC<EmployeeFormProps> = ({
       setContactNumber(employee.contactNumber || '');
       setDesignationId(employee.designationId || '');
       setDepartmentId(employee.departmentId || '');
-      setLocationId(employee.locationId || '');
+      setStateId(employee.stateId || '');
       setReportingManagerId(employee.reportingManagerId || '');
       setEmployeeType(employee.employeeType || '');
       setStatus(employee.status || '');
@@ -97,7 +97,7 @@ const EmployeeForm: React.FC<EmployeeFormProps> = ({
       contactNumber: contactNumber.trim() || undefined,
       designationId: designationId || undefined,
       departmentId: departmentId || undefined,
-      locationId: locationId || undefined,
+      stateId: stateId || undefined,
       reportingManagerId: reportingManagerId || undefined,
       employeeType,
       status,
@@ -128,7 +128,7 @@ const EmployeeForm: React.FC<EmployeeFormProps> = ({
     updateMutation.isPending ||
     loadingDepartments ||
     loadingDesignations ||
-    loadingLocations ||
+    loadingStates ||
     loadingEmployees;
 
   // Filter out current employee from reporting managers list
@@ -287,27 +287,27 @@ const EmployeeForm: React.FC<EmployeeFormProps> = ({
               </select>
             </div>
 
-            {/* Location */}
+            {/* State (Location) */}
             <div>
               <label
-                htmlFor='locationId'
+                htmlFor='stateId'
                 className='block text-sm font-medium text-gray-700 mb-2'
               >
-                Location
+                State
               </label>
               <select
-                id='locationId'
-                value={locationId}
+                id='stateId'
+                value={stateId}
                 onChange={e =>
-                  setLocationId(e.target.value ? Number(e.target.value) : '')
+                  setStateId(e.target.value ? Number(e.target.value) : '')
                 }
                 className='w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent'
-                disabled={isLoading || loadingLocations}
+                disabled={isLoading || loadingStates}
               >
-                <option value=''>Select Location</option>
-                {locations.map(location => (
-                  <option key={location.id} value={location.id}>
-                    {location.name}
+                <option value=''>Select State</option>
+                {states.map(state => (
+                  <option key={state.id} value={state.id}>
+                    {state.name}
                   </option>
                 ))}
               </select>

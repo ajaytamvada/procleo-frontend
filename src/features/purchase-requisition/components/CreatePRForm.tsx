@@ -5,6 +5,7 @@ import { z } from 'zod';
 import { Input } from '@/components/ui/Input';
 import { PRItemsTable } from './PRItemsTable';
 import { Edit, Plus } from 'lucide-react';
+import { useCities } from '@/features/master/hooks/useCityAPI';
 
 interface PurchaseRequisitionItem {
   id: string;
@@ -88,6 +89,9 @@ export const CreatePRForm: React.FC<CreatePRFormProps> = ({
     control,
     name: 'items',
   });
+
+  // Fetch cities for location dropdown
+  const { data: cities = [], isLoading: citiesLoading } = useCities();
 
   const watchedItems = watch('items');
 
@@ -243,11 +247,16 @@ export const CreatePRForm: React.FC<CreatePRFormProps> = ({
                 {...register('location')}
                 className='w-full px-3 py-2 rounded-lg bg-white text-gray-900 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500'
                 style={{ border: '1px solid #e5e7eb' }}
+                disabled={citiesLoading}
               >
-                <option value=''>Select</option>
-                <option value='Head Office'>Head Office</option>
-                <option value='Branch Office'>Branch Office</option>
-                <option value='Warehouse'>Warehouse</option>
+                <option value=''>
+                  {citiesLoading ? 'Loading cities...' : 'Select City'}
+                </option>
+                {cities.map(city => (
+                  <option key={city.id} value={city.name}>
+                    {city.name}
+                  </option>
+                ))}
               </select>
               {errors.location && (
                 <p className='mt-1 text-sm text-red-600'>

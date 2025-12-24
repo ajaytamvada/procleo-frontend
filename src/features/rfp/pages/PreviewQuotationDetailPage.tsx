@@ -321,7 +321,7 @@ export const PreviewQuotationDetailPage: React.FC = () => {
                   <span className='text-gray-600'>Other Charges:</span>
                   <span className='font-medium text-gray-900'>
                     ₹
-                    {(0 || 0).toLocaleString('en-IN', {
+                    {(quotation.otherCharges || 0).toLocaleString('en-IN', {
                       minimumFractionDigits: 2,
                     })}
                   </span>

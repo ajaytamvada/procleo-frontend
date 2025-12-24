@@ -3,10 +3,10 @@ import { apiClient } from '@/lib/api';
 
 export interface City {
   id?: number;
-  countryId: number;
-  countryName?: string;
   stateId: number;
   stateName?: string;
+  countryId?: number;
+  countryName?: string;
   name: string;
   code: string;
 }
@@ -61,11 +61,6 @@ const cityAPI = {
 
   getByStateId: async (stateId: number): Promise<City[]> => {
     const response = await apiClient.get(`/master/cities/state/${stateId}`);
-    return response.data;
-  },
-
-  getByCountryId: async (countryId: number): Promise<City[]> => {
-    const response = await apiClient.get(`/master/cities/country/${countryId}`);
     return response.data;
   },
 
@@ -129,14 +124,6 @@ export const useCitiesByState = (stateId: number) => {
     queryKey: [...CITY_QUERY_KEY, 'state', stateId],
     queryFn: () => cityAPI.getByStateId(stateId),
     enabled: !!stateId,
-  });
-};
-
-export const useCitiesByCountry = (countryId: number) => {
-  return useQuery({
-    queryKey: [...CITY_QUERY_KEY, 'country', countryId],
-    queryFn: () => cityAPI.getByCountryId(countryId),
-    enabled: !!countryId,
   });
 };
 

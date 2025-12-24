@@ -8,7 +8,6 @@ import { useCountries } from '../../hooks/useCountryAPI';
 import { useStatesByCountry } from '../../hooks/useStateAPI';
 
 const citySchema = z.object({
-  countryId: z.number().min(1, 'Country is required'),
   stateId: z.number().min(1, 'State is required'),
   name: z
     .string()
@@ -51,7 +50,6 @@ const CityForm: React.FC<CityFormProps> = ({
   } = useForm<CityFormData>({
     resolver: zodResolver(citySchema),
     defaultValues: city || {
-      countryId: 0,
       stateId: 0,
       name: '',
       code: '',
@@ -60,15 +58,14 @@ const CityForm: React.FC<CityFormProps> = ({
 
   React.useEffect(() => {
     if (city) {
-      reset(city);
-      setSelectedCountryId(city.countryId);
+      reset({ stateId: city.stateId, name: city.name, code: city.code });
+      setSelectedCountryId(city.countryId || 0);
     }
   }, [city, reset]);
 
   const handleCountryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const countryId = Number(e.target.value);
     setSelectedCountryId(countryId);
-    setValue('countryId', countryId);
     setValue('stateId', 0); // Reset state when country changes
   };
 
@@ -91,7 +88,7 @@ const CityForm: React.FC<CityFormProps> = ({
 
       <form onSubmit={handleSubmit(onSubmit)} className='p-6'>
         <div className='space-y-6 max-w-2xl'>
-          {/* Country Selection */}
+          {/* Country Selection (for filtering states) */}
           <div>
             <label
               htmlFor='countryId'
@@ -100,12 +97,10 @@ const CityForm: React.FC<CityFormProps> = ({
               Country <span className='text-red-500'>*</span>
             </label>
             <select
-              {...register('countryId', { valueAsNumber: true })}
               id='countryId'
+              value={selectedCountryId}
               onChange={handleCountryChange}
-              className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                errors.countryId ? 'border-red-500' : 'border-gray-300'
-              }`}
+              className='w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent border-gray-300'
               disabled={isSubmitting}
             >
               <option value={0}>Select a country</option>
@@ -115,11 +110,6 @@ const CityForm: React.FC<CityFormProps> = ({
                 </option>
               ))}
             </select>
-            {errors.countryId && (
-              <p className='mt-1 text-sm text-red-600'>
-                {errors.countryId.message}
-              </p>
-            )}
           </div>
 
           {/* State Selection */}

@@ -65,9 +65,12 @@ export const FloatRFPPage: React.FC = () => {
       .filter(
         v =>
           !availableSearch ||
-          v.name.toLowerCase().includes(availableSearch.toLowerCase()) ||
-          v.code?.toLowerCase().includes(availableSearch.toLowerCase()) ||
-          v.email?.toLowerCase().includes(availableSearch.toLowerCase())
+          (v.name &&
+            v.name.toLowerCase().includes(availableSearch.toLowerCase())) ||
+          (v.code &&
+            v.code.toLowerCase().includes(availableSearch.toLowerCase())) ||
+          (v.email &&
+            v.email.toLowerCase().includes(availableSearch.toLowerCase()))
       );
   }, [allVendors, selectedSuppliers, availableSearch]);
 
@@ -78,9 +81,12 @@ export const FloatRFPPage: React.FC = () => {
       .filter(
         v =>
           !selectedSearch ||
-          v.name.toLowerCase().includes(selectedSearch.toLowerCase()) ||
-          v.code?.toLowerCase().includes(selectedSearch.toLowerCase()) ||
-          v.email?.toLowerCase().includes(selectedSearch.toLowerCase())
+          (v.name &&
+            v.name.toLowerCase().includes(selectedSearch.toLowerCase())) ||
+          (v.code &&
+            v.code.toLowerCase().includes(selectedSearch.toLowerCase())) ||
+          (v.email &&
+            v.email.toLowerCase().includes(selectedSearch.toLowerCase()))
       );
   }, [allVendors, selectedSuppliers, selectedSearch]);
 

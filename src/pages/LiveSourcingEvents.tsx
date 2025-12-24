@@ -1,25 +1,23 @@
 import React, { useState, useEffect } from 'react';
 
-interface LiveSourcingEvent {
-  id: string;
-  title: string;
-  startPrice: number;
-  currentLowest: number;
-  savedPercentage: number;
-  timeLeft: number; // in seconds
-  isLive: boolean;
-}
+import { SourcingEvent } from '@/features/dashboard/types';
+import { ChevronRight } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 interface LiveSourcingCardProps {
-  event: LiveSourcingEvent;
+  event: SourcingEvent;
 }
 
 // Format time as HH:MM:SS
+// Format time as human readable string
 const formatTime = (seconds: number): string => {
-  const hrs = Math.floor(seconds / 3600);
+  const days = Math.floor(seconds / (3600 * 24));
+  const hrs = Math.floor((seconds % (3600 * 24)) / 3600);
   const mins = Math.floor((seconds % 3600) / 60);
-  const secs = seconds % 60;
-  return `${hrs.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+
+  if (days > 0) return `${days}d ${hrs}h`;
+  if (hrs > 0) return `${hrs}h ${mins}m`;
+  return `${mins}m ${seconds % 60}s`;
 };
 
 // Format currency in Indian format
@@ -31,7 +29,7 @@ const formatCurrency = (amount: number): string => {
 };
 
 const LiveSourcingCard: React.FC<LiveSourcingCardProps> = ({ event }) => {
-  const [timeLeft, setTimeLeft] = useState(event.timeLeft);
+  const [timeLeft, setTimeLeft] = useState(event.timeLeftSeconds);
 
   useEffect(() => {
     if (timeLeft <= 0) return;
@@ -44,7 +42,9 @@ const LiveSourcingCard: React.FC<LiveSourcingCardProps> = ({ event }) => {
   }, [timeLeft]);
 
   return (
-    <div className='bg-white rounded-xl border border-slate-200 p-5 hover:shadow-md hover:border-slate-300 transition-all duration-200'>
+    <div className='bg-white rounded-xl border border-slate-200 p-5 hover:shadow-md hover:border-slate-300 transition-all duration-200 relative overflow-hidden'>
+      {/* Left Accent Border */}
+      <div className='absolute top-0 left-0 w-[3px] h-full bg-violet-600' />
       {/* Header Row - Live Badge & Timer */}
       <div className='flex items-center justify-between mb-4'>
         {event.isLive && (
@@ -55,11 +55,19 @@ const LiveSourcingCard: React.FC<LiveSourcingCardProps> = ({ event }) => {
             </span>
           </span>
         )}
-        <div className='flex items-center gap-1.5 text-slate-500'>
-          <span className='text-sm font-mono font-medium text-slate-700'>
+        <div className='flex items-center gap-1.5'>
+          <span
+            className={`text-sm font-bold ${
+              timeLeft < 14400
+                ? 'text-red-600'
+                : timeLeft < 86400
+                  ? 'text-amber-600'
+                  : 'text-slate-700'
+            }`}
+          >
             {formatTime(timeLeft)}
           </span>
-          <span className='text-sm'>left</span>
+          <span className='text-sm text-slate-500'>left</span>
         </div>
       </div>
 
@@ -82,12 +90,20 @@ const LiveSourcingCard: React.FC<LiveSourcingCardProps> = ({ event }) => {
           <p className='text-[11px] font-medium text-slate-400 uppercase tracking-wider mb-1'>
             Current Lowest
           </p>
-          <p className='text-2xl font-bold text-slate-800'>
+          <p
+            className={`text-2xl font-bold ${
+              event.savedPercentage > 0 ? 'text-emerald-700' : 'text-slate-800'
+            }`}
+          >
             {formatCurrency(event.currentLowest)}
           </p>
         </div>
         <div className='text-right'>
-          <span className='text-sm font-semibold text-emerald-600'>
+          <span
+            className={`text-sm font-semibold ${
+              event.savedPercentage > 0 ? 'text-emerald-600' : 'text-slate-400'
+            }`}
+          >
             {event.savedPercentage}% Saved
           </span>
         </div>
@@ -96,39 +112,34 @@ const LiveSourcingCard: React.FC<LiveSourcingCardProps> = ({ event }) => {
   );
 };
 
-// Main Component with sample data
-const LiveSourcingEvents: React.FC = () => {
-  const events: LiveSourcingEvent[] = [
-    {
-      id: '1',
-      title: 'Packaging Material - Corrugated Boxes',
-      startPrice: 1200000,
-      currentLowest: 1050000,
-      savedPercentage: 12.5,
-      timeLeft: 2535, // 00:42:15
-      isLive: true,
-    },
-    {
-      id: '2',
-      title: 'Logistics Contract - North Zone',
-      startPrice: 1200000,
-      currentLowest: 1050000,
-      savedPercentage: 8.2,
-      timeLeft: 4500, // 01:15:00
-      isLive: true,
-    },
-  ];
+// Main Component accepting events as props
+interface LiveSourcingEventsProps {
+  events: SourcingEvent[];
+}
+
+const LiveSourcingEvents: React.FC<LiveSourcingEventsProps> = ({ events }) => {
+  if (!events || events.length === 0) {
+    return null;
+  }
 
   return (
     <div className='space-y-5'>
       {/* Section Header */}
-      <h2 className='text-xl font-semibold text-slate-800'>
-        Live Sourcing Events
-      </h2>
+      <div className='flex items-center justify-between'>
+        <h2 className='text-xl font-semibold text-slate-800'>
+          Live Sourcing Events
+        </h2>
+        <Link
+          to='/rfp/float'
+          className='text-sm text-indigo-600 hover:text-indigo-700 font-medium flex items-center gap-1'
+        >
+          View All <ChevronRight className='w-4 h-4' />
+        </Link>
+      </div>
 
       {/* Cards Grid */}
       <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5'>
-        {events.map(event => (
+        {events.slice(0, 3).map(event => (
           <LiveSourcingCard key={event.id} event={event} />
         ))}
       </div>

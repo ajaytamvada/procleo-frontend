@@ -1,11 +1,13 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { ArrowLeft, Save } from 'lucide-react';
 import type { Location } from '../../hooks/useLocationAPI';
+import { useCountries } from '../../hooks/useCountryAPI';
 
 const locationSchema = z.object({
+  countryId: z.number().min(1, 'Country is required'),
   name: z
     .string()
     .min(1, 'Location name is required')
@@ -31,6 +33,8 @@ const LocationForm: React.FC<LocationFormProps> = ({
   onCancel,
   isSubmitting = false,
 }) => {
+  const { data: countries = [] } = useCountries();
+
   const {
     register,
     handleSubmit,
@@ -39,6 +43,7 @@ const LocationForm: React.FC<LocationFormProps> = ({
   } = useForm<LocationFormData>({
     resolver: zodResolver(locationSchema),
     defaultValues: location || {
+      countryId: 0,
       name: '',
       code: '',
     },
@@ -69,6 +74,36 @@ const LocationForm: React.FC<LocationFormProps> = ({
 
       <form onSubmit={handleSubmit(onSubmit)} className='p-6'>
         <div className='space-y-6 max-w-2xl'>
+          {/* Country Selection */}
+          <div>
+            <label
+              htmlFor='countryId'
+              className='block text-sm font-medium text-gray-700 mb-2'
+            >
+              Country <span className='text-red-500'>*</span>
+            </label>
+            <select
+              {...register('countryId', { valueAsNumber: true })}
+              id='countryId'
+              className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                errors.countryId ? 'border-red-500' : 'border-gray-300'
+              }`}
+              disabled={isSubmitting}
+            >
+              <option value={0}>Select a country</option>
+              {countries.map(country => (
+                <option key={country.id} value={country.id}>
+                  {country.name}
+                </option>
+              ))}
+            </select>
+            {errors.countryId && (
+              <p className='mt-1 text-sm text-red-600'>
+                {errors.countryId.message}
+              </p>
+            )}
+          </div>
+
           {/* Location Name */}
           <div>
             <label

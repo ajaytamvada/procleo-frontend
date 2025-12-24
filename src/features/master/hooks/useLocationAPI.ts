@@ -3,8 +3,24 @@ import { apiClient } from '@/lib/api';
 
 export interface Location {
   id?: number;
+  countryId: number;
+  countryName?: string;
   name: string;
   code: string;
+}
+
+export interface LocationFilters {
+  name?: string;
+  code?: string;
+  countryName?: string;
+}
+
+export interface PagedResponse<T> {
+  content: T[];
+  totalElements: number;
+  totalPages: number;
+  size: number;
+  number: number;
 }
 
 const LOCATION_QUERY_KEY = ['locations'];
@@ -16,8 +32,33 @@ const locationAPI = {
     return response.data;
   },
 
+  getPaged: async (
+    page = 0,
+    size = 15,
+    filters: LocationFilters = {}
+  ): Promise<PagedResponse<Location>> => {
+    const params = new URLSearchParams({
+      page: page.toString(),
+      size: size.toString(),
+    });
+
+    if (filters.name) params.append('name', filters.name);
+    if (filters.code) params.append('code', filters.code);
+    if (filters.countryName) params.append('countryName', filters.countryName);
+
+    const response = await apiClient.get(`/master/locations?${params}`);
+    return response.data;
+  },
+
   getById: async (id: number): Promise<Location> => {
     const response = await apiClient.get(`/master/locations/${id}`);
+    return response.data;
+  },
+
+  getByCountryId: async (countryId: number): Promise<Location[]> => {
+    const response = await apiClient.get(
+      `/master/locations/country/${countryId}`
+    );
     return response.data;
   },
 
@@ -37,6 +78,18 @@ const locationAPI = {
   delete: async (id: number): Promise<void> => {
     await apiClient.delete(`/master/locations/${id}`);
   },
+
+  exportToExcel: async (filters: LocationFilters = {}): Promise<Blob> => {
+    const params = new URLSearchParams();
+    if (filters.name) params.append('name', filters.name);
+    if (filters.code) params.append('code', filters.code);
+    if (filters.countryName) params.append('countryName', filters.countryName);
+
+    const response = await apiClient.get(`/master/locations/export?${params}`, {
+      responseType: 'blob',
+    });
+    return response.data;
+  },
 };
 
 // React Query hooks
@@ -47,11 +100,30 @@ export const useLocations = () => {
   });
 };
 
+export const useLocationsPaged = (
+  page = 0,
+  size = 15,
+  filters: LocationFilters = {}
+) => {
+  return useQuery({
+    queryKey: [...LOCATION_QUERY_KEY, 'paged', page, size, filters],
+    queryFn: () => locationAPI.getPaged(page, size, filters),
+  });
+};
+
 export const useLocation = (id: number) => {
   return useQuery({
     queryKey: [...LOCATION_QUERY_KEY, id],
     queryFn: () => locationAPI.getById(id),
     enabled: !!id,
+  });
+};
+
+export const useLocationsByCountry = (countryId: number) => {
+  return useQuery({
+    queryKey: [...LOCATION_QUERY_KEY, 'country', countryId],
+    queryFn: () => locationAPI.getByCountryId(countryId),
+    enabled: !!countryId,
   });
 };
 
@@ -88,3 +160,5 @@ export const useDeleteLocation = () => {
     },
   });
 };
+
+export { locationAPI };

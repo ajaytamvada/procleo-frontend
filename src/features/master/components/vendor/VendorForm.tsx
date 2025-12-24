@@ -8,7 +8,10 @@ import { FileUpload } from '@/components/ui/FileUpload';
 import { useCategories } from '../../../master/hooks/useCategoryAPI';
 import { useSubCategories } from '../../../master/hooks/useSubCategoryAPI';
 import { useCountries } from '../../../master/hooks/useCountryAPI';
-import { useStatesByCountry } from '../../../master/hooks/useStateAPI';
+import {
+  useStatesByCountry,
+  stateAPI,
+} from '../../../master/hooks/useStateAPI';
 import { useCitiesByState } from '../../../master/hooks/useCityAPI';
 
 const vendorSchema = z.object({
@@ -152,31 +155,45 @@ const VendorForm: React.FC<VendorFormProps> = ({
   });
 
   useEffect(() => {
-    if (vendor) {
-      reset(vendor);
-      if (vendor.categoryIds) {
-        const catIds = vendor.categoryIds
-          .split(',')
-          .map(Number)
-          .filter(Boolean);
-        setSelectedCategories(catIds);
+    const initializeForm = async () => {
+      if (vendor) {
+        reset(vendor);
+        if (vendor.categoryIds) {
+          const catIds = vendor.categoryIds
+            .split(',')
+            .map(Number)
+            .filter(Boolean);
+          setSelectedCategories(catIds);
+        }
+        if (vendor.subCategoryIds) {
+          const subCatIds = vendor.subCategoryIds
+            .split(',')
+            .map(Number)
+            .filter(Boolean);
+          setSelectedSubCategories(subCatIds);
+        }
+
+        // Handle State -> Country relationship
+        if (vendor.stateIds) {
+          const stateId = Number(vendor.stateIds.split(',')[0]);
+          setSelectedState(stateId);
+          try {
+            // Fetch state details to get countryId
+            const stateData = await stateAPI.getById(stateId);
+            if (stateData && stateData.countryId) {
+              setSelectedCountry(stateData.countryId);
+            }
+          } catch (error) {
+            console.error('Failed to fetch state details:', error);
+          }
+        }
+
+        // If we found a location, great. If not, and we have countryIds, we can't easily map back to Location uniquely
+        // without more info. For now, rely on State to drive Location.
       }
-      if (vendor.subCategoryIds) {
-        const subCatIds = vendor.subCategoryIds
-          .split(',')
-          .map(Number)
-          .filter(Boolean);
-        setSelectedSubCategories(subCatIds);
-      }
-      if (vendor.countryIds) {
-        const countryId = Number(vendor.countryIds.split(',')[0]);
-        setSelectedCountry(countryId);
-      }
-      if (vendor.stateIds) {
-        const stateId = Number(vendor.stateIds.split(',')[0]);
-        setSelectedState(stateId);
-      }
-    }
+    };
+
+    initializeForm();
   }, [vendor, reset]);
 
   const handleCategoryToggle = (categoryId: number) => {
@@ -211,6 +228,8 @@ const VendorForm: React.FC<VendorFormProps> = ({
     const countryId = Number(e.target.value);
     setSelectedCountry(countryId || null);
     setValue('countryIds', e.target.value);
+
+    // Reset state and city
     setValue('stateIds', '');
     setValue('cityId', null);
     setSelectedState(null);

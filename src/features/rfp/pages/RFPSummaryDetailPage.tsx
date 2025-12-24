@@ -151,7 +151,9 @@ export const RFPSummaryDetailPage: React.FC = () => {
                         <td className='px-4 py-2 text-sm text-center'>
                           {item.quantity}
                         </td>
-                        <td className='px-4 py-2 text-sm'>{item.uom}</td>
+                        <td className='px-4 py-2 text-sm'>
+                          {item.unitOfMeasurement}
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -206,7 +208,11 @@ export const RFPSummaryDetailPage: React.FC = () => {
                       </div>
                       <div>
                         <span className='font-semibold'>Quotation Date:</span>{' '}
-                        {new Date(quotation.quotationDate).toLocaleDateString()}
+                        {quotation.quotationDate
+                          ? new Date(
+                              quotation.quotationDate
+                            ).toLocaleDateString()
+                          : '-'}
                       </div>
                     </div>
                   </div>
@@ -231,7 +237,7 @@ export const RFPSummaryDetailPage: React.FC = () => {
                       </tr>
                     </thead>
                     <tbody className='bg-white divide-y divide-gray-200'>
-                      {quotation.items.map((item, iIndex) => (
+                      {(quotation.items || []).map((item, iIndex) => (
                         <tr key={iIndex}>
                           <td className='px-2 py-2 text-sm'>{item.itemName}</td>
                           <td className='px-2 py-2 text-sm text-center'>
@@ -241,7 +247,7 @@ export const RFPSummaryDetailPage: React.FC = () => {
                             ₹{item.unitPrice?.toFixed(2)}
                           </td>
                           <td className='px-2 py-2 text-sm text-right'>
-                            ₹{item.taxValue?.toFixed(2)}
+                            ₹{item.taxAmount?.toFixed(2)}
                           </td>
                           <td className='px-2 py-2 text-sm text-right font-semibold'>
                             ₹{item.totalPrice?.toFixed(2)}
@@ -261,7 +267,7 @@ export const RFPSummaryDetailPage: React.FC = () => {
                       <div>
                         <span className='text-gray-600'>Discount:</span>{' '}
                         <span className='font-semibold'>
-                          ₹{quotation.discount?.toFixed(2) || '0.00'}
+                          ₹{quotation.discountAmount?.toFixed(2) || '0.00'}
                         </span>
                       </div>
                       <div>

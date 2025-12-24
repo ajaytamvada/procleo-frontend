@@ -32,9 +32,7 @@ const FloorList: React.FC<FloorListProps> = ({
 }) => {
   const [nameFilter, setNameFilter] = useState('');
   const [codeFilter, setCodeFilter] = useState('');
-  const [cityNameFilter, setCityNameFilter] = useState('');
-  const [stateNameFilter, setStateNameFilter] = useState('');
-  const [countryNameFilter, setCountryNameFilter] = useState('');
+  const [buildingNameFilter, setBuildingNameFilter] = useState('');
   const [isExporting, setIsExporting] = useState(false);
 
   const handleSearch = () => {
@@ -42,9 +40,7 @@ const FloorList: React.FC<FloorListProps> = ({
       onFiltersChange({
         name: nameFilter || undefined,
         code: codeFilter || undefined,
-        cityName: cityNameFilter || undefined,
-        stateName: stateNameFilter || undefined,
-        countryName: countryNameFilter || undefined,
+        buildingName: buildingNameFilter || undefined,
       });
     }
   };
@@ -52,9 +48,7 @@ const FloorList: React.FC<FloorListProps> = ({
   const handleClear = () => {
     setNameFilter('');
     setCodeFilter('');
-    setCityNameFilter('');
-    setStateNameFilter('');
-    setCountryNameFilter('');
+    setBuildingNameFilter('');
     if (onFiltersChange) {
       onFiltersChange({});
     }
@@ -66,22 +60,20 @@ const FloorList: React.FC<FloorListProps> = ({
       const filters: FloorFilters = {
         name: nameFilter || undefined,
         code: codeFilter || undefined,
-        cityName: cityNameFilter || undefined,
-        stateName: stateNameFilter || undefined,
-        countryName: countryNameFilter || undefined,
+        buildingName: buildingNameFilter || undefined,
       };
       const blob = await floorAPI.exportToExcel(filters);
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `locations_${new Date().toISOString().split('T')[0]}.xlsx`;
+      a.download = `floors_${new Date().toISOString().split('T')[0]}.xlsx`;
       document.body.appendChild(a);
       a.click();
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
     } catch (error) {
       console.error('Export failed:', error);
-      alert('Failed to export locations. Please try again.');
+      alert('Failed to export floors. Please try again.');
     } finally {
       setIsExporting(false);
     }
@@ -102,7 +94,7 @@ const FloorList: React.FC<FloorListProps> = ({
     <div className='bg-white rounded-lg shadow-md'>
       <div className='border-b border-gray-200 p-6'>
         <div className='flex justify-between items-center'>
-          <h2 className='text-2xl font-bold text-gray-800'>Location Master</h2>
+          <h2 className='text-2xl font-bold text-gray-800'>Floor Master</h2>
           <button
             onClick={onCreate}
             className='flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors'
@@ -115,7 +107,7 @@ const FloorList: React.FC<FloorListProps> = ({
 
       {/* Filter Section */}
       <div className='p-6 bg-gray-50 border-b'>
-        <div className='grid grid-cols-1 md:grid-cols-3 gap-4 mb-4'>
+        <div className='grid grid-cols-1 md:grid-cols-6 gap-4'>
           <input
             type='text'
             placeholder='Search by name...'
@@ -134,27 +126,9 @@ const FloorList: React.FC<FloorListProps> = ({
           />
           <input
             type='text'
-            placeholder='Search by city...'
-            value={cityNameFilter}
-            onChange={e => setCityNameFilter(e.target.value)}
-            onKeyPress={e => e.key === 'Enter' && handleSearch()}
-            className='px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500'
-          />
-        </div>
-        <div className='grid grid-cols-1 md:grid-cols-5 gap-4'>
-          <input
-            type='text'
-            placeholder='Search by state...'
-            value={stateNameFilter}
-            onChange={e => setStateNameFilter(e.target.value)}
-            onKeyPress={e => e.key === 'Enter' && handleSearch()}
-            className='px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500'
-          />
-          <input
-            type='text'
-            placeholder='Search by country...'
-            value={countryNameFilter}
-            onChange={e => setCountryNameFilter(e.target.value)}
+            placeholder='Search by building...'
+            value={buildingNameFilter}
+            onChange={e => setBuildingNameFilter(e.target.value)}
             onKeyPress={e => e.key === 'Enter' && handleSearch()}
             className='px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500'
           />
@@ -199,19 +173,13 @@ const FloorList: React.FC<FloorListProps> = ({
                 S.No
               </th>
               <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
-                Location Name
+                Floor Name
               </th>
               <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
                 Code
               </th>
               <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
-                City
-              </th>
-              <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
-                State
-              </th>
-              <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
-                Country
+                Building
               </th>
               <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
                 Zip Code
@@ -224,8 +192,8 @@ const FloorList: React.FC<FloorListProps> = ({
           <tbody className='bg-white divide-y divide-gray-200'>
             {floors.length === 0 ? (
               <tr>
-                <td colSpan={8} className='px-6 py-8 text-center text-gray-500'>
-                  No locations found. Click "New" to create one.
+                <td colSpan={6} className='px-6 py-8 text-center text-gray-500'>
+                  No floors found. Click "New" to create one.
                 </td>
               </tr>
             ) : (
@@ -250,17 +218,7 @@ const FloorList: React.FC<FloorListProps> = ({
                   </td>
                   <td className='px-6 py-4 whitespace-nowrap'>
                     <div className='text-sm text-gray-700'>
-                      {floor.cityName}
-                    </div>
-                  </td>
-                  <td className='px-6 py-4 whitespace-nowrap'>
-                    <div className='text-sm text-gray-700'>
-                      {floor.stateName}
-                    </div>
-                  </td>
-                  <td className='px-6 py-4 whitespace-nowrap'>
-                    <div className='text-sm text-gray-700'>
-                      {floor.countryName}
+                      {floor.buildingName || '-'}
                     </div>
                   </td>
                   <td className='px-6 py-4 whitespace-nowrap'>

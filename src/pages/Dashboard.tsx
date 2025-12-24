@@ -29,7 +29,7 @@ import { useDashboardData } from '@/features/dashboard/hooks/useDashboard';
 import { useAuth } from '@/hooks/useAuth';
 import RecentActivityWidget from '@/components/dashboard/RecentActivityWidget';
 import StatusSummaryCard from '@/components/dashboard/StatusSummaryCard';
-// import LiveSourcingEvents from './LiveSourcingEvents';
+import LiveSourcingEvents from './LiveSourcingEvents';
 
 const Dashboard: React.FC = () => {
   const { data: dashboardData, isLoading } = useDashboardData();
@@ -65,7 +65,8 @@ const Dashboard: React.FC = () => {
     );
   }
 
-  const { stats, recentOrders, monthlySpend, categorySpend } = dashboardData;
+  const { stats, recentOrders, monthlySpend, categorySpend, sourcingEvents } =
+    dashboardData;
 
   const getGreeting = () => {
     const hour = new Date().getHours();
@@ -238,173 +239,10 @@ const Dashboard: React.FC = () => {
           ))}
         </div>
 
-        {/* 
-  Live Sourcing Events Cards - Smaller & Lighter
-  Color: #7C3AED (Violet-600)
-*/}
-
-        <div className='space-y-4'>
-          {/* Section Header */}
-          <h2 className='text-lg font-semibold text-slate-800'>
-            Live Sourcing Events
-          </h2>
-
-          {/* Cards Grid */}
-          <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
-            {/* Card 1 */}
-            <div className='bg-white rounded-lg border border-slate-200 shadow-sm hover:shadow-md transition-all duration-200 relative overflow-hidden group cursor-pointer'>
-              {/* Left Accent Border - Violet */}
-              <div
-                className='absolute top-0 left-0 w-[3px] h-full'
-                style={{ backgroundColor: '#7C3AED' }}
-              />
-
-              <div className='p-4 pl-5'>
-                {/* Header - Live Badge & Timer */}
-                <div className='flex items-center justify-between mb-3'>
-                  <span className='inline-flex items-center px-2 py-0.5 rounded bg-red-50 border border-red-100'>
-                    <span className='w-1 h-1 bg-red-500 rounded-full mr-1 animate-pulse'></span>
-                    <span className='text-[10px] font-semibold text-red-500 uppercase'>
-                      Live
-                    </span>
-                  </span>
-                  <span className='text-xs text-slate-400'>
-                    <span className='font-mono text-slate-500'>00:42:15</span>
-                    <span className='ml-1'>left</span>
-                  </span>
-                </div>
-
-                {/* Title & Start Price */}
-                <div className='mb-4'>
-                  <h4 className='font-semibold text-slate-700 text-sm leading-snug mb-1 group-hover:text-violet-600 transition-colors'>
-                    Packaging Material - Corrugated Boxes
-                  </h4>
-                  <p className='text-xs text-slate-400'>
-                    Start Price:{' '}
-                    <span className='font-medium text-slate-500'>
-                      ₹12,00,000
-                    </span>
-                  </p>
-                </div>
-
-                {/* Current Lowest & Saved */}
-                <div className='flex items-end justify-between'>
-                  <div>
-                    <p className='text-[10px] font-medium text-slate-400 uppercase tracking-wider mb-0.5'>
-                      Current Lowest
-                    </p>
-                    <p className='text-lg font-bold text-slate-700'>₹10.5L</p>
-                  </div>
-                  <span className='text-xs font-semibold text-emerald-500'>
-                    12.5% Saved
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {/* Card 2 */}
-            <div className='bg-white rounded-lg border border-slate-200 shadow-sm hover:shadow-md transition-all duration-200 relative overflow-hidden group cursor-pointer'>
-              {/* Left Accent Border - Violet */}
-              <div
-                className='absolute top-0 left-0 w-[3px] h-full'
-                style={{ backgroundColor: '#7C3AED' }}
-              />
-
-              <div className='p-4 pl-5'>
-                {/* Header - Live Badge & Timer */}
-                <div className='flex items-center justify-between mb-3'>
-                  <span className='inline-flex items-center px-2 py-0.5 rounded bg-red-50 border border-red-100'>
-                    <span className='w-1 h-1 bg-red-500 rounded-full mr-1 animate-pulse'></span>
-                    <span className='text-[10px] font-semibold text-red-500 uppercase'>
-                      Live
-                    </span>
-                  </span>
-                  <span className='text-xs text-slate-400'>
-                    <span className='font-mono text-slate-500'>01:15:00</span>
-                    <span className='ml-1'>left</span>
-                  </span>
-                </div>
-
-                {/* Title & Start Price */}
-                <div className='mb-4'>
-                  <h4 className='font-semibold text-slate-700 text-sm leading-snug mb-1 group-hover:text-violet-600 transition-colors'>
-                    Logistics Contract - North Zone
-                  </h4>
-                  <p className='text-xs text-slate-400'>
-                    Start Price:{' '}
-                    <span className='font-medium text-slate-500'>
-                      ₹12,00,000
-                    </span>
-                  </p>
-                </div>
-
-                {/* Current Lowest & Saved */}
-                <div className='flex items-end justify-between'>
-                  <div>
-                    <p className='text-[10px] font-medium text-slate-400 uppercase tracking-wider mb-0.5'>
-                      Current Lowest
-                    </p>
-                    <p className='text-lg font-bold text-slate-700'>₹10.5L</p>
-                  </div>
-                  <span className='text-xs font-semibold text-emerald-500'>
-                    8.2% Saved
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {/* Card 3 */}
-            <div className='bg-white rounded-lg border border-slate-200 shadow-sm hover:shadow-md transition-all duration-200 relative overflow-hidden group cursor-pointer'>
-              {/* Left Accent Border - Violet */}
-              <div
-                className='absolute top-0 left-0 w-[3px] h-full'
-                style={{ backgroundColor: '#7C3AED' }}
-              />
-
-              <div className='p-4 pl-5'>
-                {/* Header - Live Badge & Timer */}
-                <div className='flex items-center justify-between mb-3'>
-                  <span className='inline-flex items-center px-2 py-0.5 rounded bg-red-50 border border-red-100'>
-                    <span className='w-1 h-1 bg-red-500 rounded-full mr-1 animate-pulse'></span>
-                    <span className='text-[10px] font-semibold text-red-500 uppercase'>
-                      Live
-                    </span>
-                  </span>
-                  <span className='text-xs text-slate-400'>
-                    <span className='font-mono text-slate-500'>02:30:00</span>
-                    <span className='ml-1'>left</span>
-                  </span>
-                </div>
-
-                {/* Title & Start Price */}
-                <div className='mb-4'>
-                  <h4 className='font-semibold text-slate-700 text-sm leading-snug mb-1 group-hover:text-violet-600 transition-colors'>
-                    Office Supplies - Annual Contract
-                  </h4>
-                  <p className='text-xs text-slate-400'>
-                    Start Price:{' '}
-                    <span className='font-medium text-slate-500'>
-                      ₹8,50,000
-                    </span>
-                  </p>
-                </div>
-
-                {/* Current Lowest & Saved */}
-                <div className='flex items-end justify-between'>
-                  <div>
-                    <p className='text-[10px] font-medium text-slate-400 uppercase tracking-wider mb-0.5'>
-                      Current Lowest
-                    </p>
-                    <p className='text-lg font-bold text-slate-700'>₹7.2L</p>
-                  </div>
-                  <span className='text-xs font-semibold text-emerald-500'>
-                    15.3% Saved
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+        {/* Live Sourcing Events */}
+        {sourcingEvents && sourcingEvents.length > 0 && (
+          <LiveSourcingEvents events={sourcingEvents} />
+        )}
         {/* Summary Cards Row */}
         <div className='grid grid-cols-1 lg:grid-cols-2 gap-6'>
           {/* Status Summary Card */}

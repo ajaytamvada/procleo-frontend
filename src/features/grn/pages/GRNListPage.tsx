@@ -307,7 +307,7 @@ const GRNListPage: React.FC = () => {
                     <td className='px-6 py-4 whitespace-nowrap text-sm'>
                       <div className='flex items-center space-x-2'>
                         <button
-                          onClick={() => navigate(`/grn/${grn.id}`)}
+                          onClick={() => navigate(`/grn/preview/${grn.id}`)}
                           className='text-blue-600 hover:text-blue-800 transition-colors'
                           title='View'
                         >
