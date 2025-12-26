@@ -5,7 +5,17 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Plus, Search, Edit, Trash2, Send, RefreshCw } from 'lucide-react';
+import {
+  Plus,
+  Search,
+  Edit,
+  Trash2,
+  Send,
+  RefreshCw,
+  FileText,
+  ChevronLeft,
+  ChevronRight,
+} from 'lucide-react';
 import { rfpApi } from '../services/rfpApi';
 import type { RFP } from '../types';
 import toast from 'react-hot-toast';
@@ -14,6 +24,8 @@ const ManageRFPPage: React.FC = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   // Fetch only draft RFPs
   const {
@@ -45,6 +57,54 @@ const ManageRFPPage: React.FC = () => {
       rfp.remarks?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  // Pagination calculations
+  const totalPages = Math.ceil(filteredRFPs.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedRFPs = filteredRFPs.slice(startIndex, endIndex);
+
+  // Generate page numbers with ellipsis
+  const getPageNumbers = () => {
+    const pages: (number | string)[] = [];
+    const maxVisiblePages = 5;
+
+    if (totalPages <= maxVisiblePages + 2) {
+      for (let i = 1; i <= totalPages; i++) {
+        pages.push(i);
+      }
+    } else {
+      pages.push(1);
+
+      if (currentPage > 3) {
+        pages.push('...');
+      }
+
+      const start = Math.max(2, currentPage - 1);
+      const end = Math.min(totalPages - 1, currentPage + 1);
+
+      for (let i = start; i <= end; i++) {
+        if (!pages.includes(i)) {
+          pages.push(i);
+        }
+      }
+
+      if (currentPage < totalPages - 2) {
+        pages.push('...');
+      }
+
+      if (!pages.includes(totalPages)) {
+        pages.push(totalPages);
+      }
+    }
+
+    return pages;
+  };
+
+  // Reset to page 1 when search changes
+  React.useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm]);
+
   const handleDelete = async (id: number) => {
     if (window.confirm('Are you sure you want to delete this RFP draft?')) {
       deleteMutation.mutate(id);
@@ -56,169 +116,229 @@ const ManageRFPPage: React.FC = () => {
   };
 
   return (
-    <div className='space-y-6'>
-      {/* Header */}
-      <div className='flex justify-between items-center'>
-        <div>
-          <h1 className='text-2xl font-bold text-gray-900'>Manage RFP</h1>
-          <p className='text-sm text-gray-500 mt-1'>
-            View and manage draft RFPs
-          </p>
+    <div className='min-h-screen bg-[#f8f9fc]'>
+      <div className='p-2'>
+        {/* Page Header - Cashfree Style */}
+        <div className='flex items-center justify-between mb-6'>
+          <div>
+            <h1 className='text-xl font-semibold text-gray-900'>Manage RFP</h1>
+            <p className='text-sm text-gray-500 mt-0.5'>
+              View and manage draft RFPs
+            </p>
+          </div>
+          <button
+            onClick={() => navigate('/rfp/create')}
+            className='inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-violet-600 rounded-md hover:bg-violet-700 transition-colors'
+          >
+            <Plus size={15} />
+            Create RFP
+          </button>
         </div>
-        <button
-          onClick={() => navigate('/rfp/create')}
-          className='flex items-center px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors'
-        >
-          <Plus className='w-5 h-5 mr-2' />
-          Create RFP
-        </button>
-      </div>
 
-      {/* Search and Filters */}
-      <div className='bg-white rounded-lg shadow-sm border border-gray-200 p-4'>
-        <div className='flex items-center gap-4'>
-          <div className='flex-1 relative'>
-            <Search className='absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5' />
+        {/* Search Bar */}
+        <div className='flex items-center gap-3 mb-4'>
+          <div className='relative flex-1 max-w-md'>
+            <Search className='absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400' />
             <input
               type='text'
               placeholder='Search by RFP Number or Remarks...'
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
-              className='w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent'
+              className='w-full pl-10 pr-4 py-2.5 text-sm border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500'
             />
           </div>
           <button
             onClick={() => refetch()}
-            className='flex items-center px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors'
+            className='inline-flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 hover:border-gray-300 transition-colors'
           >
-            <RefreshCw className='w-5 h-5 mr-2' />
+            <RefreshCw size={15} />
             Refresh
           </button>
         </div>
-      </div>
 
-      {/* RFP Table */}
-      <div className='bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden'>
-        <div className='overflow-x-auto'>
-          <table className='w-full'>
-            <thead className='bg-gray-50 border-b border-gray-200'>
-              <tr>
-                <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
-                  RFP Number
-                </th>
-                <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
-                  RFP Date
-                </th>
-                <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
-                  Closing Date
-                </th>
-                <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
-                  Items
-                </th>
-                <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
-                  Status
-                </th>
-                <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody className='bg-white divide-y divide-gray-200'>
-              {isLoading ? (
-                <tr>
-                  <td
-                    colSpan={6}
-                    className='px-6 py-4 text-center text-gray-500'
-                  >
-                    <div className='flex items-center justify-center'>
-                      <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600'></div>
-                    </div>
-                  </td>
+        {/* RFP Table Card */}
+        <div className='bg-white rounded-lg border border-gray-200 overflow-hidden'>
+          <div className='overflow-x-auto'>
+            <table className='w-full'>
+              <thead>
+                <tr className='bg-[#fafbfc]'>
+                  <th className='px-6 py-3.5 text-left text-xs font-semibold text-gray-600 tracking-wide'>
+                    RFP Number
+                  </th>
+                  <th className='px-6 py-3.5 text-left text-xs font-semibold text-gray-600 tracking-wide'>
+                    RFP Date
+                  </th>
+                  <th className='px-6 py-3.5 text-left text-xs font-semibold text-gray-600 tracking-wide'>
+                    Closing Date
+                  </th>
+                  <th className='px-6 py-3.5 text-center text-xs font-semibold text-gray-600 tracking-wide'>
+                    Items
+                  </th>
+                  <th className='px-6 py-3.5 text-left text-xs font-semibold text-gray-600 tracking-wide'>
+                    Status
+                  </th>
+                  <th className='px-6 py-3.5 text-center text-xs font-semibold text-gray-600 tracking-wide'>
+                    Actions
+                  </th>
                 </tr>
-              ) : filteredRFPs.length === 0 ? (
-                <tr>
-                  <td
-                    colSpan={6}
-                    className='px-6 py-8 text-center text-gray-500'
-                  >
-                    <p className='text-lg font-medium'>No draft RFPs found</p>
-                    <p className='text-sm mt-1'>
-                      Create a new RFP and save it as draft to see it here.
-                    </p>
-                    <button
-                      onClick={() => navigate('/rfp/create')}
-                      className='mt-4 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors'
-                    >
-                      Create RFP
-                    </button>
-                  </td>
-                </tr>
-              ) : (
-                filteredRFPs.map(rfp => (
-                  <tr
-                    key={rfp.id}
-                    className='hover:bg-gray-50 transition-colors'
-                  >
-                    <td className='px-6 py-4 whitespace-nowrap'>
-                      <div className='text-sm font-medium text-gray-900'>
-                        {rfp.rfpNumber}
+              </thead>
+              <tbody className='divide-y divide-gray-100'>
+                {isLoading ? (
+                  <tr>
+                    <td colSpan={6} className='px-6 py-12 text-center'>
+                      <div className='flex flex-col items-center justify-center'>
+                        <div className='animate-spin rounded-full h-8 w-8 border-2 border-violet-600 border-t-transparent'></div>
+                        <p className='text-sm text-gray-500 mt-3'>
+                          Loading RFPs...
+                        </p>
                       </div>
-                      {rfp.prNumber && (
-                        <div className='text-xs text-gray-500'>
-                          PR: {rfp.prNumber}
+                    </td>
+                  </tr>
+                ) : paginatedRFPs.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className='px-6 py-12 text-center'>
+                      <div className='flex flex-col items-center justify-center'>
+                        <div className='w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-3'>
+                          <FileText className='w-6 h-6 text-gray-400' />
                         </div>
-                      )}
-                    </td>
-                    <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-900'>
-                      {rfp.requestDate
-                        ? new Date(rfp.requestDate).toLocaleDateString()
-                        : '-'}
-                    </td>
-                    <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-900'>
-                      {rfp.closingDate
-                        ? new Date(rfp.closingDate).toLocaleDateString()
-                        : '-'}
-                    </td>
-                    <td className='px-6 py-4 whitespace-nowrap'>
-                      <span className='inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800'>
-                        {rfp.items?.length || 0}
-                      </span>
-                    </td>
-                    <td className='px-6 py-4 whitespace-nowrap'>
-                      <span className='inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800'>
-                        DRAFT
-                      </span>
-                    </td>
-                    <td className='px-6 py-4 whitespace-nowrap text-sm'>
-                      <div className='flex items-center space-x-3'>
+                        <p className='text-gray-600 font-medium'>
+                          No draft RFPs found
+                        </p>
+                        <p className='text-gray-400 text-sm mt-1'>
+                          Create a new RFP and save it as draft to see it here
+                        </p>
                         <button
-                          onClick={() => navigate(`/rfp/${rfp.id}/edit`)}
-                          className='text-blue-600 hover:text-blue-800 transition-colors'
-                          title='Edit'
+                          onClick={() => navigate('/rfp/create')}
+                          className='mt-4 inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-violet-600 rounded-md hover:bg-violet-700 transition-colors'
                         >
-                          <Edit className='w-4 h-4' />
-                        </button>
-                        <button
-                          onClick={() => handleFloatRFP(rfp)}
-                          className='text-purple-600 hover:text-purple-800 transition-colors'
-                          title='Float RFP'
-                        >
-                          <Send className='w-4 h-4' />
-                        </button>
-                        <button
-                          onClick={() => handleDelete(rfp.id!)}
-                          className='text-red-600 hover:text-red-800 transition-colors'
-                          title='Delete'
-                        >
-                          <Trash2 className='w-4 h-4' />
+                          <Plus size={15} />
+                          Create RFP
                         </button>
                       </div>
                     </td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+                ) : (
+                  paginatedRFPs.map(rfp => (
+                    <tr
+                      key={rfp.id}
+                      className='hover:bg-gray-50 transition-colors'
+                    >
+                      <td className='px-6 py-4'>
+                        <div className='text-sm font-medium text-violet-600 hover:text-violet-700'>
+                          {rfp.rfpNumber}
+                        </div>
+                        {rfp.prNumber && (
+                          <div className='text-xs text-gray-500 mt-0.5'>
+                            PR: {rfp.prNumber}
+                          </div>
+                        )}
+                      </td>
+                      <td className='px-6 py-4 text-sm text-gray-600'>
+                        {rfp.requestDate
+                          ? new Date(rfp.requestDate).toLocaleDateString()
+                          : '-'}
+                      </td>
+                      <td className='px-6 py-4 text-sm text-gray-600'>
+                        {rfp.closingDate
+                          ? new Date(rfp.closingDate).toLocaleDateString()
+                          : '-'}
+                      </td>
+                      <td className='px-6 py-4 text-center'>
+                        <span className='inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-violet-100 text-violet-700'>
+                          {rfp.items?.length || 0}
+                        </span>
+                      </td>
+                      <td className='px-6 py-4'>
+                        <span className='inline-flex px-2.5 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-600 border border-gray-200'>
+                          DRAFT
+                        </span>
+                      </td>
+                      <td className='px-6 py-4'>
+                        <div className='flex items-center justify-center gap-1'>
+                          <button
+                            onClick={() => navigate(`/rfp/${rfp.id}/edit`)}
+                            className='p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors'
+                            title='Edit'
+                          >
+                            <Edit size={16} />
+                          </button>
+                          <button
+                            onClick={() => handleFloatRFP(rfp)}
+                            className='p-2 text-gray-400 hover:text-violet-600 hover:bg-violet-50 rounded-lg transition-colors'
+                            title='Float RFP'
+                          >
+                            <Send size={16} />
+                          </button>
+                          <button
+                            onClick={() => handleDelete(rfp.id!)}
+                            className='p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors'
+                            title='Delete'
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Pagination - Cashfree Style */}
+          {totalPages > 1 && (
+            <div className='px-6 py-4 border-t border-gray-200 flex items-center justify-between'>
+              <p className='text-sm text-gray-600'>
+                Showing <span className='font-medium'>{startIndex + 1}</span> to{' '}
+                <span className='font-medium'>
+                  {Math.min(endIndex, filteredRFPs.length)}
+                </span>{' '}
+                of <span className='font-medium'>{filteredRFPs.length}</span>{' '}
+                results
+              </p>
+
+              <div className='flex items-center gap-1'>
+                <button
+                  onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                  disabled={currentPage === 1}
+                  className='p-2 rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50 hover:border-gray-300 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-white disabled:hover:border-gray-200 transition-colors'
+                >
+                  <ChevronLeft className='w-4 h-4' />
+                </button>
+
+                {getPageNumbers().map((page, index) => (
+                  <span key={index}>
+                    {page === '...' ? (
+                      <span className='px-3 py-2 text-sm text-gray-400'>
+                        ...
+                      </span>
+                    ) : (
+                      <button
+                        onClick={() => setCurrentPage(page as number)}
+                        className={`min-w-[36px] h-9 px-3 rounded-lg text-sm font-medium transition-colors ${
+                          currentPage === page
+                            ? 'bg-violet-600 text-white border border-violet-600'
+                            : 'text-gray-600 border border-gray-200 hover:bg-gray-50 hover:border-gray-300'
+                        }`}
+                      >
+                        {page}
+                      </button>
+                    )}
+                  </span>
+                ))}
+
+                <button
+                  onClick={() =>
+                    setCurrentPage(prev => Math.min(prev + 1, totalPages))
+                  }
+                  disabled={currentPage === totalPages}
+                  className='p-2 rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50 hover:border-gray-300 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-white disabled:hover:border-gray-200 transition-colors'
+                >
+                  <ChevronRight className='w-4 h-4' />
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

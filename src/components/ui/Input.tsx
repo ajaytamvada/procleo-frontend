@@ -5,7 +5,7 @@ import { cn } from '@/lib/utils';
 import { Eye, EyeOff } from 'lucide-react';
 
 const inputVariants = cva(
-  'flex w-full rounded-lg border bg-white/90 backdrop-blur-sm text-gray-900 px-4 py-2 text-sm shadow-sm transition-all duration-200 file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/20 focus-visible:border-blue-500 disabled:cursor-not-allowed disabled:opacity-50 hover:bg-white/95',
+  'flex w-full rounded-lg border bg-white text-gray-900 px-4 py-2 text-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-gray-400 focus-visible:outline-none focus-visible:border-violet-600 disabled:cursor-not-allowed disabled:opacity-50',
   {
     variants: {
       size: {
@@ -15,10 +15,8 @@ const inputVariants = cva(
       },
       variant: {
         default: 'border-gray-200 hover:border-gray-300',
-        error:
-          'border-red-300 focus-visible:ring-red-500/20 focus-visible:border-red-500',
-        success:
-          'border-green-300 focus-visible:ring-green-500/20 focus-visible:border-green-500',
+        error: 'border-red-300 focus-visible:border-red-500',
+        success: 'border-green-300 focus-visible:border-green-500',
       },
     },
     defaultVariants: {
@@ -99,7 +97,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
               <button
                 type='button'
                 onClick={() => setShowPassword(!showPassword)}
-                className='text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500/20 rounded-sm transition-colors duration-200'
+                className='text-gray-400 hover:text-gray-600 focus:outline-none rounded-sm transition-colors'
                 aria-label={showPassword ? 'Hide password' : 'Show password'}
               >
                 {showPassword ? (
@@ -122,7 +120,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
           {label && (
             <label
               htmlFor={inputId}
-              className='text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70'
+              className='text-sm font-medium text-gray-700 leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70'
             >
               {label}
               {required && (

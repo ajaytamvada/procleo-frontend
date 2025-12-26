@@ -5,7 +5,7 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Send, Loader2, AlertCircle } from 'lucide-react';
+import { ArrowLeft, Send, AlertCircle } from 'lucide-react';
 import {
   useRFPForQuotation,
   useSubmitQuotation,
@@ -181,29 +181,73 @@ export const SubmitQuotationFormPage: React.FC = () => {
 
   if (isLoadingRFP) {
     return (
-      <div className='flex items-center justify-center h-screen'>
-        <Loader2 className='w-8 h-8 animate-spin text-purple-600' />
-        <span className='ml-2 text-gray-600'>Loading RFP details...</span>
+      <div className='min-h-screen bg-[#f8f9fc]'>
+        <div className='p-2'>
+          {/* Header Skeleton */}
+          <div className='flex items-center justify-between mb-6'>
+            <div className='flex items-center gap-3'>
+              <div className='w-8 h-8 bg-gray-200 rounded-lg animate-pulse'></div>
+              <div>
+                <div className='w-32 h-5 bg-gray-200 rounded animate-pulse'></div>
+                <div className='w-24 h-4 bg-gray-200 rounded animate-pulse mt-1'></div>
+              </div>
+            </div>
+            <div className='w-24 h-10 bg-gray-200 rounded-md animate-pulse'></div>
+          </div>
+
+          {/* Content Skeleton */}
+          <div className='bg-white rounded-lg border border-gray-200 p-8'>
+            <div className='flex flex-col items-center justify-center py-12'>
+              <div className='animate-spin rounded-full h-8 w-8 border-2 border-violet-600 border-t-transparent'></div>
+              <p className='text-sm text-gray-500 mt-3'>
+                Loading RFP details...
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
 
   if (rfpError || !rfp) {
     return (
-      <div className='p-6'>
-        <div className='bg-red-50 border border-red-200 rounded-lg p-4 flex items-start'>
-          <AlertCircle className='w-5 h-5 text-red-600 mt-0.5 mr-3' />
-          <div>
-            <h3 className='text-red-800 font-medium'>Error Loading RFP</h3>
-            <p className='text-red-600 text-sm mt-1'>
-              {rfpError instanceof Error ? rfpError.message : 'RFP not found'}
-            </p>
+      <div className='min-h-screen bg-[#f8f9fc]'>
+        <div className='p-2'>
+          {/* Header */}
+          <div className='flex items-center gap-3 mb-6'>
             <button
               onClick={() => navigate('/rfp/submit-quotation')}
-              className='mt-3 text-sm text-red-700 hover:text-red-800 underline'
+              className='p-1.5 text-gray-500 hover:text-gray-700 rounded-lg transition-colors'
             >
-              Return to RFP List
+              <ArrowLeft size={20} />
             </button>
+            <h1 className='text-xl font-semibold text-gray-900'>Submit RFP</h1>
+          </div>
+
+          {/* Error Card */}
+          <div className='bg-white rounded-lg border border-gray-200 p-6 max-w-2xl'>
+            <div className='flex items-start gap-3'>
+              <div className='w-10 h-10 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0'>
+                <AlertCircle className='w-5 h-5 text-red-600' />
+              </div>
+              <div>
+                <h3 className='text-base font-semibold text-gray-900'>
+                  Error Loading RFP
+                </h3>
+                <p className='text-sm text-gray-500 mt-1'>
+                  {rfpError instanceof Error
+                    ? rfpError.message
+                    : 'RFP not found'}
+                </p>
+                <button
+                  onClick={() => navigate('/rfp/submit-quotation')}
+                  className='mt-4 inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-violet-600 bg-violet-50 rounded-md hover:bg-violet-100 transition-colors'
+                >
+                  <ArrowLeft size={15} />
+                  Return to RFP List
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -211,20 +255,22 @@ export const SubmitQuotationFormPage: React.FC = () => {
   }
 
   return (
-    <div className='h-full flex flex-col bg-gray-50'>
-      {/* Header */}
-      <div className='bg-white border-b border-gray-200 px-6 py-4'>
-        <div className='flex items-center justify-between'>
-          <div className='flex items-center space-x-3'>
+    <div className='min-h-screen bg-[#f8f9fc]'>
+      <div className='p-2'>
+        {/* Page Header - Cashfree Style */}
+        <div className='flex items-center justify-between mb-6'>
+          <div className='flex items-center gap-3'>
             <button
               onClick={() => navigate('/rfp/submit-quotation')}
-              className='p-2 hover:bg-gray-100 rounded-lg transition-colors'
+              className='p-1.5 text-gray-500 hover:text-gray-700 rounded-lg transition-colors'
             >
               <ArrowLeft size={20} />
             </button>
             <div>
-              <h1 className='text-2xl font-bold text-gray-900'>Submit RFP</h1>
-              <p className='text-sm text-gray-600'>
+              <h1 className='text-xl font-semibold text-gray-900'>
+                Submit RFP
+              </h1>
+              <p className='text-sm text-gray-500 mt-0.5'>
                 {vendor?.name || 'Supplier'}
               </p>
             </div>
@@ -232,146 +278,164 @@ export const SubmitQuotationFormPage: React.FC = () => {
           <button
             onClick={handleSubmit}
             disabled={submitQuotationMutation.isPending}
-            className='px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed'
+            className='inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-violet-600 rounded-md hover:bg-violet-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed'
           >
             {submitQuotationMutation.isPending ? (
               <>
-                <Loader2 size={16} className='animate-spin' />
+                <div className='animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent'></div>
                 <span>Submitting...</span>
               </>
             ) : (
               <>
-                <Send size={16} />
+                <Send size={15} />
                 <span>Submit</span>
               </>
             )}
           </button>
         </div>
-      </div>
 
-      {/* Form */}
-      <div className='flex-1 overflow-auto p-6'>
-        <form onSubmit={handleSubmit} className='max-w-6xl mx-auto space-y-6'>
-          {/* Header Information */}
-          <div className='bg-white rounded-lg border border-gray-200 p-6'>
-            <h2 className='text-lg font-semibold text-gray-900 mb-4'>
-              Quotation Details
-            </h2>
-            <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-              <div>
-                <label className='block text-sm font-medium text-gray-700 mb-1'>
-                  <span className='text-red-600'>*</span> RFP No
-                </label>
-                <input
-                  type='text'
-                  value={rfp.rfpNumber}
-                  readOnly
-                  className='w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50'
-                />
+        <form onSubmit={handleSubmit} className='space-y-6'>
+          {/* Quotation Details Card */}
+          <div className='bg-white rounded-lg border border-gray-200 overflow-hidden'>
+            <div className='p-6'>
+              <h2 className='text-base font-semibold text-gray-900 mb-5'>
+                Quotation Details
+              </h2>
+              <div className='grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-5'>
+                <div>
+                  <label className='block text-sm font-medium text-gray-700 mb-2'>
+                    <span className='text-red-500'>*</span> RFP No
+                  </label>
+                  <input
+                    type='text'
+                    value={rfp.rfpNumber}
+                    readOnly
+                    className='w-full px-4 py-3 text-sm border border-gray-200 rounded-lg bg-gray-50 text-gray-600'
+                  />
+                </div>
+                <div>
+                  <label className='block text-sm font-medium text-gray-700 mb-2'>
+                    Payment Terms
+                  </label>
+                  <input
+                    type='text'
+                    value={paymentTerms}
+                    onChange={e => setPaymentTerms(e.target.value)}
+                    className='w-full px-4 py-3 text-sm border border-gray-200 rounded-lg bg-white focus:ring-2 focus:ring-violet-500 focus:border-violet-500'
+                  />
+                </div>
+                <div>
+                  <label className='block text-sm font-medium text-gray-700 mb-2'>
+                    <span className='text-red-500'>*</span> Quotation Ref No
+                  </label>
+                  <input
+                    type='text'
+                    value={quotationNumber}
+                    readOnly
+                    className='w-full px-4 py-3 text-sm border border-gray-200 rounded-lg bg-gray-50 text-gray-600'
+                  />
+                </div>
+                <div>
+                  <label className='block text-sm font-medium text-gray-700 mb-2'>
+                    <span className='text-red-500'>*</span> Quotation Ref Date
+                  </label>
+                  <input
+                    type='date'
+                    value={quotationDate}
+                    onChange={e => setQuotationDate(e.target.value)}
+                    required
+                    className='w-full px-4 py-3 text-sm border border-gray-200 rounded-lg bg-white focus:ring-2 focus:ring-violet-500 focus:border-violet-500'
+                  />
+                </div>
+                <div className='md:col-span-2'>
+                  <label className='block text-sm font-medium text-gray-700 mb-2'>
+                    Remarks
+                  </label>
+                  <textarea
+                    value={remarks}
+                    onChange={e => setRemarks(e.target.value)}
+                    rows={3}
+                    className='w-full px-4 py-3 text-sm border border-gray-200 rounded-lg bg-white focus:ring-2 focus:ring-violet-500 focus:border-violet-500 resize-none'
+                    placeholder='Enter any additional remarks...'
+                  />
+                </div>
               </div>
-              <div>
-                <label className='block text-sm font-medium text-gray-700 mb-1'>
-                  Payment Terms
-                </label>
-                <input
-                  type='text'
-                  value={paymentTerms}
-                  onChange={e => setPaymentTerms(e.target.value)}
-                  className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500'
-                />
-              </div>
-              <div>
-                <label className='block text-sm font-medium text-gray-700 mb-1'>
-                  <span className='text-red-600'>*</span> Quotation Ref No
-                </label>
-                <input
-                  type='text'
-                  value={quotationNumber}
-                  readOnly
-                  className='w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50'
-                />
-              </div>
-              <div>
-                <label className='block text-sm font-medium text-gray-700 mb-1'>
-                  <span className='text-red-600'>*</span> Quotation Ref Date
-                </label>
-                <input
-                  type='date'
-                  value={quotationDate}
-                  onChange={e => setQuotationDate(e.target.value)}
-                  required
-                  className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500'
-                />
-              </div>
-            </div>
-            <div className='mt-4'>
-              <label className='block text-sm font-medium text-gray-700 mb-1'>
-                Remarks
-              </label>
-              <textarea
-                value={remarks}
-                onChange={e => setRemarks(e.target.value)}
-                rows={3}
-                className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500'
-              />
             </div>
           </div>
 
-          {/* Items Table */}
-          <div className='bg-white rounded-lg border border-gray-200 p-6'>
-            <h2 className='text-lg font-semibold text-gray-900 mb-4'>
+          {/* Item Details Section Header */}
+          <div className='flex items-center justify-between'>
+            <h2 className='text-base font-semibold text-gray-900'>
               Item Details
             </h2>
+            <div className='bg-white rounded-lg border border-gray-200 px-4 py-3'>
+              <p className='text-xs text-gray-500'>Grand Total</p>
+              <p className='text-lg font-bold text-violet-600'>
+                ₹
+                {grandTotal.toLocaleString('en-IN', {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                })}
+              </p>
+            </div>
+          </div>
+
+          {/* Items Table Card */}
+          <div className='bg-white rounded-lg border border-gray-200 overflow-hidden'>
             <div className='overflow-x-auto'>
-              <table className='min-w-full divide-y divide-gray-200'>
-                <thead className='bg-gray-50'>
-                  <tr>
-                    <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase'>
+              <table className='w-full'>
+                <thead>
+                  <tr className='bg-[#fafbfc]'>
+                    <th className='px-4 py-3.5 text-left text-xs font-semibold text-gray-600 tracking-wide'>
                       Item Name
                     </th>
-                    <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase'>
+                    <th className='px-4 py-3.5 text-left text-xs font-semibold text-gray-600 tracking-wide'>
                       Remarks
                     </th>
-                    <th className='px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase'>
+                    <th className='px-4 py-3.5 text-center text-xs font-semibold text-gray-600 tracking-wide'>
                       Quantity
                     </th>
-                    <th className='px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase'>
-                      <span className='text-red-600'>*</span> Unit Price
+                    <th className='px-4 py-3.5 text-center text-xs font-semibold text-gray-600 tracking-wide'>
+                      <span className='text-red-500'>*</span> Unit Price
                     </th>
-                    <th className='px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase'>
+                    <th className='px-4 py-3.5 text-center text-xs font-semibold text-gray-600 tracking-wide'>
                       Target Price
                     </th>
-                    <th className='px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase'>
+                    <th className='px-4 py-3.5 text-center text-xs font-semibold text-gray-600 tracking-wide'>
                       Tax %
                     </th>
-                    <th className='px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase'>
+                    <th className='px-4 py-3.5 text-center text-xs font-semibold text-gray-600 tracking-wide'>
                       Tax Amount
                     </th>
-                    <th className='px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase'>
+                    <th className='px-4 py-3.5 text-right text-xs font-semibold text-gray-600 tracking-wide'>
                       Amount
                     </th>
                   </tr>
                 </thead>
-                <tbody className='bg-white divide-y divide-gray-200'>
+                <tbody className='divide-y divide-gray-100'>
                   {items.map((item, index) => (
-                    <tr key={index}>
-                      <td className='px-4 py-3 text-sm text-gray-900'>
+                    <tr
+                      key={index}
+                      className='hover:bg-gray-50 transition-colors'
+                    >
+                      <td className='px-4 py-3.5 text-sm text-gray-700'>
                         {item.itemName}
                       </td>
-                      <td className='px-4 py-3'>
+                      <td className='px-4 py-3.5'>
                         <input
                           type='text'
                           value={item.remarks}
                           onChange={e =>
                             handleItemChange(index, 'remarks', e.target.value)
                           }
-                          className='w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-purple-500'
+                          placeholder='Enter remarks'
+                          className='w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-violet-500'
                         />
                       </td>
-                      <td className='px-4 py-3 text-center text-sm text-gray-900'>
+                      <td className='px-4 py-3.5 text-center text-sm text-gray-700'>
                         {item.quantity} {item.unitOfMeasurement || ''}
                       </td>
-                      <td className='px-4 py-3'>
+                      <td className='px-4 py-3.5'>
                         <input
                           type='number'
                           step='0.01'
@@ -385,13 +449,17 @@ export const SubmitQuotationFormPage: React.FC = () => {
                             )
                           }
                           required
-                          className='w-24 px-2 py-1 text-sm text-right border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-purple-500'
+                          className='w-28 px-3 py-2 text-sm text-right border border-gray-200 rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-violet-500'
                         />
                       </td>
-                      <td className='px-4 py-3 text-center text-sm text-gray-600'>
-                        ₹{item.targetUnitPrice.toFixed(2)}
+                      <td className='px-4 py-3.5 text-center text-sm text-gray-500'>
+                        ₹
+                        {item.targetUnitPrice.toLocaleString('en-IN', {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2,
+                        })}
                       </td>
-                      <td className='px-4 py-3'>
+                      <td className='px-4 py-3.5'>
                         <input
                           type='number'
                           step='0.01'
@@ -405,32 +473,43 @@ export const SubmitQuotationFormPage: React.FC = () => {
                               parseFloat(e.target.value) || 0
                             )
                           }
-                          className='w-20 px-2 py-1 text-sm text-right border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-purple-500'
+                          className='w-20 px-3 py-2 text-sm text-right border border-gray-200 rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-violet-500'
                         />
                       </td>
-                      <td className='px-4 py-3 text-center text-sm text-gray-900'>
-                        ₹{item.taxAmount.toFixed(2)}
+                      <td className='px-4 py-3.5 text-center text-sm text-gray-700'>
+                        ₹
+                        {item.taxAmount.toLocaleString('en-IN', {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2,
+                        })}
                       </td>
-                      <td className='px-4 py-3 text-right text-sm font-medium text-gray-900'>
-                        ₹{item.totalPrice.toFixed(2)}
+                      <td className='px-4 py-3.5 text-right text-sm font-medium text-gray-900'>
+                        ₹
+                        {item.totalPrice.toLocaleString('en-IN', {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2,
+                        })}
                       </td>
                     </tr>
                   ))}
                 </tbody>
-                <tfoot className='bg-gray-50'>
-                  <tr>
-                    <td
-                      colSpan={7}
-                      className='px-4 py-3 text-right text-sm font-semibold text-gray-900'
-                    >
-                      Grand Total:
-                    </td>
-                    <td className='px-4 py-3 text-right text-sm font-bold text-purple-600'>
-                      ₹{grandTotal.toFixed(2)}
-                    </td>
-                  </tr>
-                </tfoot>
               </table>
+            </div>
+
+            {/* Grand Total Row */}
+            <div className='px-6 py-4 bg-white border-t border-gray-200 flex justify-end'>
+              <div className='flex items-center gap-8'>
+                <span className='text-sm font-semibold text-gray-600'>
+                  Grand Total
+                </span>
+                <span className='text-lg font-bold text-gray-900'>
+                  ₹
+                  {grandTotal.toLocaleString('en-IN', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}
+                </span>
+              </div>
             </div>
           </div>
         </form>

@@ -69,9 +69,14 @@ export const ApprovePRPage: React.FC = () => {
   return (
     <div className='space-y-6'>
       <div className='flex items-center justify-between'>
-        <h1 className='text-2xl font-bold text-gray-900'>
-          Pending For Approval
-        </h1>
+        <div>
+          <h1 className='text-xl font-semibold text-gray-800'>
+            Pending For Approval
+          </h1>
+          <p className='text-sm text-gray-500 mt-1'>
+            Review and approve purchase requisitions
+          </p>
+        </div>
       </div>
 
       {/* Search */}
@@ -103,79 +108,82 @@ export const ApprovePRPage: React.FC = () => {
         </div>
       ) : (
         <>
-          <div className='bg-white border border-gray-200 rounded-lg overflow-hidden'>
+          <div className='bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden'>
             <div className='overflow-x-auto'>
               <table className='min-w-full divide-y divide-gray-200'>
-                <thead className='bg-gray-50'>
+                <thead className='bg-[#F7F8FA]'>
                   <tr>
-                    <th className='px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-16'>
+                    <th className='px-6 py-4 text-center text-xs font-medium text-gray-600 uppercase tracking-wide w-16'>
                       S.No
                     </th>
-                    <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
+                    <th className='px-6 py-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wide'>
                       Request Number
                     </th>
-                    <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
+                    <th className='px-6 py-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wide'>
                       Request Date
                     </th>
-                    <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
+                    <th className='px-6 py-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wide'>
                       Requested By
                     </th>
-                    <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
+                    <th className='px-6 py-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wide'>
                       Department
                     </th>
-                    <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
+                    <th className='px-6 py-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wide'>
                       Created By
                     </th>
-                    <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
+                    <th className='px-6 py-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wide'>
                       Created Date
                     </th>
-                    <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
+                    <th className='px-6 py-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wide'>
                       Purchase Type
                     </th>
-                    <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
+                    <th className='px-6 py-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wide'>
                       Project Code
                     </th>
-                    <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
+                    <th className='px-6 py-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wide'>
                       Project Name
                     </th>
                   </tr>
                 </thead>
                 <tbody className='bg-white divide-y divide-gray-200'>
                   {paginatedPRs.map((pr, index) => (
-                    <tr key={pr.prId} className='hover:bg-gray-50'>
-                      <td className='px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-center'>
+                    <tr
+                      key={pr.prId}
+                      className='hover:bg-gray-50 transition-colors border-b border-gray-200 last:border-b-0'
+                    >
+                      <td className='px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700 text-center'>
                         {startIndex + index + 1}
                       </td>
-                      <td className='px-4 py-4 whitespace-nowrap'>
+                      <td className='px-6 py-4 whitespace-nowrap'>
                         <button
                           onClick={() => handleView(pr.prId)}
-                          className='text-blue-600 hover:text-blue-800 hover:underline font-medium'
+                          className='text-sm font-medium text-violet-600 hover:text-violet-700 hover:underline'
                         >
                           {pr.requestNumber}
                         </button>
                       </td>
-                      <td className='px-4 py-4 whitespace-nowrap text-sm text-gray-900'>
+                      <td className='px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700'>
                         {new Date(pr.requestDate).toLocaleDateString()}
                       </td>
-                      <td className='px-4 py-4 whitespace-nowrap text-sm text-gray-900'>
+                      <td className='px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700'>
                         {pr.requestedBy}
                       </td>
-                      <td className='px-4 py-4 whitespace-nowrap text-sm text-gray-900'>
+                      <td className='px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700'>
                         {pr.department}
                       </td>
-                      <td className='px-4 py-4 whitespace-nowrap text-sm text-gray-900'>
+                      <td className='px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700'>
                         {pr.createdBy}
                       </td>
-                      <td className='px-4 py-4 whitespace-nowrap text-sm text-gray-900'>
+                      <td className='px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700'>
                         {new Date(pr.createdDate).toLocaleDateString()}
                       </td>
-                      <td className='px-4 py-4 whitespace-nowrap text-sm text-gray-900'>
+                      <td className='px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700'>
                         {pr.purchaseType || '-'}
                       </td>
-                      <td className='px-4 py-4 whitespace-nowrap text-sm text-gray-900'>
+                      <td className='px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700'>
                         {pr.projectCode || '-'}
                       </td>
-                      <td className='px-4 py-4 whitespace-nowrap text-sm text-gray-900'>
+                      <td className='px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700'>
                         {pr.projectName || '-'}
                       </td>
                     </tr>
@@ -237,10 +245,11 @@ export const ApprovePRPage: React.FC = () => {
                         <button
                           key={page}
                           onClick={() => setCurrentPage(page)}
-                          className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${currentPage === page
+                          className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
+                            currentPage === page
                               ? 'z-10 bg-blue-50 border-blue-500 text-blue-600'
                               : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
-                            }`}
+                          }`}
                         >
                           {page}
                         </button>

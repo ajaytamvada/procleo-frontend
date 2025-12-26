@@ -2,7 +2,15 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useForm, Controller, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { ArrowLeft, Plus, Trash2, Download, Upload } from 'lucide-react';
+import {
+  ArrowLeft,
+  Plus,
+  Trash2,
+  Download,
+  Upload,
+  ChevronDown,
+  Search,
+} from 'lucide-react';
 import toast from 'react-hot-toast';
 import { AlertDialog } from '@/components/ui/Dialog';
 import type { PurchaseRequest, PurchaseRequestItem } from '../types';
@@ -193,20 +201,9 @@ const PurchaseRequestForm: React.FC<PurchaseRequestFormProps> = ({
     name: 'items',
   });
 
-  console.log(pendingSubmission);
   // Reset form when purchaseRequest prop changes
   useEffect(() => {
     if (purchaseRequest) {
-      // Debug logging to see what data we're receiving
-      console.log('=== PR Edit Data Received ===');
-      console.log('Full PR:', purchaseRequest);
-      console.log('Items:', purchaseRequest.items);
-      if (purchaseRequest.items && purchaseRequest.items.length > 0) {
-        console.log('First item fields:', purchaseRequest.items[0]);
-      }
-      console.log('=============================');
-
-      // Reset only header fields (not items)
       const headerValues = {
         requestDate:
           purchaseRequest.requestDate || new Date().toISOString().split('T')[0],
@@ -220,15 +217,12 @@ const PurchaseRequestForm: React.FC<PurchaseRequestFormProps> = ({
         remarks: purchaseRequest.remarks || '',
       };
 
-      // Reset header values (excluding items to avoid conflict)
       reset({
         ...headerValues,
-        items: [], // Temporarily set empty, will be replaced below
+        items: [],
       });
 
-      // Replace items array separately with all required fields
       if (purchaseRequest.items && purchaseRequest.items.length > 0) {
-        // Map items to ensure all fields are present
         const mappedItems = purchaseRequest.items.map(item => ({
           id: item.id,
           itemId: item.itemId || 0,
@@ -249,10 +243,8 @@ const PurchaseRequestForm: React.FC<PurchaseRequestFormProps> = ({
           approvalRemarks: item.approvalRemarks,
         }));
 
-        console.log('Mapped items for form:', mappedItems);
         replace(mappedItems);
 
-        // Populate search queries with model names so they appear in the input fields
         const newSearchQueries: Record<number, string> = {};
         purchaseRequest.items.forEach((item, index) => {
           newSearchQueries[index] = item.modelName || '';
@@ -265,13 +257,8 @@ const PurchaseRequestForm: React.FC<PurchaseRequestFormProps> = ({
   // Auto-fill Location and Department for new PRs
   useEffect(() => {
     if (!purchaseRequest) {
-      // Only for new PRs
       const user = AuthService.getStoredUser();
-      console.log('Auto-fill Debug: User Data:', user);
-      console.log('Auto-fill Debug: Departments:', departments);
-      console.log('Auto-fill Debug: Locations:', cities);
       if (user) {
-        // Auto-fill Department
         if (user.departmentName && departments.length > 0) {
           const matchedDept = departments.find(
             d => d.name.toLowerCase() === user.departmentName?.toLowerCase()
@@ -280,7 +267,6 @@ const PurchaseRequestForm: React.FC<PurchaseRequestFormProps> = ({
             setValue('departmentId', matchedDept.id);
           }
         }
-        // Auto-fill Location
         if (user.locationName && cities.length > 0) {
           const matchedLoc = cities.find(
             c => c.name.toLowerCase() === user.locationName?.toLowerCase()
@@ -337,22 +323,16 @@ const PurchaseRequestForm: React.FC<PurchaseRequestFormProps> = ({
 
   // Handle delete line item
   const handleDeleteItem = (index: number) => {
-    // Remove the item from form array
     remove(index);
-
-    // Clean up search queries - rebuild the object with adjusted indices
     setSearchQueries(prev => {
       const newQueries: Record<number, string> = {};
       Object.keys(prev).forEach(key => {
         const oldIndex = parseInt(key);
         if (oldIndex < index) {
-          // Keep indices before deleted item as-is
           newQueries[oldIndex] = prev[oldIndex];
         } else if (oldIndex > index) {
-          // Shift indices after deleted item down by 1
           newQueries[oldIndex - 1] = prev[oldIndex];
         }
-        // Skip the deleted index
       });
       return newQueries;
     });
@@ -378,18 +358,14 @@ const PurchaseRequestForm: React.FC<PurchaseRequestFormProps> = ({
     handleSubmit(
       data => {
         if (sendForApproval) {
-          // Show confirmation dialog for submit
           setPendingSubmission(true);
           setShowConfirmDialog(true);
         } else {
-          // No confirmation needed for draft
           onSubmit(data, sendForApproval);
         }
       },
       errors => {
-        // Show validation errors with detailed logging
         console.error('Validation errors:', JSON.stringify(errors, null, 2));
-        console.error('Items array errors:', errors.items);
         if (errors.items?.root) {
           toast.error(
             errors.items.root.message || 'At least one item is required'
@@ -397,7 +373,6 @@ const PurchaseRequestForm: React.FC<PurchaseRequestFormProps> = ({
         } else if (errors.items?.message) {
           toast.error(errors.items.message);
         } else if (errors.items) {
-          // Check for individual item errors
           const itemErrors = Object.entries(errors.items)
             .filter(([key]) => !isNaN(Number(key)))
             .map(([idx, err]: [string, any]) => {
@@ -423,9 +398,7 @@ const PurchaseRequestForm: React.FC<PurchaseRequestFormProps> = ({
   };
 
   const handleConfirmSubmit = () => {
-    // Close dialog first
     setShowConfirmDialog(false);
-    // Then submit the form - we know it's valid because handleFormSubmit checked it
     setTimeout(() => {
       handleSubmit(data => onSubmit(data, true))();
     }, 100);
@@ -436,20 +409,13 @@ const PurchaseRequestForm: React.FC<PurchaseRequestFormProps> = ({
     setPendingSubmission(false);
   };
 
-  const handleDialogOpenChange = (open: boolean) => {
-    if (!open) {
-      handleCancelSubmit();
-    }
-  };
-
   // Handle Excel template download
   const handleDownloadTemplate = () => {
     downloadExcelTemplate();
   };
 
-  // Handle Excel file processing (via Dialog)
+  // Handle Excel file processing
   const processExcelFile = async (file: File) => {
-    // Validate file type
     const validTypes = [
       'application/vnd.ms-excel',
       'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
@@ -459,27 +425,17 @@ const PurchaseRequestForm: React.FC<PurchaseRequestFormProps> = ({
     }
 
     try {
-      // Parse Excel file
       const excelItems = await parseExcelFile(file);
-
-      // Validate items
       const validation = validateLineItems(excelItems);
       if (!validation.valid) {
         throw new Error(validation.errors.join('\n'));
       }
 
-      // Search and map items with progress
-      // Note: We might want to pass setUploadProgress to the dialog if we want to show detailed progress there
-      // For now, the dialog shows a generic spinner which is fine.
       const mappedItems = await searchAndMapExcelItemsInBatch(excelItems);
-
-      // Replace all existing items with new Excel items
       replace(mappedItems);
 
-      // Clear and populate search queries for the new items
       const newSearchQueries: Record<number, string> = {};
       mappedItems.forEach((item, index) => {
-        // Set the model name in search queries so it appears in the Model input field
         newSearchQueries[index] = item.modelName || '';
       });
       setSearchQueries(newSearchQueries);
@@ -487,34 +443,26 @@ const PurchaseRequestForm: React.FC<PurchaseRequestFormProps> = ({
       return mappedItems;
     } catch (error) {
       console.error('Excel processing error:', error);
-      throw error; // Re-throw to be handled by the dialog
+      throw error;
     }
   };
 
-  // Optimized batch processing with parallel requests and progress tracking
   const searchAndMapExcelItemsInBatch = async (excelItems: ExcelLineItem[]) => {
-    const BATCH_SIZE = 10; // Process 10 items in parallel
+    const BATCH_SIZE = 10;
     const mappedItems: PurchaseRequestItem[] = [];
 
-    // setUploadProgress({ current: 0, total: excelItems.length }); // Progress tracking disabled for simplicity in dialog mode for now
-
-    // Process items in batches
     for (let i = 0; i < excelItems.length; i += BATCH_SIZE) {
       const batch = excelItems.slice(i, i + BATCH_SIZE);
 
-      // Process all items in this batch in parallel
       const batchPromises = batch.map(async excelItem => {
         try {
-          // Search for the item by model name
           const response = await apiClient.get(
             `/master/items/search?query=${encodeURIComponent(excelItem.model)}`
           );
           const searchResults = response.data;
 
-          // Find exact or best match
           let matchedItem: PurchaseRequestItem | null = null;
           if (searchResults && searchResults.length > 0) {
-            // Try to find exact match first (case-insensitive)
             matchedItem = searchResults.find(
               (item: PurchaseRequestItemFormData) =>
                 item.displayName?.toLowerCase() ===
@@ -522,14 +470,12 @@ const PurchaseRequestForm: React.FC<PurchaseRequestFormProps> = ({
                 item.modelName?.toLowerCase() === excelItem.model.toLowerCase()
             );
 
-            // If no exact match, use first result
             if (!matchedItem) {
               matchedItem = searchResults[0];
             }
           }
 
           if (matchedItem) {
-            // Item found in system - use system data
             return {
               itemId: matchedItem.id || 0,
               categoryId: matchedItem.categoryId || 0,
@@ -545,7 +491,6 @@ const PurchaseRequestForm: React.FC<PurchaseRequestFormProps> = ({
               description: excelItem.description,
             } as PurchaseRequestItem;
           } else {
-            // Item not found - use Excel data as-is
             return {
               itemId: 0,
               categoryId: 0,
@@ -563,7 +508,6 @@ const PurchaseRequestForm: React.FC<PurchaseRequestFormProps> = ({
           }
         } catch (error) {
           console.error(`Error searching for item: ${excelItem.model}`, error);
-          // Return item with Excel data if search fails
           return {
             itemId: 0,
             categoryId: 0,
@@ -581,47 +525,37 @@ const PurchaseRequestForm: React.FC<PurchaseRequestFormProps> = ({
         }
       });
 
-      // Wait for all items in this batch to complete
       const batchResults = await Promise.all(batchPromises);
       mappedItems.push(...batchResults);
-
-      // Update progress
-      // setUploadProgress({ // Progress tracking disabled
-      //   current: mappedItems.length,
-      //   total: excelItems.length,
-      // });
     }
 
     return mappedItems;
   };
 
-  const inputClass = (hasError: boolean) =>
-    `w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-      hasError ? 'border-red-500' : 'border-gray-300'
-    }`;
-
   return (
-    <div className='bg-white rounded-lg shadow-md'>
-      <div className='border-b border-gray-200 p-6'>
-        <div className='flex items-center justify-between'>
-          <div className='flex items-center gap-4'>
+    <div className='min-h-screen bg-[#f8f9fc]'>
+      {/* Page Content */}
+      <div className=''>
+        {/* Page Header - Cashfree Style (Title + Buttons on same line, no background) */}
+        <div className='flex items-center justify-between mb-6'>
+          <div className='flex items-center gap-3'>
             <button
               onClick={onCancel}
-              className='text-gray-600 hover:text-gray-800 transition-colors'
+              className='p-1.5 text-gray-500 hover:text-gray-700 rounded-lg transition-colors'
               disabled={isSubmitting}
             >
-              <ArrowLeft size={24} />
+              <ArrowLeft size={20} />
             </button>
-            <h2 className='text-2xl font-bold text-gray-800'>
+            <h1 className='text-xl font-semibold text-gray-900'>
               Create Purchase Request
-            </h2>
+            </h1>
           </div>
-          <div className='flex gap-2'>
+          <div className='flex items-center gap-3'>
             <button
               type='button'
               onClick={() => handleFormSubmit(false)}
               disabled={isSubmitting}
-              className='px-6 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors disabled:bg-gray-400'
+              className='px-4 py-2 text-sm font-semibold text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 hover:border-gray-400 transition-all disabled:opacity-50 disabled:cursor-not-allowed'
             >
               Save as Draft
             </button>
@@ -629,198 +563,240 @@ const PurchaseRequestForm: React.FC<PurchaseRequestFormProps> = ({
               type='button'
               onClick={() => handleFormSubmit(true)}
               disabled={isSubmitting}
-              className='px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:bg-gray-400'
+              className='px-4 py-2 text-sm font-semibold text-white bg-violet-600 rounded-md hover:bg-violet-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed'
             >
               Submit
             </button>
           </div>
         </div>
-      </div>
+        <form
+          onSubmit={e => {
+            e.preventDefault();
+          }}
+          className='space-y-6'
+        >
+          {/* Header Information Card */}
+          <div className='bg-white rounded-lg border border-gray-200 overflow-hidden'>
+            <div className='p-6'>
+              <div className='grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-5'>
+                {/* Request Date */}
+                <div>
+                  <label className='block text-sm font-medium text-gray-700 mb-2'>
+                    <span className='text-red-500'>*</span> Request Date
+                  </label>
+                  <div className='relative'>
+                    <input
+                      type='date'
+                      {...register('requestDate')}
+                      min={new Date().toISOString().split('T')[0]}
+                      className={`w-full px-4 py-3 text-sm border rounded-lg bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors ${
+                        errors.requestDate
+                          ? 'border-red-400'
+                          : 'border-gray-200'
+                      }`}
+                      disabled={isSubmitting}
+                    />
+                  </div>
+                  {errors.requestDate && (
+                    <p className='mt-1.5 text-sm text-red-500'>
+                      {errors.requestDate.message}
+                    </p>
+                  )}
+                </div>
 
-      <form
-        className='p-6'
-        onSubmit={e => {
-          e.preventDefault(); /* Form submission is handled by buttons */
-        }}
-      >
-        {/* Header Information */}
-        <div className='grid grid-cols-1 md:grid-cols-2 gap-6 mb-6'>
-          <div>
-            <label className='block text-sm font-medium text-gray-700 mb-2'>
-              <span className='text-red-500'>*</span> Request Date
-            </label>
-            <input
-              type='date'
-              {...register('requestDate')}
-              min={new Date().toISOString().split('T')[0]}
-              className={inputClass(!!errors.requestDate)}
-              disabled={isSubmitting}
-            />
-            {errors.requestDate && (
-              <p className='mt-1 text-sm text-red-600'>
-                {errors.requestDate.message}
-              </p>
-            )}
+                {/* Requestor */}
+                <div>
+                  <label className='block text-sm font-medium text-gray-700 mb-2'>
+                    <span className='text-red-500'>*</span> Requestor
+                  </label>
+                  <input
+                    {...register('requestedBy')}
+                    className={`w-full px-4 py-3 text-sm border rounded-lg bg-gray-50 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors ${
+                      errors.requestedBy ? 'border-red-400' : 'border-gray-200'
+                    }`}
+                    disabled={isSubmitting}
+                    placeholder='Enter requestor name'
+                  />
+                  {errors.requestedBy && (
+                    <p className='mt-1.5 text-sm text-red-500'>
+                      {errors.requestedBy.message}
+                    </p>
+                  )}
+                </div>
+
+                {/* Location */}
+                <div>
+                  <label className='block text-sm font-medium text-gray-700 mb-2'>
+                    <span className='text-red-500'>*</span> Location
+                  </label>
+                  <div className='relative'>
+                    <Controller
+                      name='locationId'
+                      control={control}
+                      render={({ field }) => (
+                        <select
+                          {...field}
+                          value={field.value || ''}
+                          onChange={e =>
+                            field.onChange(
+                              e.target.value
+                                ? Number(e.target.value)
+                                : undefined
+                            )
+                          }
+                          className={`w-full px-4 py-3 text-sm border rounded-lg bg-white appearance-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors ${
+                            errors.locationId
+                              ? 'border-red-400'
+                              : 'border-gray-200'
+                          }`}
+                          disabled={isSubmitting || citiesLoading}
+                        >
+                          <option value=''>
+                            {citiesLoading ? 'Loading...' : 'Select Location'}
+                          </option>
+                          {cities.map(city => (
+                            <option key={city.id} value={city.id}>
+                              {city.name}
+                            </option>
+                          ))}
+                        </select>
+                      )}
+                    />
+                    <ChevronDown className='absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none' />
+                  </div>
+                  {errors.locationId && (
+                    <p className='mt-1.5 text-sm text-red-500'>
+                      {errors.locationId.message}
+                    </p>
+                  )}
+                </div>
+
+                {/* Department */}
+                <div>
+                  <label className='block text-sm font-medium text-gray-700 mb-2'>
+                    <span className='text-red-500'>*</span> Department
+                  </label>
+                  <div className='relative'>
+                    <Controller
+                      name='departmentId'
+                      control={control}
+                      render={({ field }) => (
+                        <select
+                          {...field}
+                          value={field.value || ''}
+                          onChange={e =>
+                            field.onChange(
+                              e.target.value
+                                ? Number(e.target.value)
+                                : undefined
+                            )
+                          }
+                          className={`w-full px-4 py-3 text-sm border rounded-lg bg-white appearance-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors ${
+                            errors.departmentId
+                              ? 'border-red-400'
+                              : 'border-gray-200'
+                          }`}
+                          disabled={isSubmitting}
+                        >
+                          <option value=''>Select</option>
+                          {departments.map(dept => (
+                            <option key={dept.id} value={dept.id}>
+                              {dept.name}
+                            </option>
+                          ))}
+                        </select>
+                      )}
+                    />
+                    <ChevronDown className='absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none' />
+                  </div>
+                  {errors.departmentId && (
+                    <p className='mt-1.5 text-sm text-red-500'>
+                      {errors.departmentId.message}
+                    </p>
+                  )}
+                </div>
+
+                {/* Purchase Type */}
+                <div>
+                  <label className='block text-sm font-medium text-gray-700 mb-2'>
+                    <span className='text-red-500'>*</span> Purchase Type
+                  </label>
+                  <div className='relative'>
+                    <select
+                      {...register('purchaseType')}
+                      className={`w-full px-4 py-3 text-sm border rounded-lg bg-white appearance-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors ${
+                        errors.purchaseType
+                          ? 'border-red-400'
+                          : 'border-gray-200'
+                      }`}
+                      disabled={isSubmitting}
+                    >
+                      <option value=''>Select Purchase Type</option>
+                      <option value='Product'>Product</option>
+                      <option value='Service'>Service</option>
+                    </select>
+                    <ChevronDown className='absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none' />
+                  </div>
+                  {errors.purchaseType && (
+                    <p className='mt-1.5 text-sm text-red-500'>
+                      {errors.purchaseType.message}
+                    </p>
+                  )}
+                </div>
+
+                {/* Project Name */}
+                <div>
+                  <label className='block text-sm font-medium text-gray-700 mb-2'>
+                    <span className='text-red-500'>*</span> Project Name
+                  </label>
+                  <input
+                    {...register('projectName')}
+                    className={`w-full px-4 py-3 text-sm border rounded-lg bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors ${
+                      errors.projectName ? 'border-red-400' : 'border-gray-200'
+                    }`}
+                    disabled={isSubmitting}
+                    placeholder='Enter project name'
+                  />
+                  {errors.projectName && (
+                    <p className='mt-1.5 text-sm text-red-500'>
+                      {errors.projectName.message}
+                    </p>
+                  )}
+                </div>
+
+                {/* Justification */}
+                <div className='md:col-span-2'>
+                  <label className='block text-sm font-medium text-gray-700 mb-2'>
+                    Justification
+                  </label>
+                  <textarea
+                    {...register('remarks')}
+                    rows={3}
+                    className={`w-full px-4 py-3 text-sm border rounded-lg bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors resize-none ${
+                      errors.remarks ? 'border-red-400' : 'border-gray-200'
+                    }`}
+                    disabled={isSubmitting}
+                    placeholder='Enter justification for this request...'
+                  />
+                </div>
+              </div>
+            </div>
           </div>
 
-          <div>
-            <label className='block text-sm font-medium text-gray-700 mb-2'>
-              <span className='text-red-500'>*</span> Requestor
-            </label>
-            <input
-              {...register('requestedBy')}
-              className={inputClass(!!errors.requestedBy)}
-              disabled={isSubmitting}
-              placeholder='Enter requestor name'
-            />
-            {errors.requestedBy && (
-              <p className='mt-1 text-sm text-red-600'>
-                {errors.requestedBy.message}
-              </p>
-            )}
-          </div>
-
-          <div>
-            <label className='block text-sm font-medium text-gray-700 mb-2'>
-              <span className='text-red-500'>*</span> Location
-            </label>
-            <Controller
-              name='locationId'
-              control={control}
-              render={({ field }) => (
-                <select
-                  {...field}
-                  value={field.value || ''}
-                  onChange={e =>
-                    field.onChange(
-                      e.target.value ? Number(e.target.value) : undefined
-                    )
-                  }
-                  className={inputClass(!!errors.locationId)}
-                  disabled={isSubmitting || citiesLoading}
-                >
-                  <option value=''>
-                    {citiesLoading ? 'Loading cities...' : 'Select Location'}
-                  </option>
-                  {cities.map(city => (
-                    <option key={city.id} value={city.id}>
-                      {city.name}
-                    </option>
-                  ))}
-                </select>
-              )}
-            />
-            {errors.locationId && (
-              <p className='mt-1 text-sm text-red-600'>
-                {errors.locationId.message}
-              </p>
-            )}
-          </div>
-
-          <div>
-            <label className='block text-sm font-medium text-gray-700 mb-2'>
-              <span className='text-red-500'>*</span> Department
-            </label>
-            <Controller
-              name='departmentId'
-              control={control}
-              render={({ field }) => (
-                <select
-                  {...field}
-                  value={field.value || ''}
-                  onChange={e =>
-                    field.onChange(
-                      e.target.value ? Number(e.target.value) : undefined
-                    )
-                  }
-                  className={inputClass(!!errors.departmentId)}
-                  disabled={isSubmitting}
-                >
-                  <option value=''>Select</option>
-                  {departments.map(dept => (
-                    <option key={dept.id} value={dept.id}>
-                      {dept.name}
-                    </option>
-                  ))}
-                </select>
-              )}
-            />
-            {errors.departmentId && (
-              <p className='mt-1 text-sm text-red-600'>
-                {errors.departmentId.message}
-              </p>
-            )}
-          </div>
-
-          <div>
-            <label className='block text-sm font-medium text-gray-700 mb-2'>
-              <span className='text-red-500'>*</span> Purchase Type
-            </label>
-            <select
-              {...register('purchaseType')}
-              className={inputClass(!!errors.purchaseType)}
-              disabled={isSubmitting}
-            >
-              <option value=''>Select Purchase Type</option>
-              <option value='Product'>Product</option>
-              <option value='Service'>Service</option>
-            </select>
-          </div>
-
-          {/* Project Code hidden as per requirement */}
-          {/* <div>
-            <label className='block text-sm font-medium text-gray-700 mb-2'>
-              <span className='text-red-500'>*</span> Project Code
-            </label>
-            <input
-              {...register('projectCode')}
-              className={inputClass(!!errors.projectCode)}
-              disabled={isSubmitting}
-              placeholder='Enter project code'
-            />
-          </div> */}
-
-          <div>
-            <label className='block text-sm font-medium text-gray-700 mb-2'>
-              <span className='text-red-500'>*</span> Project Name
-            </label>
-            <input
-              {...register('projectName')}
-              className={inputClass(!!errors.projectName)}
-              disabled={isSubmitting}
-              placeholder='Enter project name'
-            />
-          </div>
-
-          <div className='md:col-span-2'>
-            <label className='block text-sm font-medium text-gray-700 mb-2'>
-              Justification
-            </label>
-            <textarea
-              {...register('remarks')}
-              rows={3}
-              className={inputClass(!!errors.remarks)}
-              disabled={isSubmitting}
-            />
-          </div>
-        </div>
-
-        {/* Line Items */}
-        <div className='border-t border-gray-200 pt-6'>
+          {/* Item Details Section Header - Cashfree Style */}
           <div className='flex items-center justify-between mb-4'>
-            <h3 className='text-lg font-semibold text-gray-800'>
+            <h2 className='text-base font-semibold text-gray-900'>
               Item Details
-            </h3>
-            <div className='flex items-center gap-2'>
+            </h2>
+            <div className='flex items-center gap-3'>
               {/* Download Template Button */}
               <button
                 type='button'
                 onClick={handleDownloadTemplate}
                 disabled={isSubmitting}
-                className='flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:bg-gray-400'
-                title='Download Excel Template'
+                className='inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-violet-600 rounded-md hover:bg-violet-700 transition-colors disabled:opacity-50'
               >
-                <Download size={18} />
+                <Download size={15} />
                 Download Template
               </button>
 
@@ -829,10 +805,9 @@ const PurchaseRequestForm: React.FC<PurchaseRequestFormProps> = ({
                 type='button'
                 onClick={() => setIsImportDialogOpen(true)}
                 disabled={isSubmitting}
-                className='flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors disabled:bg-gray-400'
-                title='Upload Excel File'
+                className='inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-violet-600 rounded-md hover:bg-violet-700 transition-colors disabled:opacity-50'
               >
-                <Upload size={18} />
+                <Upload size={15} />
                 Upload Excel
               </button>
 
@@ -856,244 +831,253 @@ const PurchaseRequestForm: React.FC<PurchaseRequestFormProps> = ({
                   })
                 }
                 disabled={isSubmitting}
-                className='flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:bg-gray-400'
+                className='inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-violet-600 rounded-md hover:bg-violet-700 transition-colors disabled:opacity-50'
               >
-                <Plus size={18} />
+                <Plus size={15} />
                 Add Line Item
               </button>
             </div>
           </div>
 
-          <div className='overflow-x-auto'>
-            <table className='w-full border-collapse'>
-              <thead>
-                <tr className='bg-gray-100'>
-                  <th className='border border-gray-300 px-4 py-2 text-center text-sm font-semibold'>
-                    S.No
-                  </th>
-                  <th className='border border-gray-300 px-4 py-2 text-left text-sm font-semibold'>
-                    Model
-                  </th>
-                  <th className='border border-gray-300 px-4 py-2 text-left text-sm font-semibold'>
-                    Make
-                  </th>
-                  <th className='border border-gray-300 px-4 py-2 text-left text-sm font-semibold'>
-                    Category
-                  </th>
-                  <th className='border border-gray-300 px-4 py-2 text-left text-sm font-semibold'>
-                    Sub Category
-                  </th>
-                  <th className='border border-gray-300 px-4 py-2 text-left text-sm font-semibold'>
-                    UOM
-                  </th>
-                  <th className='border border-gray-300 px-4 py-2 text-left text-sm font-semibold'>
-                    Description
-                  </th>
-                  <th className='border border-gray-300 px-4 py-2 text-left text-sm font-semibold'>
-                    Quantity
-                  </th>
-                  <th className='border border-gray-300 px-4 py-2 text-left text-sm font-semibold'>
-                    Unit Price
-                  </th>
-                  <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24'>
-                    Total
-                  </th>
-
-                  <th className='px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-16'>
-                    Action
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {fields.map((field, index) => {
-                  const isAccepted =
-                    purchaseRequest?.items?.[index]?.rmApprovalStatus ===
-                    'Accepted';
-                  return (
-                    <tr
-                      key={field.id}
-                      className={
-                        isAccepted ? 'bg-gray-100' : 'hover:bg-gray-50'
-                      }
-                    >
-                      <td className='border border-gray-300 px-4 py-2 text-center font-medium text-gray-700'>
-                        {index + 1}
-                      </td>
-                      <td className='border border-gray-300 px-2 py-2 relative'>
-                        <div
-                          ref={el => {
-                            dropdownRefs.current[index] = el;
-                          }}
-                        >
-                          <input
-                            type='text'
-                            value={searchQueries[index] || ''}
-                            onChange={e =>
-                              handleSearchInput(index, e.target.value)
-                            }
-                            placeholder='Type to search...'
-                            className='w-full px-2 py-1 border rounded text-sm'
-                            disabled={isSubmitting}
-                          />
-                          {showDropdown[index] && searchResults.length > 0 && (
-                            <div className='absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto'>
-                              {searchResults.map(item => (
-                                <div
-                                  key={item.id}
-                                  onClick={() => handleItemSelect(index, item)}
-                                  className='px-3 py-2 hover:bg-blue-50 cursor-pointer text-sm'
-                                >
-                                  <div className='font-medium'>
-                                    {item.displayName}
-                                  </div>
-                                  <div className='text-xs text-gray-500'>
-                                    {item.categoryName} - {item.subCategoryName}
-                                  </div>
-                                </div>
-                              ))}
+          {/* Item Details Table Card */}
+          <div className='bg-white rounded-lg border border-gray-200 overflow-hidden'>
+            {/* Table */}
+            <div className='overflow-x-auto'>
+              <table className='w-full'>
+                <thead>
+                  <tr className='bg-[#fafbfc]'>
+                    <th className='px-4 py-3.5 text-left text-xs font-semibold text-gray-600 tracking-wide w-16'>
+                      S.No
+                    </th>
+                    <th className='px-4 py-3.5 text-left text-xs font-semibold text-gray-600 tracking-wide min-w-[180px]'>
+                      Model
+                    </th>
+                    <th className='px-4 py-3.5 text-left text-xs font-semibold text-gray-600 tracking-wide min-w-[120px]'>
+                      Make
+                    </th>
+                    <th className='px-4 py-3.5 text-left text-xs font-semibold text-gray-600 tracking-wide min-w-[120px]'>
+                      Category
+                    </th>
+                    <th className='px-4 py-3.5 text-left text-xs font-semibold text-gray-600 tracking-wide min-w-[120px]'>
+                      Sub Category
+                    </th>
+                    <th className='px-4 py-3.5 text-left text-xs font-semibold text-gray-600 tracking-wide w-20'>
+                      UOM
+                    </th>
+                    <th className='px-4 py-3.5 text-left text-xs font-semibold text-gray-600 tracking-wide min-w-[150px]'>
+                      Description
+                    </th>
+                    <th className='px-4 py-3.5 text-left text-xs font-semibold text-gray-600 tracking-wide w-24'>
+                      Quantity
+                    </th>
+                    <th className='px-4 py-3.5 text-left text-xs font-semibold text-gray-600 tracking-wide w-28'>
+                      Unit Price
+                    </th>
+                    <th className='px-4 py-3.5 text-right text-xs font-semibold text-gray-600 tracking-wide w-28'>
+                      Total
+                    </th>
+                    <th className='px-4 py-3.5 text-center text-xs font-semibold text-gray-600 tracking-wide w-20'>
+                      Action
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className='divide-y divide-gray-100'>
+                  {fields.map((field, index) => {
+                    const isAccepted =
+                      purchaseRequest?.items?.[index]?.rmApprovalStatus ===
+                      'Accepted';
+                    return (
+                      <tr
+                        key={field.id}
+                        className={`${isAccepted ? 'bg-gray-50' : 'hover:bg-gray-50'} transition-colors`}
+                      >
+                        <td className='px-4 py-3 text-sm text-gray-600 font-medium'>
+                          {index + 1}
+                        </td>
+                        <td className='px-4 py-3 relative'>
+                          <div
+                            ref={el => {
+                              dropdownRefs.current[index] = el;
+                            }}
+                          >
+                            <div className='relative'>
+                              <Search className='absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400' />
+                              <input
+                                type='text'
+                                value={searchQueries[index] || ''}
+                                onChange={e =>
+                                  handleSearchInput(index, e.target.value)
+                                }
+                                placeholder='Type to search...'
+                                className='w-full pl-9 pr-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white'
+                                disabled={isSubmitting}
+                              />
                             </div>
-                          )}
-                        </div>
-                      </td>
-                      <td className='border border-gray-300 px-2 py-2'>
-                        <input
-                          {...register(`items.${index}.make`)}
-                          className='w-full px-2 py-1 border rounded text-sm bg-gray-50'
-                          disabled
-                        />
-                      </td>
-                      <td className='border border-gray-300 px-2 py-2 text-sm'>
-                        <Controller
-                          name={`items.${index}.categoryName`}
-                          control={control}
-                          render={({ field }) => (
-                            <span className='text-gray-700'>
-                              {field.value || '-'}
-                            </span>
-                          )}
-                        />
-                      </td>
-                      <td className='border border-gray-300 px-2 py-2 text-sm'>
-                        <Controller
-                          name={`items.${index}.subCategoryName`}
-                          control={control}
-                          render={({ field }) => (
-                            <span className='text-gray-700'>
-                              {field.value || '-'}
-                            </span>
-                          )}
-                        />
-                      </td>
-                      <td className='border border-gray-300 px-2 py-2 text-sm'>
-                        <Controller
-                          name={`items.${index}.uomName`}
-                          control={control}
-                          render={({ field }) => (
-                            <span className='text-gray-700'>
-                              {field.value || '-'}
-                            </span>
-                          )}
-                        />
-                      </td>
-                      <td className='border border-gray-300 px-2 py-2'>
-                        <input
-                          {...register(`items.${index}.description`)}
-                          className={`w-full px-2 py-1 border rounded text-sm ${isAccepted ? 'bg-gray-100' : ''}`}
-                          disabled={isSubmitting || isAccepted}
-                        />
-                      </td>
-                      <td className='border border-gray-300 px-2 py-2'>
-                        <Controller
-                          name={`items.${index}.quantity`}
-                          control={control}
-                          render={({ field }) => (
-                            <input
-                              {...field}
-                              type='number'
-                              min='1'
-                              onChange={e =>
-                                field.onChange(Number(e.target.value))
-                              }
-                              className={`w-20 px-2 py-1 border rounded text-sm ${isAccepted ? 'bg-gray-100' : ''}`}
-                              disabled={isSubmitting || isAccepted}
-                            />
-                          )}
-                        />
-                      </td>
-                      <td className='border border-gray-300 px-2 py-2'>
-                        <Controller
-                          name={`items.${index}.unitPrice`}
-                          control={control}
-                          render={({ field }) => (
-                            <input
-                              {...field}
-                              type='number'
-                              min='0'
-                              step='0.01'
-                              onChange={e =>
-                                field.onChange(Number(e.target.value))
-                              }
-                              className={`w-24 px-2 py-1 border rounded text-sm ${isAccepted ? 'bg-gray-100' : ''}`}
-                              disabled={isSubmitting || isAccepted}
-                            />
-                          )}
-                        />
-                      </td>
-                      <td className='px-4 py-2 whitespace-nowrap text-sm text-gray-900'>
-                        {calculateLineTotal(index)}
-                      </td>
+                            {showDropdown[index] &&
+                              searchResults.length > 0 && (
+                                <div className='absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto'>
+                                  {searchResults.map(item => (
+                                    <div
+                                      key={item.id}
+                                      onClick={() =>
+                                        handleItemSelect(index, item)
+                                      }
+                                      className='px-3 py-2.5 hover:bg-indigo-50 cursor-pointer text-sm border-b border-gray-100 last:border-0'
+                                    >
+                                      <div className='font-medium text-gray-900'>
+                                        {item.displayName}
+                                      </div>
+                                      <div className='text-xs text-gray-500 mt-0.5'>
+                                        {item.categoryName} •{' '}
+                                        {item.subCategoryName}
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                          </div>
+                        </td>
+                        <td className='px-4 py-3'>
+                          <input
+                            {...register(`items.${index}.make`)}
+                            className='w-full px-3 py-2 text-sm border border-gray-200 rounded-lg bg-gray-50 text-gray-500'
+                            disabled
+                          />
+                        </td>
+                        <td className='px-4 py-3 text-sm text-gray-600'>
+                          <Controller
+                            name={`items.${index}.categoryName`}
+                            control={control}
+                            render={({ field }) => (
+                              <span>{field.value || '-'}</span>
+                            )}
+                          />
+                        </td>
+                        <td className='px-4 py-3 text-sm text-gray-600'>
+                          <Controller
+                            name={`items.${index}.subCategoryName`}
+                            control={control}
+                            render={({ field }) => (
+                              <span>{field.value || '-'}</span>
+                            )}
+                          />
+                        </td>
+                        <td className='px-4 py-3 text-sm text-gray-600'>
+                          <Controller
+                            name={`items.${index}.uomName`}
+                            control={control}
+                            render={({ field }) => (
+                              <span>{field.value || '-'}</span>
+                            )}
+                          />
+                        </td>
+                        <td className='px-4 py-3'>
+                          <input
+                            {...register(`items.${index}.description`)}
+                            className={`w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 ${isAccepted ? 'bg-gray-100' : 'bg-white'}`}
+                            disabled={isSubmitting || isAccepted}
+                            placeholder='Description'
+                          />
+                        </td>
+                        <td className='px-4 py-3'>
+                          <Controller
+                            name={`items.${index}.quantity`}
+                            control={control}
+                            render={({ field }) => (
+                              <input
+                                {...field}
+                                type='number'
+                                min='1'
+                                onChange={e =>
+                                  field.onChange(Number(e.target.value))
+                                }
+                                className={`w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 ${isAccepted ? 'bg-gray-100' : 'bg-white'}`}
+                                disabled={isSubmitting || isAccepted}
+                              />
+                            )}
+                          />
+                        </td>
+                        <td className='px-4 py-3'>
+                          <Controller
+                            name={`items.${index}.unitPrice`}
+                            control={control}
+                            render={({ field }) => (
+                              <input
+                                {...field}
+                                type='number'
+                                min='0'
+                                step='0.01'
+                                onChange={e =>
+                                  field.onChange(Number(e.target.value))
+                                }
+                                className={`w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 ${isAccepted ? 'bg-gray-100' : 'bg-white'}`}
+                                disabled={isSubmitting || isAccepted}
+                              />
+                            )}
+                          />
+                        </td>
+                        <td className='px-4 py-3 text-right text-sm font-medium text-gray-900'>
+                          {calculateLineTotal(index)}
+                        </td>
+                        <td className='px-4 py-3 text-center'>
+                          <button
+                            type='button'
+                            onClick={() => handleDeleteItem(index)}
+                            className='p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed'
+                            disabled={isSubmitting || isAccepted}
+                            title={
+                              isAccepted
+                                ? 'Cannot delete accepted items'
+                                : 'Delete item'
+                            }
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
 
-                      <td className='px-4 py-2 whitespace-nowrap text-center'>
-                        <button
-                          type='button'
-                          onClick={() => handleDeleteItem(index)}
-                          className='text-red-600 hover:text-red-800 disabled:text-gray-400 disabled:cursor-not-allowed'
-                          disabled={isSubmitting || isAccepted}
-                          title={
-                            isAccepted
-                              ? 'Cannot delete accepted items'
-                              : 'Delete item'
-                          }
-                        >
-                          <Trash2 size={18} />
-                        </button>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-              <tfoot>
-                <tr className='bg-gray-100'>
-                  <td
-                    colSpan={9}
-                    className='border border-gray-300 px-4 py-2 text-right font-semibold'
-                  >
+              {/* Grand Total Row */}
+              <div className='px-6 py-4 bg-white border-t border-gray-200 flex justify-end'>
+                <div className='flex items-center gap-8'>
+                  <span className='text-sm font-semibold text-gray-600'>
                     Grand Total
-                  </td>
-                  <td className='border border-gray-300 px-4 py-2 text-right font-bold text-lg'>
+                  </span>
+                  <span className='text-lg font-bold text-gray-900'>
                     ₹{grandTotal.toFixed(2)}
-                  </td>
-                  <td className='border border-gray-300'></td>
-                </tr>
-              </tfoot>
-            </table>
-            <div className='mt-6 pt-4 border-t border-gray-200'>
-              <div className='flex justify-end'>
-                <div className='text-xl font-semibold text-gray-800'>
-                  Total Amount:{' '}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {errors.items && (
+              <p className='px-6 pb-4 text-sm text-red-500'>
+                {errors.items.message}
+              </p>
+            )}
+          </div>
+
+          {/* Total Amount Footer */}
+          <div className='flex justify-end'>
+            <div className='bg-white rounded-lg border border-gray-200 px-6 py-4'>
+              <div className='flex items-center gap-4'>
+                <span className='text-sm font-medium text-gray-600'>
+                  Total Amount:
+                </span>
+                <span className='text-xl font-bold text-violet-600'>
                   {grandTotal.toLocaleString('en-IN', {
                     style: 'currency',
                     currency: 'INR',
                   })}
-                </div>
+                </span>
               </div>
             </div>
           </div>
-          {errors.items && (
-            <p className='mt-2 text-sm text-red-600'>{errors.items.message}</p>
-          )}
-        </div>
-      </form>
+        </form>
+      </div>
 
       {/* Confirmation Dialog */}
       <AlertDialog
@@ -1113,7 +1097,7 @@ const PurchaseRequestForm: React.FC<PurchaseRequestFormProps> = ({
         entityName='Line Items'
         onFileData={processExcelFile}
         onTemplateDownload={handleDownloadTemplate}
-        onImportSuccess={() => {}} // No extra action needed after success
+        onImportSuccess={() => {}}
       />
     </div>
   );

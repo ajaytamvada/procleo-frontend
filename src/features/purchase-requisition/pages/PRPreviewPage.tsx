@@ -113,7 +113,12 @@ export const PRPreviewPage: React.FC = () => {
     return (
       <div className='space-y-6'>
         <div className='flex items-center justify-between'>
-          <h1 className='text-2xl font-bold text-gray-900'>PR Preview</h1>
+          <div>
+            <h1 className='text-xl font-semibold text-gray-800'>PR Preview</h1>
+            <p className='text-sm text-gray-500 mt-1'>
+              Preview and print purchase requisitions
+            </p>
+          </div>
         </div>
         <div className='text-center py-12'>
           <div className='inline-flex items-center justify-center w-16 h-16 bg-gray-100 rounded-full mb-4'>
@@ -131,10 +136,15 @@ export const PRPreviewPage: React.FC = () => {
   return (
     <div className='space-y-6'>
       <div className='flex items-center justify-between print:hidden'>
-        <h1 className='text-2xl font-bold text-gray-900'>PR Preview</h1>
+        <div>
+          <h1 className='text-xl font-semibold text-gray-800'>PR Preview</h1>
+          <p className='text-sm text-gray-500 mt-1'>
+            Preview and print purchase requisitions
+          </p>
+        </div>
         <button
           onClick={handlePrint}
-          className='flex items-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors'
+          className='flex items-center space-x-2 px-4 py-2 bg-violet-600 hover:bg-violet-700 text-white rounded-lg transition-colors'
         >
           <Printer className='h-4 w-4' />
           <span>Print</span>
@@ -172,69 +182,72 @@ export const PRPreviewPage: React.FC = () => {
       </div>
 
       {/* Table */}
-      <div className='bg-white border border-gray-200 rounded-lg overflow-hidden'>
+      <div className='bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden'>
         <div className='overflow-x-auto'>
           <table className='min-w-full divide-y divide-gray-200'>
-            <thead className='bg-gray-50'>
+            <thead className='bg-[#F7F8FA]'>
               <tr>
-                <th className='px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-16'>
+                <th className='px-6 py-4 text-center text-xs font-medium text-gray-600 uppercase tracking-wide w-16'>
                   S.No
                 </th>
-                <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
+                <th className='px-6 py-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wide'>
                   Request Number
                 </th>
-                <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
+                <th className='px-6 py-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wide'>
                   Request Date
                 </th>
-                <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
+                <th className='px-6 py-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wide'>
                   Requested By
                 </th>
-                <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
+                <th className='px-6 py-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wide'>
                   Department
                 </th>
-                <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
+                <th className='px-6 py-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wide'>
                   Project
                 </th>
-                <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
+                <th className='px-6 py-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wide'>
                   Grand Total
                 </th>
-                <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
+                <th className='px-6 py-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wide'>
                   Status
                 </th>
               </tr>
             </thead>
             <tbody className='bg-white divide-y divide-gray-200'>
               {paginatedItems.map((item, index) => (
-                <tr key={item.requestNumber} className='hover:bg-gray-50'>
-                  <td className='px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-center'>
+                <tr
+                  key={item.requestNumber}
+                  className='hover:bg-gray-50 transition-colors border-b border-gray-200 last:border-b-0'
+                >
+                  <td className='px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700 text-center'>
                     {startIndex + index + 1}
                   </td>
-                  <td className='px-4 py-4 whitespace-nowrap'>
+                  <td className='px-6 py-4 whitespace-nowrap'>
                     <button
                       onClick={() => handleView(item.requestNumber || '')}
-                      className='text-blue-600 hover:text-blue-800 hover:underline font-medium'
+                      className='text-sm font-medium text-violet-600 hover:text-violet-700 hover:underline'
                     >
                       {item.requestNumber || '-'}
                     </button>
                   </td>
-                  <td className='px-4 py-4 whitespace-nowrap text-sm text-gray-900'>
+                  <td className='px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700'>
                     {item.requestDate
                       ? new Date(item.requestDate).toLocaleDateString()
                       : '-'}
                   </td>
-                  <td className='px-4 py-4 whitespace-nowrap text-sm text-gray-900'>
+                  <td className='px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700'>
                     {item.requestedBy || '-'}
                   </td>
-                  <td className='px-4 py-4 whitespace-nowrap text-sm text-gray-900'>
+                  <td className='px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700'>
                     {item.departmentName || '-'}
                   </td>
-                  <td className='px-4 py-4 whitespace-nowrap text-sm text-gray-900'>
+                  <td className='px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700'>
                     {item.projectName || '-'}
                   </td>
-                  <td className='px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900'>
+                  <td className='px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900'>
                     ₹{item.grandTotal?.toFixed(2) || '0.00'}
                   </td>
-                  <td className='px-4 py-4 whitespace-nowrap'>
+                  <td className='px-6 py-4 whitespace-nowrap'>
                     <Badge className={getStatusColor(item.status || '')}>
                       {item.status
                         ? item.status.charAt(0).toUpperCase() +
@@ -420,74 +433,77 @@ export const PRPreviewPage: React.FC = () => {
               Line Items
             </h3>
             <div className='overflow-x-auto'>
-              <table className='min-w-full divide-y divide-gray-200 border border-gray-200'>
-                <thead className='bg-gray-50'>
+              <table className='min-w-full divide-y divide-gray-200 border border-gray-200 rounded-lg overflow-hidden'>
+                <thead className='bg-[#F7F8FA]'>
                   <tr>
-                    <th className='px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-r'>
+                    <th className='px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wide border-r border-gray-200'>
                       S.No
                     </th>
-                    <th className='px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-r'>
+                    <th className='px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wide border-r border-gray-200'>
                       Model Name
                     </th>
-                    <th className='px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-r'>
+                    <th className='px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wide border-r border-gray-200'>
                       Make
                     </th>
-                    <th className='px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-r'>
+                    <th className='px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wide border-r border-gray-200'>
                       Category
                     </th>
-                    <th className='px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-r'>
+                    <th className='px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wide border-r border-gray-200'>
                       Description
                     </th>
-                    <th className='px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider border-r'>
+                    <th className='px-4 py-3 text-right text-xs font-medium text-gray-600 uppercase tracking-wide border-r border-gray-200'>
                       Quantity
                     </th>
-                    <th className='px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider border-r'>
+                    <th className='px-4 py-3 text-right text-xs font-medium text-gray-600 uppercase tracking-wide border-r border-gray-200'>
                       Unit Price
                     </th>
-                    <th className='px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider'>
+                    <th className='px-4 py-3 text-right text-xs font-medium text-gray-600 uppercase tracking-wide'>
                       Total Price
                     </th>
                   </tr>
                 </thead>
                 <tbody className='bg-white divide-y divide-gray-200'>
                   {singlePR.items.map((item, index) => (
-                    <tr key={index} className='hover:bg-gray-50'>
-                      <td className='px-3 py-2 text-sm text-gray-900 text-center border-r'>
+                    <tr
+                      key={index}
+                      className='hover:bg-gray-50 transition-colors'
+                    >
+                      <td className='px-4 py-3 text-sm font-medium text-gray-700 text-center border-r border-gray-200'>
                         {index + 1}
                       </td>
-                      <td className='px-3 py-2 text-sm text-gray-900 border-r'>
+                      <td className='px-4 py-3 text-sm font-medium text-gray-700 border-r border-gray-200'>
                         {item.modelName || '-'}
                       </td>
-                      <td className='px-3 py-2 text-sm text-gray-900 border-r'>
+                      <td className='px-4 py-3 text-sm font-medium text-gray-700 border-r border-gray-200'>
                         {item.make || '-'}
                       </td>
-                      <td className='px-3 py-2 text-sm text-gray-900 border-r'>
+                      <td className='px-4 py-3 text-sm font-medium text-gray-700 border-r border-gray-200'>
                         {item.categoryName || '-'}
                       </td>
-                      <td className='px-3 py-2 text-sm text-gray-900 border-r'>
+                      <td className='px-4 py-3 text-sm font-medium text-gray-700 border-r border-gray-200'>
                         {item.description || '-'}
                       </td>
-                      <td className='px-3 py-2 text-sm text-gray-900 text-right border-r'>
+                      <td className='px-4 py-3 text-sm font-medium text-gray-700 text-right border-r border-gray-200'>
                         {item.quantity || 0}
                       </td>
-                      <td className='px-3 py-2 text-sm text-gray-900 text-right border-r'>
+                      <td className='px-4 py-3 text-sm font-medium text-gray-700 text-right border-r border-gray-200'>
                         ₹{item.unitPrice?.toFixed(2) || '0.00'}
                       </td>
-                      <td className='px-3 py-2 text-sm text-gray-900 text-right'>
+                      <td className='px-4 py-3 text-sm font-medium text-gray-700 text-right'>
                         ₹{item.totalPrice?.toFixed(2) || '0.00'}
                       </td>
                     </tr>
                   ))}
                 </tbody>
                 <tfoot>
-                  <tr className='bg-gray-50'>
+                  <tr className='bg-[#F7F8FA]'>
                     <td
                       colSpan={7}
-                      className='px-3 py-3 text-sm font-semibold text-gray-900 text-right border-r'
+                      className='px-4 py-3 text-sm font-semibold text-gray-900 text-right border-r border-gray-200'
                     >
                       Grand Total
                     </td>
-                    <td className='px-3 py-3 text-sm font-semibold text-gray-900 text-right'>
+                    <td className='px-4 py-3 text-sm font-semibold text-gray-900 text-right'>
                       ₹{singlePR.grandTotal?.toFixed(2) || '0.00'}
                     </td>
                   </tr>

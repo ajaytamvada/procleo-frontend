@@ -156,7 +156,12 @@ export const ManagePRPage: React.FC = () => {
   return (
     <div className='space-y-6'>
       <div className='flex items-center justify-between'>
-        <h1 className='text-2xl font-bold text-gray-900'>Manage PR</h1>
+        <div>
+          <h1 className='text-xl font-semibold text-gray-800'>Manage PR</h1>
+          <p className='text-sm text-gray-500 mt-1'>
+            View and manage your purchase requisitions
+          </p>
+        </div>
         {selectedItems.size > 0 && (
           <Button
             variant='outline'
@@ -199,12 +204,12 @@ export const ManagePRPage: React.FC = () => {
         </div>
       ) : (
         <>
-          <div className='bg-white border border-gray-200 rounded-lg overflow-hidden'>
+          <div className='bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden'>
             <div className='overflow-x-auto'>
               <table className='min-w-full divide-y divide-gray-200'>
-                <thead className='bg-gray-50'>
+                <thead className='bg-[#F7F8FA]'>
                   <tr>
-                    <th className='px-4 py-3 text-center w-16'>
+                    <th className='px-6 py-4 text-center w-16'>
                       <input
                         type='checkbox'
                         checked={
@@ -212,81 +217,84 @@ export const ManagePRPage: React.FC = () => {
                           selectedItems.size === paginatedPRs.length
                         }
                         onChange={handleSelectAll}
-                        className='rounded border-gray-300 text-blue-600 focus:ring-blue-500'
+                        className='rounded border-gray-300 text-violet-600 focus:ring-violet-500'
                       />
                     </th>
-                    <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
+                    <th className='px-6 py-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wide'>
                       Request Number
                     </th>
-                    <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
+                    <th className='px-6 py-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wide'>
                       Request Date
                     </th>
-                    <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
+                    <th className='px-6 py-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wide'>
                       Requested By
                     </th>
-                    <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
+                    <th className='px-6 py-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wide'>
                       Department
                     </th>
-                    <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
+                    <th className='px-6 py-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wide'>
                       Project Name
                     </th>
-                    <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
+                    <th className='px-6 py-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wide'>
                       Status
                     </th>
-                    <th className='px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider'>
+                    <th className='px-6 py-4 text-center text-xs font-medium text-gray-600 uppercase tracking-wide'>
                       Actions
                     </th>
                   </tr>
                 </thead>
                 <tbody className='bg-white divide-y divide-gray-200'>
                   {paginatedPRs.map(pr => (
-                    <tr key={pr.id} className='hover:bg-gray-50'>
-                      <td className='px-4 py-4 text-center'>
+                    <tr
+                      key={pr.id}
+                      className='hover:bg-gray-50 transition-colors border-b border-gray-200 last:border-b-0'
+                    >
+                      <td className='px-6 py-4 text-center'>
                         <input
                           type='checkbox'
                           checked={selectedItems.has(pr.id)}
                           onChange={() => handleTogglePR(pr.id)}
-                          className='rounded border-gray-300 text-blue-600 focus:ring-blue-500'
+                          className='rounded border-gray-300 text-violet-600 focus:ring-violet-500'
                         />
                       </td>
-                      <td className='px-4 py-4 whitespace-nowrap'>
+                      <td className='px-6 py-4 whitespace-nowrap'>
                         <button
                           onClick={() => handleEdit(pr.id)}
-                          className='text-blue-600 hover:text-blue-800 hover:underline font-medium'
+                          className='text-sm font-medium text-violet-600 hover:text-violet-700 hover:underline'
                         >
                           {pr.requestNumber}
                         </button>
                       </td>
-                      <td className='px-4 py-4 whitespace-nowrap text-sm text-gray-900'>
+                      <td className='px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700'>
                         {new Date(pr.requestDate).toLocaleDateString()}
                       </td>
-                      <td className='px-4 py-4 whitespace-nowrap text-sm text-gray-900'>
+                      <td className='px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700'>
                         {pr.requestedByName || pr.requestedBy}
                       </td>
-                      <td className='px-4 py-4 whitespace-nowrap text-sm text-gray-900'>
+                      <td className='px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700'>
                         {pr.departmentName || '-'}
                       </td>
-                      <td className='px-4 py-4 whitespace-nowrap text-sm text-gray-900'>
+                      <td className='px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700'>
                         {pr.projectName || '-'}
                       </td>
-                      <td className='px-4 py-4 whitespace-nowrap'>
+                      <td className='px-6 py-4 whitespace-nowrap'>
                         <Badge className={getStatusColor(pr.status)}>
                           {pr.status.charAt(0).toUpperCase() +
                             pr.status.slice(1)}
                         </Badge>
                       </td>
-                      <td className='px-4 py-4 whitespace-nowrap text-center'>
+                      <td className='px-6 py-4 whitespace-nowrap text-center'>
                         <div className='flex items-center justify-center space-x-2'>
                           <button
                             onClick={() => handleEdit(pr.id)}
-                            className='text-blue-600 hover:text-blue-800 p-1'
+                            className='text-violet-600 hover:text-violet-700 p-1'
                             title='Edit'
                           >
                             <Edit className='h-4 w-4' />
                           </button>
                           <button
                             onClick={() => handleDelete(pr.id)}
-                            className='text-red-600 hover:text-red-800 p-1'
+                            className='text-red-600 hover:text-red-700 p-1'
                             title='Delete'
                             disabled={deleteMutation.isPending}
                           >
