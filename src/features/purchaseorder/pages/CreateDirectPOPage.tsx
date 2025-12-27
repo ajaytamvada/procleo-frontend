@@ -253,58 +253,42 @@ export const CreateDirectPOPage: React.FC = () => {
   }
 
   return (
-    <div className='min-h-screen bg-gray-50'>
-      {/* Header */}
-      <div className='bg-white border-b border-gray-200 px-6 py-4'>
-        <div className='flex items-center justify-between'>
-          <div className='flex items-center space-x-4'>
-            <button
-              onClick={() => navigate('/purchase-orders/direct')}
-              className='p-2 hover:bg-gray-100 rounded-lg transition-colors'
-            >
-              <ArrowLeft className='w-5 h-5 text-gray-600' />
-            </button>
-            <div>
-              <h1 className='text-xl font-semibold text-gray-900'>
-                Create Direct Purchase Order
-              </h1>
-              <p className='text-sm text-gray-600 mt-1'>
-                Create PO without PR/RFP workflow for urgent/small purchases
-              </p>
-            </div>
-          </div>
-          <div className='flex items-center space-x-3'>
-            <button
-              onClick={() => handleSubmit(false)}
-              disabled={createPO.isPending || !formData.items?.length}
-              className='px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors disabled:opacity-50 flex items-center'
-            >
-              {createPO.isPending ? (
-                <Loader2 className='w-4 h-4 mr-2 animate-spin' />
-              ) : (
-                <Save className='w-4 h-4 mr-2' />
-              )}
-              Save as Draft
-            </button>
-            <button
-              onClick={() => handleSubmit(true)}
-              disabled={createPO.isPending || !formData.items?.length}
-              className='px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 flex items-center'
-            >
-              {createPO.isPending ? (
-                <Loader2 className='w-4 h-4 mr-2 animate-spin' />
-              ) : (
-                <Send className='w-4 h-4 mr-2' />
-              )}
-              Submit for Approval
-            </button>
-          </div>
+    <>
+      {/* Page Header */}
+      <div className='flex items-center justify-between mb-6'>
+        <div className='flex items-center gap-3'>
+          <button
+            onClick={() => navigate('/purchase-orders/direct')}
+            className='p-1.5 text-gray-500 hover:text-gray-700 rounded-lg transition-colors'
+            disabled={createPO.isPending}
+          >
+            <ArrowLeft size={20} />
+          </button>
+          <h1 className='text-xl font-semibold text-gray-900'>
+            Create Direct Purchase Order
+          </h1>
+        </div>
+        <div className='flex items-center gap-3'>
+          <button
+            onClick={() => handleSubmit(false)}
+            disabled={createPO.isPending || !formData.items?.length}
+            className='px-4 py-2 text-sm font-semibold text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 hover:border-gray-400 transition-all disabled:opacity-50 disabled:cursor-not-allowed'
+          >
+            Save as Draft
+          </button>
+          <button
+            onClick={() => handleSubmit(true)}
+            disabled={createPO.isPending || !formData.items?.length}
+            className='px-4 py-2 text-sm font-semibold text-white bg-violet-600 rounded-md hover:bg-violet-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed'
+          >
+            Submit
+          </button>
         </div>
       </div>
 
-      <div className='max-w-7xl mx-auto px-6 py-6'>
+      <form className='space-y-6'>
         {/* Info Banner */}
-        <div className='bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6'>
+        <div className='bg-blue-50 border border-blue-200 rounded-lg p-4'>
           <div className='flex items-start'>
             <AlertCircle className='w-5 h-5 text-blue-600 mt-0.5 mr-3' />
             <div className='flex-1'>
@@ -321,16 +305,12 @@ export const CreateDirectPOPage: React.FC = () => {
         </div>
 
         {/* Basic Information */}
-        <div className='bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6'>
-          <h2 className='text-lg font-semibold text-gray-900 mb-4'>
-            Purchase Order Details
-          </h2>
-
-          <div className='grid grid-cols-1 md:grid-cols-3 gap-6'>
-            {/* Left Column */}
-            <div className='space-y-4'>
+        <div className='bg-white rounded-lg border border-gray-200 overflow-hidden'>
+          <div className='p-6'>
+            <div className='grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-5'>
+              {/* PO Number */}
               <div>
-                <label className='block text-sm font-medium text-gray-700 mb-1'>
+                <label className='block text-sm font-medium text-gray-700 mb-2'>
                   <span className='text-red-500'>*</span> PO Number
                 </label>
                 <input
@@ -338,12 +318,13 @@ export const CreateDirectPOPage: React.FC = () => {
                   name='poNumber'
                   value={formData.poNumber || ''}
                   readOnly
-                  className='w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-700'
+                  className='w-full px-4 py-3 text-sm border rounded-lg bg-gray-50 border-gray-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500'
                 />
               </div>
 
+              {/* Raised By */}
               <div>
-                <label className='block text-sm font-medium text-gray-700 mb-1'>
+                <label className='block text-sm font-medium text-gray-700 mb-2'>
                   <span className='text-red-500'>*</span> Raised By
                 </label>
                 <input
@@ -352,12 +333,57 @@ export const CreateDirectPOPage: React.FC = () => {
                   value={formData.raisedBy || ''}
                   onChange={handleInputChange}
                   placeholder='Enter your name'
-                  className='w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent'
+                  className='w-full px-4 py-3 text-sm border rounded-lg bg-white border-gray-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500'
                 />
               </div>
 
+              {/* PO Date */}
               <div>
-                <label className='block text-sm font-medium text-gray-700 mb-1'>
+                <label className='block text-sm font-medium text-gray-700 mb-2'>
+                  <span className='text-red-500'>*</span> PO Date
+                </label>
+                <input
+                  type='date'
+                  name='poDate'
+                  value={formData.poDate || ''}
+                  onChange={handleInputChange}
+                  className='w-full px-4 py-3 text-sm border rounded-lg bg-white border-gray-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500'
+                />
+              </div>
+
+              {/* Delivery Date */}
+              <div>
+                <label className='block text-sm font-medium text-gray-700 mb-2'>
+                  <span className='text-red-500'>*</span> Delivery Date
+                </label>
+                <input
+                  type='date'
+                  name='deliveryDate'
+                  value={formData.deliveryDate || ''}
+                  onChange={handleInputChange}
+                  min={formData.poDate}
+                  className='w-full px-4 py-3 text-sm border rounded-lg bg-white border-gray-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500'
+                />
+              </div>
+
+              {/* Supplier Name */}
+              <div>
+                <label className='block text-sm font-medium text-gray-700 mb-2'>
+                  <span className='text-red-500'>*</span> Supplier Name
+                </label>
+                <input
+                  type='text'
+                  name='supplierName'
+                  value={formData.supplierName || ''}
+                  onChange={handleInputChange}
+                  placeholder='Enter supplier name'
+                  className='w-full px-4 py-3 text-sm border rounded-lg bg-white border-gray-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500'
+                />
+              </div>
+
+              {/* Department */}
+              <div>
+                <label className='block text-sm font-medium text-gray-700 mb-2'>
                   Department
                 </label>
                 <input
@@ -366,72 +392,20 @@ export const CreateDirectPOPage: React.FC = () => {
                   value={formData.department || ''}
                   onChange={handleInputChange}
                   placeholder='Enter department'
-                  className='w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent'
+                  className='w-full px-4 py-3 text-sm border rounded-lg bg-white border-gray-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500'
                 />
               </div>
 
+              {/* Payment Terms */}
               <div>
-                <label className='block text-sm font-medium text-gray-700 mb-1'>
-                  <span className='text-red-500'>*</span> Supplier Name
-                </label>
-                <div className='relative'>
-                  <Building className='absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400' />
-                  <input
-                    type='text'
-                    name='supplierName'
-                    value={formData.supplierName || ''}
-                    onChange={handleInputChange}
-                    placeholder='Enter supplier name'
-                    className='w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent'
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Middle Column */}
-            <div className='space-y-4'>
-              <div>
-                <label className='block text-sm font-medium text-gray-700 mb-1'>
-                  <span className='text-red-500'>*</span> PO Date
-                </label>
-                <div className='relative'>
-                  <input
-                    type='date'
-                    name='poDate'
-                    value={formData.poDate || ''}
-                    onChange={handleInputChange}
-                    className='w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent'
-                  />
-                  <Calendar className='absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none' />
-                </div>
-              </div>
-
-              <div>
-                <label className='block text-sm font-medium text-gray-700 mb-1'>
-                  <span className='text-red-500'>*</span> Delivery Date
-                </label>
-                <div className='relative'>
-                  <input
-                    type='date'
-                    name='deliveryDate'
-                    value={formData.deliveryDate || ''}
-                    onChange={handleInputChange}
-                    min={formData.poDate}
-                    className='w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent'
-                  />
-                  <Calendar className='absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none' />
-                </div>
-              </div>
-
-              <div>
-                <label className='block text-sm font-medium text-gray-700 mb-1'>
+                <label className='block text-sm font-medium text-gray-700 mb-2'>
                   <span className='text-red-500'>*</span> Payment Terms
                 </label>
                 <select
                   name='paymentTerms'
                   value={formData.paymentTerms || ''}
                   onChange={handleInputChange}
-                  className='w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent'
+                  className='w-full px-4 py-3 text-sm border rounded-lg bg-white border-gray-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500'
                 >
                   <option value=''>Select Payment Terms</option>
                   <option value='NET 30'>Net 30 Days</option>
@@ -442,8 +416,9 @@ export const CreateDirectPOPage: React.FC = () => {
                 </select>
               </div>
 
+              {/* Approval Group */}
               <div>
-                <label className='block text-sm font-medium text-gray-700 mb-1'>
+                <label className='block text-sm font-medium text-gray-700 mb-2'>
                   Approval Group
                 </label>
                 <input
@@ -452,15 +427,13 @@ export const CreateDirectPOPage: React.FC = () => {
                   value={formData.approvalGroup || ''}
                   onChange={handleInputChange}
                   placeholder='Enter approval group'
-                  className='w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent'
+                  className='w-full px-4 py-3 text-sm border rounded-lg bg-white border-gray-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500'
                 />
               </div>
-            </div>
 
-            {/* Right Column */}
-            <div className='space-y-4'>
+              {/* Ship To Address */}
               <div>
-                <label className='block text-sm font-medium text-gray-700 mb-1'>
+                <label className='block text-sm font-medium text-gray-700 mb-2'>
                   Ship To Address
                 </label>
                 <textarea
@@ -469,12 +442,13 @@ export const CreateDirectPOPage: React.FC = () => {
                   onChange={handleInputChange}
                   rows={3}
                   placeholder='Enter shipping address'
-                  className='w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent'
+                  className='w-full px-4 py-3 text-sm border rounded-lg bg-white border-gray-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 resize-none'
                 />
               </div>
 
+              {/* Bill To Address */}
               <div>
-                <label className='block text-sm font-medium text-gray-700 mb-1'>
+                <label className='block text-sm font-medium text-gray-700 mb-2'>
                   Bill To Address
                 </label>
                 <textarea
@@ -483,188 +457,188 @@ export const CreateDirectPOPage: React.FC = () => {
                   onChange={handleInputChange}
                   rows={3}
                   placeholder='Enter billing address'
-                  className='w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent'
+                  className='w-full px-4 py-3 text-sm border rounded-lg bg-white border-gray-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 resize-none'
                 />
               </div>
-            </div>
-          </div>
 
-          {/* Terms and Remarks */}
-          <div className='mt-6 grid grid-cols-1 md:grid-cols-2 gap-6'>
-            <div>
-              <label className='block text-sm font-medium text-gray-700 mb-1'>
-                Terms & Conditions
-              </label>
-              <textarea
-                name='termsConditions'
-                value={formData.termsConditions || ''}
-                onChange={handleInputChange}
-                rows={3}
-                placeholder='Enter terms and conditions'
-                className='w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent'
-              />
-            </div>
+              {/* Terms & Conditions */}
+              <div>
+                <label className='block text-sm font-medium text-gray-700 mb-2'>
+                  Terms & Conditions
+                </label>
+                <textarea
+                  name='termsConditions'
+                  value={formData.termsConditions || ''}
+                  onChange={handleInputChange}
+                  rows={3}
+                  placeholder='Enter terms and conditions'
+                  className='w-full px-4 py-3 text-sm border rounded-lg bg-white border-gray-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 resize-none'
+                />
+              </div>
 
-            <div>
-              <label className='block text-sm font-medium text-gray-700 mb-1'>
-                Remarks
-              </label>
-              <textarea
-                name='remarks'
-                value={formData.remarks || ''}
-                onChange={handleInputChange}
-                rows={3}
-                maxLength={2000}
-                placeholder='Enter any remarks (2000 characters max)'
-                className='w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent'
-              />
-              <div className='text-xs text-gray-500 mt-1'>
-                {(formData.remarks || '').length} / 2000 characters
+              {/* Remarks */}
+              <div>
+                <label className='block text-sm font-medium text-gray-700 mb-2'>
+                  Remarks
+                </label>
+                <textarea
+                  name='remarks'
+                  value={formData.remarks || ''}
+                  onChange={handleInputChange}
+                  rows={3}
+                  maxLength={2000}
+                  placeholder='Enter any remarks (2000 characters max)'
+                  className='w-full px-4 py-3 text-sm border rounded-lg bg-white border-gray-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 resize-none'
+                />
+                <div className='text-xs text-gray-500 mt-1'>
+                  {(formData.remarks || '').length} / 2000 characters
+                </div>
               </div>
             </div>
           </div>
         </div>
 
         {/* Add New Item */}
-        <div className='bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6'>
-          <h2 className='text-lg font-semibold text-gray-900 mb-4'>Add Item</h2>
+        <div className='bg-white rounded-lg border border-gray-200 overflow-hidden'>
+          <div className='p-6'>
+            <h2 className='text-base font-semibold text-gray-900 mb-4'>
+              Add Item
+            </h2>
 
-          <div className='grid grid-cols-1 md:grid-cols-4 gap-4 mb-4'>
-            <div>
-              <label className='block text-sm font-medium text-gray-700 mb-1'>
-                <span className='text-red-500'>*</span> Item Name
-              </label>
-              <input
-                type='text'
-                name='itemName'
-                value={newItem.itemName || ''}
-                onChange={handleItemChange}
-                placeholder='Enter item name'
-                className='w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500'
-              />
-            </div>
+            <div className='grid grid-cols-1 md:grid-cols-4 gap-4 mb-4'>
+              <div>
+                <label className='block text-sm font-medium text-gray-700 mb-2'>
+                  <span className='text-red-500'>*</span> Item Name
+                </label>
+                <input
+                  type='text'
+                  name='itemName'
+                  value={newItem.itemName || ''}
+                  onChange={handleItemChange}
+                  placeholder='Enter item name'
+                  className='w-full px-4 py-3 text-sm border rounded-lg bg-white border-gray-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500'
+                />
+              </div>
 
-            <div>
-              <label className='block text-sm font-medium text-gray-700 mb-1'>
-                Item Code
-              </label>
-              <input
-                type='text'
-                name='itemCode'
-                value={newItem.itemCode || ''}
-                onChange={handleItemChange}
-                placeholder='Enter item code'
-                className='w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500'
-              />
-            </div>
+              <div>
+                <label className='block text-sm font-medium text-gray-700 mb-2'>
+                  Item Code
+                </label>
+                <input
+                  type='text'
+                  name='itemCode'
+                  value={newItem.itemCode || ''}
+                  onChange={handleItemChange}
+                  placeholder='Enter item code'
+                  className='w-full px-4 py-3 text-sm border rounded-lg bg-white border-gray-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500'
+                />
+              </div>
 
-            <div>
-              <label className='block text-sm font-medium text-gray-700 mb-1'>
-                <span className='text-red-500'>*</span> Quantity
-              </label>
-              <input
-                type='number'
-                name='quantity'
-                value={newItem.quantity || ''}
-                onChange={handleItemChange}
-                min='1'
-                step='1'
-                className='w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500'
-              />
-            </div>
+              <div>
+                <label className='block text-sm font-medium text-gray-700 mb-2'>
+                  <span className='text-red-500'>*</span> Quantity
+                </label>
+                <input
+                  type='number'
+                  name='quantity'
+                  value={newItem.quantity || ''}
+                  onChange={handleItemChange}
+                  min='1'
+                  step='1'
+                  className='w-full px-4 py-3 text-sm border rounded-lg bg-white border-gray-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500'
+                />
+              </div>
 
-            <div>
-              <label className='block text-sm font-medium text-gray-700 mb-1'>
-                UOM
-              </label>
-              <select
-                name='unitOfMeasurement'
-                value={newItem.unitOfMeasurement || 'PCS'}
-                onChange={handleItemChange}
-                className='w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500'
-              >
-                <option value='PCS'>Pieces</option>
-                <option value='KG'>Kilograms</option>
-                <option value='L'>Liters</option>
-                <option value='M'>Meters</option>
-                <option value='BOX'>Box</option>
-                <option value='SET'>Set</option>
-              </select>
-            </div>
+              <div>
+                <label className='block text-sm font-medium text-gray-700 mb-2'>
+                  UOM
+                </label>
+                <select
+                  name='unitOfMeasurement'
+                  value={newItem.unitOfMeasurement || 'PCS'}
+                  onChange={handleItemChange}
+                  className='w-full px-4 py-3 text-sm border rounded-lg bg-white border-gray-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500'
+                >
+                  <option value='PCS'>Pieces</option>
+                  <option value='KG'>Kilograms</option>
+                  <option value='L'>Liters</option>
+                  <option value='M'>Meters</option>
+                  <option value='BOX'>Box</option>
+                  <option value='SET'>Set</option>
+                </select>
+              </div>
 
-            <div>
-              <label className='block text-sm font-medium text-gray-700 mb-1'>
-                <span className='text-red-500'>*</span> Unit Price (₹)
-              </label>
-              <input
-                type='number'
-                name='unitPrice'
-                value={newItem.unitPrice || ''}
-                onChange={handleItemChange}
-                min='0'
-                step='0.01'
-                className='w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500'
-              />
-            </div>
+              <div>
+                <label className='block text-sm font-medium text-gray-700 mb-2'>
+                  <span className='text-red-500'>*</span> Unit Price (₹)
+                </label>
+                <input
+                  type='number'
+                  name='unitPrice'
+                  value={newItem.unitPrice || ''}
+                  onChange={handleItemChange}
+                  min='0'
+                  step='0.01'
+                  className='w-full px-4 py-3 text-sm border rounded-lg bg-white border-gray-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500'
+                />
+              </div>
 
-            <div>
-              <label className='block text-sm font-medium text-gray-700 mb-1'>
-                Delivery Date
-              </label>
-              <input
-                type='date'
-                name='deliveryDate'
-                value={newItem.deliveryDate || ''}
-                onChange={handleItemChange}
-                className='w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500'
-              />
-            </div>
+              <div>
+                <label className='block text-sm font-medium text-gray-700 mb-2'>
+                  Delivery Date
+                </label>
+                <input
+                  type='date'
+                  name='deliveryDate'
+                  value={newItem.deliveryDate || ''}
+                  onChange={handleItemChange}
+                  className='w-full px-4 py-3 text-sm border rounded-lg bg-white border-gray-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500'
+                />
+              </div>
 
-            <div className='md:col-span-2 flex items-end'>
-              <button
-                onClick={addItem}
-                className='w-full px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center'
-              >
-                <Plus className='w-4 h-4 mr-2' />
-                Add Item
-              </button>
-            </div>
-          </div>
-
-          <div className='grid grid-cols-2 md:grid-cols-4 gap-4 text-sm'>
-            <div className='bg-gray-50 p-3 rounded-lg'>
-              <div className='text-gray-600 mb-1'>Total Amount</div>
-              <div className='font-medium text-gray-900'>
-                ₹ {newItem.totalAmount?.toFixed(2) || '0.00'}
+              <div className='md:col-span-2 flex items-end'>
+                <button
+                  onClick={addItem}
+                  className='w-full px-4 py-3 text-sm font-semibold text-white bg-violet-600 rounded-md hover:bg-violet-700 transition-colors flex items-center justify-center'
+                >
+                  <Plus className='w-4 h-4 mr-2' />
+                  Add Item
+                </button>
               </div>
             </div>
-            <div className='bg-gray-50 p-3 rounded-lg'>
-              <div className='text-gray-600 mb-1'>Tax (18%)</div>
-              <div className='font-medium text-gray-900'>
-                ₹{' '}
-                {((newItem.tax1Value || 0) + (newItem.tax2Value || 0)).toFixed(
-                  2
-                )}
+
+            <div className='grid grid-cols-2 md:grid-cols-4 gap-4 text-sm'>
+              <div className='bg-gray-50 p-3 rounded-lg'>
+                <div className='text-gray-600 mb-1'>Total Amount</div>
+                <div className='font-medium text-gray-900'>
+                  ₹ {newItem.totalAmount?.toFixed(2) || '0.00'}
+                </div>
               </div>
-            </div>
-            <div className='bg-gray-50 p-3 rounded-lg'>
-              <div className='text-gray-600 mb-1'>Item Total</div>
-              <div className='font-medium text-green-600'>
-                ₹ {newItem.grandTotal?.toFixed(2) || '0.00'}
+              <div className='bg-gray-50 p-3 rounded-lg'>
+                <div className='text-gray-600 mb-1'>Tax (18%)</div>
+                <div className='font-medium text-gray-900'>
+                  ₹{' '}
+                  {(
+                    (newItem.tax1Value || 0) + (newItem.tax2Value || 0)
+                  ).toFixed(2)}
+                </div>
+              </div>
+              <div className='bg-gray-50 p-3 rounded-lg'>
+                <div className='text-gray-600 mb-1'>Item Total</div>
+                <div className='font-medium text-violet-600'>
+                  ₹ {newItem.grandTotal?.toFixed(2) || '0.00'}
+                </div>
               </div>
             </div>
           </div>
         </div>
 
         {/* Items List */}
-        <div className='bg-white rounded-lg shadow-sm border border-gray-200 mb-6'>
-          <div className='border-b border-gray-200 px-6 py-4'>
-            <h2 className='text-lg font-semibold text-gray-900'>
+        <div className='bg-white rounded-lg border border-gray-200 overflow-hidden'>
+          <div className='p-6'>
+            <h2 className='text-base font-semibold text-gray-900 mb-4'>
               Items ({formData.items?.length || 0})
             </h2>
-          </div>
-
-          <div className='p-6'>
             {!formData.items || formData.items.length === 0 ? (
               <div className='text-center py-12'>
                 <div className='text-gray-400 mb-2'>No items added yet</div>
@@ -792,8 +766,8 @@ export const CreateDirectPOPage: React.FC = () => {
             )}
           </div>
         </div>
-      </div>
-    </div>
+      </form>
+    </>
   );
 };
 

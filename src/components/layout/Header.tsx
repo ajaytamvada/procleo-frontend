@@ -139,7 +139,11 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
 
         <div className='flex items-center gap-3'>
           <div className='w-8 h-8 bg-gradient-to-br from-purple-400 to-pink-400 rounded-lg flex items-center justify-center shadow-lg'>
-            <span className='text-white font-bold text-base'>P</span>
+            <img
+              src='/riditstack-logo.png'
+              alt='RiditStack Logo'
+              className='h-9 w-auto'
+            />
           </div>
           <div className='hidden sm:block'>
             <h1 className='text-lg font-semibold text-white'>Procleo</h1>

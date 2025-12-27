@@ -342,8 +342,8 @@ export function PurchaseOrderForm({ mode = 'create' }: PurchaseOrderFormProps) {
       <form onSubmit={handleSubmit(onSubmit)} className='space-y-6'>
         {/* Tab Navigation */}
         <Card>
-          <div className='border-b'>
-            <nav className='flex space-x-8 px-6'>
+          <div className='border-b border-gray-200 px-6'>
+            <nav className='-mb-px flex gap-6'>
               {tabs.map(tab => {
                 const IconComponent = tab.icon;
                 return (
@@ -351,14 +351,28 @@ export function PurchaseOrderForm({ mode = 'create' }: PurchaseOrderFormProps) {
                     key={tab.id}
                     type='button'
                     onClick={() => setActiveTab(tab.id)}
-                    className={`py-4 text-sm font-medium border-b-2 transition-colors flex items-center gap-2 ${
-                      activeTab === tab.id
-                        ? 'border-blue-500 text-blue-600'
-                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                    }`}
+                    className={`
+                      group relative flex items-center gap-2 pb-3 px-1 font-medium text-sm transition-all duration-200
+                      border-0 outline-none bg-transparent
+                      ${
+                        activeTab === tab.id
+                          ? 'text-violet-600'
+                          : 'text-gray-500 hover:text-gray-700'
+                      }
+                    `}
                   >
-                    <IconComponent className='w-4 h-4' />
-                    {tab.label}
+                    <IconComponent
+                      className={`w-5 h-5 transition-colors ${activeTab === tab.id ? 'text-violet-600' : 'text-gray-400 group-hover:text-gray-500'}`}
+                    />
+                    <span>{tab.label}</span>
+                    {/* Active/Hover/Focus indicator */}
+                    <span
+                      className={`absolute bottom-0 left-0 right-0 h-0.5 rounded-t-full transition-all duration-200 ${
+                        activeTab === tab.id
+                          ? 'bg-violet-600'
+                          : 'bg-transparent group-hover:bg-gray-300 group-focus:bg-violet-400'
+                      }`}
+                    />
                   </button>
                 );
               })}

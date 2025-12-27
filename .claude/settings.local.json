@@ -3,7 +3,15 @@
     "allow": [
       "Bash(git push:*)",
       "Bash(zip -r autovitica-p2p-frontend.zip . -x \"node_modules/*\" \"dist/*\" \"build/*\" \".git/*\" \"coverage/*\" \"*.log\")",
-      "Bash(tar:*)"
+      "Bash(tar:*)",
+      "Bash(grep:*)",
+      "Bash(find:*)",
+      "Bash(npm run build:*)",
+      "mcp__ide__getDiagnostics",
+      "Bash(ls:*)",
+      "Bash(wc:*)",
+      "Bash(npx tsc:*)",
+      "Bash(npx eslint:*)"
     ],
     "deny": [],
     "ask": []

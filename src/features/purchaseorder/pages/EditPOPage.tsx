@@ -289,58 +289,47 @@ export const EditPOPage: React.FC = () => {
   }
 
   return (
-    <div className='min-h-screen bg-gray-50'>
-      {/* Header */}
-      <div className='bg-white border-b border-gray-200 px-6 py-4'>
-        <div className='flex items-center justify-between'>
-          <div className='flex items-center space-x-4'>
-            <button
-              onClick={() => navigate('/purchase-orders/modify')}
-              className='p-2 hover:bg-gray-100 rounded-lg transition-colors'
-            >
-              <ArrowLeft className='w-5 h-5 text-gray-600' />
-            </button>
-            <div>
-              <h1 className='text-xl font-semibold text-gray-900'>
-                Edit Purchase Order
-              </h1>
-              <p className='text-sm text-gray-600 mt-1'>
-                PO #{formData.poNumber} - {formData.poType}
-              </p>
-            </div>
+    <>
+      {/* Page Header */}
+      <div className='flex items-center justify-between mb-6'>
+        <div className='flex items-center gap-3'>
+          <button
+            onClick={() => navigate('/purchase-orders/modify')}
+            className='p-1.5 text-gray-500 hover:text-gray-700 rounded-lg transition-colors'
+            disabled={updatePO.isPending}
+          >
+            <ArrowLeft size={20} />
+          </button>
+          <div>
+            <h1 className='text-xl font-semibold text-gray-900'>
+              Edit Purchase Order
+            </h1>
+            <p className='text-sm text-gray-600 mt-1'>
+              PO #{formData.poNumber} - {formData.poType}
+            </p>
           </div>
-          <div className='flex items-center space-x-3'>
-            <button
-              onClick={() => handleSubmit(false)}
-              disabled={updatePO.isPending || !formData.items?.length}
-              className='px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors disabled:opacity-50 flex items-center'
-            >
-              {updatePO.isPending ? (
-                <Loader2 className='w-4 h-4 mr-2 animate-spin' />
-              ) : (
-                <Save className='w-4 h-4 mr-2' />
-              )}
-              Update as Draft
-            </button>
-            <button
-              onClick={() => handleSubmit(true)}
-              disabled={updatePO.isPending || !formData.items?.length}
-              className='px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 flex items-center'
-            >
-              {updatePO.isPending ? (
-                <Loader2 className='w-4 h-4 mr-2 animate-spin' />
-              ) : (
-                <Send className='w-4 h-4 mr-2' />
-              )}
-              Submit for Approval
-            </button>
-          </div>
+        </div>
+        <div className='flex items-center gap-3'>
+          <button
+            onClick={() => handleSubmit(false)}
+            disabled={updatePO.isPending || !formData.items?.length}
+            className='px-4 py-2 text-sm font-semibold text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 hover:border-gray-400 transition-all disabled:opacity-50 disabled:cursor-not-allowed'
+          >
+            Update as Draft
+          </button>
+          <button
+            onClick={() => handleSubmit(true)}
+            disabled={updatePO.isPending || !formData.items?.length}
+            className='px-4 py-2 text-sm font-semibold text-white bg-violet-600 rounded-md hover:bg-violet-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed'
+          >
+            Submit
+          </button>
         </div>
       </div>
 
-      <div className='max-w-7xl mx-auto px-6 py-6'>
+      <form className='space-y-6'>
         {/* Info Banner */}
-        <div className='bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6'>
+        <div className='bg-blue-50 border border-blue-200 rounded-lg p-4'>
           <div className='flex items-start'>
             <AlertCircle className='w-5 h-5 text-blue-600 mt-0.5 mr-3' />
             <div className='flex-1'>
@@ -356,82 +345,70 @@ export const EditPOPage: React.FC = () => {
         </div>
 
         {/* Basic Information */}
-        <div className='bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6'>
-          <h2 className='text-lg font-semibold text-gray-900 mb-4'>
-            Purchase Order Details
-          </h2>
-
-          <div className='grid grid-cols-1 md:grid-cols-3 gap-6'>
-            {/* Left Column */}
-            <div className='space-y-4'>
+        <div className='bg-white rounded-lg border border-gray-200 overflow-hidden'>
+          <div className='p-6'>
+            <div className='grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-5'>
+              {/* PO Number */}
               <div>
-                <label className='block text-sm font-medium text-gray-700 mb-1'>
-                  PO Number <span className='text-red-500'>*</span>
+                <label className='block text-sm font-medium text-gray-700 mb-2'>
+                  <span className='text-red-500'>*</span> PO Number
                 </label>
                 <input
                   type='text'
                   name='poNumber'
                   value={formData.poNumber}
                   onChange={handleInputChange}
-                  className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-50'
+                  className='w-full px-4 py-3 text-sm border rounded-lg bg-gray-50 border-gray-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500'
                   readOnly
                 />
               </div>
 
+              {/* PO Date */}
               <div>
-                <label className='block text-sm font-medium text-gray-700 mb-1'>
-                  PO Date <span className='text-red-500'>*</span>
+                <label className='block text-sm font-medium text-gray-700 mb-2'>
+                  <span className='text-red-500'>*</span> PO Date
                 </label>
-                <div className='relative'>
-                  <Calendar className='absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5' />
-                  <input
-                    type='date'
-                    name='poDate'
-                    value={formData.poDate}
-                    onChange={handleInputChange}
-                    className='w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent'
-                  />
-                </div>
+                <input
+                  type='date'
+                  name='poDate'
+                  value={formData.poDate}
+                  onChange={handleInputChange}
+                  className='w-full px-4 py-3 text-sm border rounded-lg bg-white border-gray-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500'
+                />
               </div>
 
+              {/* Delivery Date */}
               <div>
-                <label className='block text-sm font-medium text-gray-700 mb-1'>
-                  Delivery Date <span className='text-red-500'>*</span>
+                <label className='block text-sm font-medium text-gray-700 mb-2'>
+                  <span className='text-red-500'>*</span> Delivery Date
                 </label>
-                <div className='relative'>
-                  <Calendar className='absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5' />
-                  <input
-                    type='date'
-                    name='deliveryDate'
-                    value={formData.deliveryDate}
-                    onChange={handleInputChange}
-                    className='w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent'
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Middle Column */}
-            <div className='space-y-4'>
-              <div>
-                <label className='block text-sm font-medium text-gray-700 mb-1'>
-                  Supplier Name <span className='text-red-500'>*</span>
-                </label>
-                <div className='relative'>
-                  <Building className='absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5' />
-                  <input
-                    type='text'
-                    name='supplierName'
-                    value={formData.supplierName}
-                    onChange={handleInputChange}
-                    className='w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent'
-                    placeholder='Enter supplier name'
-                  />
-                </div>
+                <input
+                  type='date'
+                  name='deliveryDate'
+                  value={formData.deliveryDate}
+                  onChange={handleInputChange}
+                  className='w-full px-4 py-3 text-sm border rounded-lg bg-white border-gray-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500'
+                />
               </div>
 
+              {/* Supplier Name */}
               <div>
-                <label className='block text-sm font-medium text-gray-700 mb-1'>
+                <label className='block text-sm font-medium text-gray-700 mb-2'>
+                  <span className='text-red-500'>*</span> Supplier Name
+                </label>
+                <input
+                  type='text'
+                  name='supplierName'
+                  value={formData.supplierName}
+                  onChange={handleInputChange}
+                  className='w-full px-4 py-3 text-sm border rounded-lg bg-white border-gray-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500'
+                  placeholder='Enter supplier name'
+                />
+              </div>
+
+              {/* Raised By */}
+              <div>
+                <label className='block text-sm font-medium text-gray-700 mb-2'>
                   Raised By
                 </label>
                 <input
@@ -439,13 +416,14 @@ export const EditPOPage: React.FC = () => {
                   name='raisedBy'
                   value={formData.raisedBy}
                   onChange={handleInputChange}
-                  className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent'
+                  className='w-full px-4 py-3 text-sm border rounded-lg bg-white border-gray-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500'
                   placeholder='Enter name'
                 />
               </div>
 
+              {/* Department */}
               <div>
-                <label className='block text-sm font-medium text-gray-700 mb-1'>
+                <label className='block text-sm font-medium text-gray-700 mb-2'>
                   Department
                 </label>
                 <input
@@ -453,23 +431,21 @@ export const EditPOPage: React.FC = () => {
                   name='department'
                   value={formData.department}
                   onChange={handleInputChange}
-                  className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent'
+                  className='w-full px-4 py-3 text-sm border rounded-lg bg-white border-gray-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500'
                   placeholder='Enter department'
                 />
               </div>
-            </div>
 
-            {/* Right Column */}
-            <div className='space-y-4'>
+              {/* Currency */}
               <div>
-                <label className='block text-sm font-medium text-gray-700 mb-1'>
+                <label className='block text-sm font-medium text-gray-700 mb-2'>
                   Currency
                 </label>
                 <select
                   name='currency'
                   value={formData.currency}
                   onChange={handleInputChange}
-                  className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent'
+                  className='w-full px-4 py-3 text-sm border rounded-lg bg-white border-gray-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500'
                 >
                   <option value='INR'>INR - Indian Rupee</option>
                   <option value='USD'>USD - US Dollar</option>
@@ -477,8 +453,9 @@ export const EditPOPage: React.FC = () => {
                 </select>
               </div>
 
+              {/* Payment Terms */}
               <div>
-                <label className='block text-sm font-medium text-gray-700 mb-1'>
+                <label className='block text-sm font-medium text-gray-700 mb-2'>
                   Payment Terms
                 </label>
                 <input
@@ -486,13 +463,14 @@ export const EditPOPage: React.FC = () => {
                   name='paymentTerms'
                   value={formData.paymentTerms}
                   onChange={handleInputChange}
-                  className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent'
+                  className='w-full px-4 py-3 text-sm border rounded-lg bg-white border-gray-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500'
                   placeholder='e.g., Net 30 days'
                 />
               </div>
 
+              {/* Approval Group */}
               <div>
-                <label className='block text-sm font-medium text-gray-700 mb-1'>
+                <label className='block text-sm font-medium text-gray-700 mb-2'>
                   Approval Group
                 </label>
                 <input
@@ -500,394 +478,398 @@ export const EditPOPage: React.FC = () => {
                   name='approvalGroup'
                   value={formData.approvalGroup}
                   onChange={handleInputChange}
-                  className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent'
+                  className='w-full px-4 py-3 text-sm border rounded-lg bg-white border-gray-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500'
                   placeholder='Enter approval group'
                 />
               </div>
-            </div>
-          </div>
 
-          {/* Addresses */}
-          <div className='grid grid-cols-1 md:grid-cols-2 gap-6 mt-6'>
-            <div>
-              <label className='block text-sm font-medium text-gray-700 mb-1'>
-                Ship To Address
-              </label>
-              <textarea
-                name='shipToAddress'
-                value={formData.shipToAddress}
-                onChange={handleInputChange}
-                rows={3}
-                className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent'
-                placeholder='Enter shipping address'
-              />
-            </div>
+              {/* Ship To Address */}
+              <div>
+                <label className='block text-sm font-medium text-gray-700 mb-2'>
+                  Ship To Address
+                </label>
+                <textarea
+                  name='shipToAddress'
+                  value={formData.shipToAddress}
+                  onChange={handleInputChange}
+                  rows={3}
+                  className='w-full px-4 py-3 text-sm border rounded-lg bg-white border-gray-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 resize-none'
+                  placeholder='Enter shipping address'
+                />
+              </div>
 
-            <div>
-              <label className='block text-sm font-medium text-gray-700 mb-1'>
-                Bill To Address
-              </label>
-              <textarea
-                name='billToAddress'
-                value={formData.billToAddress}
-                onChange={handleInputChange}
-                rows={3}
-                className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent'
-                placeholder='Enter billing address'
-              />
-            </div>
-          </div>
+              {/* Bill To Address */}
+              <div>
+                <label className='block text-sm font-medium text-gray-700 mb-2'>
+                  Bill To Address
+                </label>
+                <textarea
+                  name='billToAddress'
+                  value={formData.billToAddress}
+                  onChange={handleInputChange}
+                  rows={3}
+                  className='w-full px-4 py-3 text-sm border rounded-lg bg-white border-gray-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 resize-none'
+                  placeholder='Enter billing address'
+                />
+              </div>
 
-          {/* Terms and Remarks */}
-          <div className='grid grid-cols-1 md:grid-cols-2 gap-6 mt-6'>
-            <div>
-              <label className='block text-sm font-medium text-gray-700 mb-1'>
-                Terms & Conditions
-              </label>
-              <textarea
-                name='termsConditions'
-                value={formData.termsConditions}
-                onChange={handleInputChange}
-                rows={3}
-                className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent'
-                placeholder='Enter terms and conditions'
-              />
-            </div>
+              {/* Terms & Conditions */}
+              <div>
+                <label className='block text-sm font-medium text-gray-700 mb-2'>
+                  Terms & Conditions
+                </label>
+                <textarea
+                  name='termsConditions'
+                  value={formData.termsConditions}
+                  onChange={handleInputChange}
+                  rows={3}
+                  className='w-full px-4 py-3 text-sm border rounded-lg bg-white border-gray-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 resize-none'
+                  placeholder='Enter terms and conditions'
+                />
+              </div>
 
-            <div>
-              <label className='block text-sm font-medium text-gray-700 mb-1'>
-                Remarks
-              </label>
-              <textarea
-                name='remarks'
-                value={formData.remarks}
-                onChange={handleInputChange}
-                rows={3}
-                className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent'
-                placeholder='Enter any remarks'
-              />
+              {/* Remarks */}
+              <div>
+                <label className='block text-sm font-medium text-gray-700 mb-2'>
+                  Remarks
+                </label>
+                <textarea
+                  name='remarks'
+                  value={formData.remarks}
+                  onChange={handleInputChange}
+                  rows={3}
+                  className='w-full px-4 py-3 text-sm border rounded-lg bg-white border-gray-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 resize-none'
+                  placeholder='Enter any remarks'
+                />
+              </div>
             </div>
           </div>
         </div>
 
         {/* Items Section */}
-        <div className='bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6'>
-          <h2 className='text-lg font-semibold text-gray-900 mb-4'>PO Items</h2>
+        <div className='bg-white rounded-lg border border-gray-200 overflow-hidden'>
+          <div className='p-6'>
+            <h2 className='text-base font-semibold text-gray-900 mb-4'>
+              PO Items
+            </h2>
 
-          {/* Existing Items Table */}
-          {formData.items && formData.items.length > 0 && (
-            <div className='mb-6 overflow-x-auto'>
-              <table className='min-w-full divide-y divide-gray-200'>
-                <thead className='bg-gray-50'>
-                  <tr>
-                    <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase'>
-                      Item Name
-                    </th>
-                    <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase'>
-                      Item Code
-                    </th>
-                    <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase'>
-                      Qty
-                    </th>
-                    <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase'>
-                      UOM
-                    </th>
-                    <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase'>
-                      Unit Price
-                    </th>
-                    <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase'>
-                      Total
-                    </th>
-                    <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase'>
-                      Tax
-                    </th>
-                    <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase'>
-                      Grand Total
-                    </th>
-                    <th className='px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase'>
-                      Action
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className='bg-white divide-y divide-gray-200'>
-                  {formData.items.map((item, index) => (
-                    <tr key={index}>
-                      <td className='px-4 py-3'>
-                        <input
-                          type='text'
-                          value={item.itemName}
-                          onChange={e =>
-                            updateExistingItem(
-                              index,
-                              'itemName',
-                              e.target.value
-                            )
-                          }
-                          className='w-full px-2 py-1 border border-gray-300 rounded text-sm'
-                        />
-                      </td>
-                      <td className='px-4 py-3'>
-                        <input
-                          type='text'
-                          value={item.itemCode || ''}
-                          onChange={e =>
-                            updateExistingItem(
-                              index,
-                              'itemCode',
-                              e.target.value
-                            )
-                          }
-                          className='w-24 px-2 py-1 border border-gray-300 rounded text-sm'
-                        />
-                      </td>
-                      <td className='px-4 py-3'>
-                        <input
-                          type='number'
-                          value={item.quantity}
-                          onChange={e =>
-                            updateExistingItem(
-                              index,
-                              'quantity',
-                              parseFloat(e.target.value)
-                            )
-                          }
-                          className='w-20 px-2 py-1 border border-gray-300 rounded text-sm'
-                        />
-                      </td>
-                      <td className='px-4 py-3'>
-                        <select
-                          value={item.unitOfMeasurement}
-                          onChange={e =>
-                            updateExistingItem(
-                              index,
-                              'unitOfMeasurement',
-                              e.target.value
-                            )
-                          }
-                          className='w-20 px-2 py-1 border border-gray-300 rounded text-sm'
-                        >
-                          <option value='PCS'>PCS</option>
-                          <option value='KG'>KG</option>
-                          <option value='LTR'>LTR</option>
-                          <option value='MTR'>MTR</option>
-                        </select>
-                      </td>
-                      <td className='px-4 py-3'>
-                        <input
-                          type='number'
-                          value={item.unitPrice}
-                          onChange={e =>
-                            updateExistingItem(
-                              index,
-                              'unitPrice',
-                              parseFloat(e.target.value)
-                            )
-                          }
-                          className='w-24 px-2 py-1 border border-gray-300 rounded text-sm'
-                        />
-                      </td>
-                      <td className='px-4 py-3 text-sm text-gray-700'>
-                        ₹{item.totalAmount?.toFixed(2) || '0.00'}
-                      </td>
-                      <td className='px-4 py-3 text-sm text-gray-700'>
-                        ₹
-                        {(
-                          (item.tax1Value || 0) + (item.tax2Value || 0)
-                        ).toFixed(2)}
-                      </td>
-                      <td className='px-4 py-3 text-sm font-medium text-gray-900'>
-                        ₹{item.grandTotal?.toFixed(2) || '0.00'}
-                      </td>
-                      <td className='px-4 py-3 text-center'>
-                        <button
-                          onClick={() => removeItem(index)}
-                          className='text-red-600 hover:text-red-800'
-                        >
-                          <Trash2 className='w-4 h-4' />
-                        </button>
-                      </td>
+            {/* Existing Items Table */}
+            {formData.items && formData.items.length > 0 && (
+              <div className='mb-6 overflow-x-auto'>
+                <table className='min-w-full divide-y divide-gray-200'>
+                  <thead className='bg-gray-50'>
+                    <tr>
+                      <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase'>
+                        Item Name
+                      </th>
+                      <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase'>
+                        Item Code
+                      </th>
+                      <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase'>
+                        Qty
+                      </th>
+                      <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase'>
+                        UOM
+                      </th>
+                      <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase'>
+                        Unit Price
+                      </th>
+                      <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase'>
+                        Total
+                      </th>
+                      <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase'>
+                        Tax
+                      </th>
+                      <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase'>
+                        Grand Total
+                      </th>
+                      <th className='px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase'>
+                        Action
+                      </th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-
-          {/* Add New Item Form */}
-          <div className='border-t border-gray-200 pt-6'>
-            <h3 className='text-md font-medium text-gray-900 mb-4'>
-              Add New Item
-            </h3>
-            <div className='grid grid-cols-1 md:grid-cols-6 gap-4'>
-              <div className='md:col-span-2'>
-                <label className='block text-sm font-medium text-gray-700 mb-1'>
-                  Item Name *
-                </label>
-                <input
-                  type='text'
-                  name='itemName'
-                  value={newItem.itemName}
-                  onChange={handleItemChange}
-                  className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500'
-                  placeholder='Enter item name'
-                />
-              </div>
-
-              <div>
-                <label className='block text-sm font-medium text-gray-700 mb-1'>
-                  Item Code
-                </label>
-                <input
-                  type='text'
-                  name='itemCode'
-                  value={newItem.itemCode}
-                  onChange={handleItemChange}
-                  className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500'
-                  placeholder='Code'
-                />
-              </div>
-
-              <div>
-                <label className='block text-sm font-medium text-gray-700 mb-1'>
-                  Quantity *
-                </label>
-                <input
-                  type='number'
-                  name='quantity'
-                  value={newItem.quantity}
-                  onChange={handleItemChange}
-                  min='1'
-                  className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500'
-                />
-              </div>
-
-              <div>
-                <label className='block text-sm font-medium text-gray-700 mb-1'>
-                  UOM
-                </label>
-                <select
-                  name='unitOfMeasurement'
-                  value={newItem.unitOfMeasurement}
-                  onChange={handleItemChange}
-                  className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500'
-                >
-                  <option value='PCS'>PCS</option>
-                  <option value='KG'>KG</option>
-                  <option value='LTR'>LTR</option>
-                  <option value='MTR'>MTR</option>
-                  <option value='BOX'>BOX</option>
-                </select>
-              </div>
-
-              <div>
-                <label className='block text-sm font-medium text-gray-700 mb-1'>
-                  Unit Price *
-                </label>
-                <input
-                  type='number'
-                  name='unitPrice'
-                  value={newItem.unitPrice}
-                  onChange={handleItemChange}
-                  min='0'
-                  step='0.01'
-                  className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500'
-                />
-              </div>
-            </div>
-
-            {/* Item Calculations Display */}
-            {newItem.totalAmount && newItem.totalAmount > 0 && (
-              <div className='mt-4 p-4 bg-gray-50 rounded-lg'>
-                <div className='grid grid-cols-4 gap-4 text-sm'>
-                  <div>
-                    <span className='text-gray-600'>Total Amount:</span>
-                    <span className='ml-2 font-medium text-gray-900'>
-                      ₹{newItem.totalAmount?.toFixed(2)}
-                    </span>
-                  </div>
-                  <div>
-                    <span className='text-gray-600'>CGST (9%):</span>
-                    <span className='ml-2 font-medium text-gray-900'>
-                      ₹{newItem.tax1Value?.toFixed(2)}
-                    </span>
-                  </div>
-                  <div>
-                    <span className='text-gray-600'>SGST (9%):</span>
-                    <span className='ml-2 font-medium text-gray-900'>
-                      ₹{newItem.tax2Value?.toFixed(2)}
-                    </span>
-                  </div>
-                  <div>
-                    <span className='text-gray-600'>Grand Total:</span>
-                    <span className='ml-2 font-medium text-green-600'>
-                      ₹{newItem.grandTotal?.toFixed(2)}
-                    </span>
-                  </div>
-                </div>
+                  </thead>
+                  <tbody className='bg-white divide-y divide-gray-200'>
+                    {formData.items.map((item, index) => (
+                      <tr key={index}>
+                        <td className='px-4 py-3'>
+                          <input
+                            type='text'
+                            value={item.itemName}
+                            onChange={e =>
+                              updateExistingItem(
+                                index,
+                                'itemName',
+                                e.target.value
+                              )
+                            }
+                            className='w-full px-2 py-1 border border-gray-300 rounded text-sm'
+                          />
+                        </td>
+                        <td className='px-4 py-3'>
+                          <input
+                            type='text'
+                            value={item.itemCode || ''}
+                            onChange={e =>
+                              updateExistingItem(
+                                index,
+                                'itemCode',
+                                e.target.value
+                              )
+                            }
+                            className='w-24 px-2 py-1 border border-gray-300 rounded text-sm'
+                          />
+                        </td>
+                        <td className='px-4 py-3'>
+                          <input
+                            type='number'
+                            value={item.quantity}
+                            onChange={e =>
+                              updateExistingItem(
+                                index,
+                                'quantity',
+                                parseFloat(e.target.value)
+                              )
+                            }
+                            className='w-20 px-2 py-1 border border-gray-300 rounded text-sm'
+                          />
+                        </td>
+                        <td className='px-4 py-3'>
+                          <select
+                            value={item.unitOfMeasurement}
+                            onChange={e =>
+                              updateExistingItem(
+                                index,
+                                'unitOfMeasurement',
+                                e.target.value
+                              )
+                            }
+                            className='w-20 px-2 py-1 border border-gray-300 rounded text-sm'
+                          >
+                            <option value='PCS'>PCS</option>
+                            <option value='KG'>KG</option>
+                            <option value='LTR'>LTR</option>
+                            <option value='MTR'>MTR</option>
+                          </select>
+                        </td>
+                        <td className='px-4 py-3'>
+                          <input
+                            type='number'
+                            value={item.unitPrice}
+                            onChange={e =>
+                              updateExistingItem(
+                                index,
+                                'unitPrice',
+                                parseFloat(e.target.value)
+                              )
+                            }
+                            className='w-24 px-2 py-1 border border-gray-300 rounded text-sm'
+                          />
+                        </td>
+                        <td className='px-4 py-3 text-sm text-gray-700'>
+                          ₹{item.totalAmount?.toFixed(2) || '0.00'}
+                        </td>
+                        <td className='px-4 py-3 text-sm text-gray-700'>
+                          ₹
+                          {(
+                            (item.tax1Value || 0) + (item.tax2Value || 0)
+                          ).toFixed(2)}
+                        </td>
+                        <td className='px-4 py-3 text-sm font-medium text-gray-900'>
+                          ₹{item.grandTotal?.toFixed(2) || '0.00'}
+                        </td>
+                        <td className='px-4 py-3 text-center'>
+                          <button
+                            onClick={() => removeItem(index)}
+                            className='text-red-600 hover:text-red-800'
+                          >
+                            <Trash2 className='w-4 h-4' />
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             )}
 
-            <button
-              onClick={addItem}
-              className='mt-4 inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors'
-            >
-              <Plus className='w-4 h-4 mr-2' />
-              Add Item
-            </button>
+            {/* Add New Item Form */}
+            <div className='border-t border-gray-200 pt-6'>
+              <h3 className='text-md font-medium text-gray-900 mb-4'>
+                Add New Item
+              </h3>
+              <div className='grid grid-cols-1 md:grid-cols-6 gap-4'>
+                <div className='md:col-span-2'>
+                  <label className='block text-sm font-medium text-gray-700 mb-1'>
+                    Item Name *
+                  </label>
+                  <input
+                    type='text'
+                    name='itemName'
+                    value={newItem.itemName}
+                    onChange={handleItemChange}
+                    className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500'
+                    placeholder='Enter item name'
+                  />
+                </div>
+
+                <div>
+                  <label className='block text-sm font-medium text-gray-700 mb-1'>
+                    Item Code
+                  </label>
+                  <input
+                    type='text'
+                    name='itemCode'
+                    value={newItem.itemCode}
+                    onChange={handleItemChange}
+                    className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500'
+                    placeholder='Code'
+                  />
+                </div>
+
+                <div>
+                  <label className='block text-sm font-medium text-gray-700 mb-1'>
+                    Quantity *
+                  </label>
+                  <input
+                    type='number'
+                    name='quantity'
+                    value={newItem.quantity}
+                    onChange={handleItemChange}
+                    min='1'
+                    className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500'
+                  />
+                </div>
+
+                <div>
+                  <label className='block text-sm font-medium text-gray-700 mb-1'>
+                    UOM
+                  </label>
+                  <select
+                    name='unitOfMeasurement'
+                    value={newItem.unitOfMeasurement}
+                    onChange={handleItemChange}
+                    className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500'
+                  >
+                    <option value='PCS'>PCS</option>
+                    <option value='KG'>KG</option>
+                    <option value='LTR'>LTR</option>
+                    <option value='MTR'>MTR</option>
+                    <option value='BOX'>BOX</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className='block text-sm font-medium text-gray-700 mb-1'>
+                    Unit Price *
+                  </label>
+                  <input
+                    type='number'
+                    name='unitPrice'
+                    value={newItem.unitPrice}
+                    onChange={handleItemChange}
+                    min='0'
+                    step='0.01'
+                    className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500'
+                  />
+                </div>
+              </div>
+
+              {/* Item Calculations Display */}
+              {newItem.totalAmount && newItem.totalAmount > 0 && (
+                <div className='mt-4 p-4 bg-gray-50 rounded-lg'>
+                  <div className='grid grid-cols-4 gap-4 text-sm'>
+                    <div>
+                      <span className='text-gray-600'>Total Amount:</span>
+                      <span className='ml-2 font-medium text-gray-900'>
+                        ₹{newItem.totalAmount?.toFixed(2)}
+                      </span>
+                    </div>
+                    <div>
+                      <span className='text-gray-600'>CGST (9%):</span>
+                      <span className='ml-2 font-medium text-gray-900'>
+                        ₹{newItem.tax1Value?.toFixed(2)}
+                      </span>
+                    </div>
+                    <div>
+                      <span className='text-gray-600'>SGST (9%):</span>
+                      <span className='ml-2 font-medium text-gray-900'>
+                        ₹{newItem.tax2Value?.toFixed(2)}
+                      </span>
+                    </div>
+                    <div>
+                      <span className='text-gray-600'>Grand Total:</span>
+                      <span className='ml-2 font-medium text-green-600'>
+                        ₹{newItem.grandTotal?.toFixed(2)}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <button
+                onClick={addItem}
+                className='mt-4 inline-flex items-center px-4 py-3 text-sm font-semibold text-white bg-violet-600 rounded-md hover:bg-violet-700 transition-colors'
+              >
+                <Plus className='w-4 h-4 mr-2' />
+                Add Item
+              </button>
+            </div>
           </div>
         </div>
 
         {/* PO Summary */}
-        <div className='bg-white rounded-lg shadow-sm border border-gray-200 p-6'>
-          <h2 className='text-lg font-semibold text-gray-900 mb-4'>
-            PO Summary
-          </h2>
-          <div className='space-y-3'>
-            <div className='flex justify-between items-center py-2 border-b border-gray-200'>
-              <span className='text-gray-600'>Sub Total:</span>
-              <span className='font-medium text-gray-900'>
-                ₹{formData.subTotal?.toFixed(2) || '0.00'}
-              </span>
-            </div>
-            <div className='flex justify-between items-center py-2 border-b border-gray-200'>
-              <span className='text-gray-600'>Tax Amount:</span>
-              <span className='font-medium text-gray-900'>
-                ₹{formData.taxAmount?.toFixed(2) || '0.00'}
-              </span>
-            </div>
-            <div className='flex justify-between items-center py-2 border-b border-gray-200'>
-              <span className='text-gray-600'>Discount:</span>
-              <div className='flex items-center space-x-2'>
-                <input
-                  type='number'
-                  name='discountAmount'
-                  value={formData.discountAmount}
-                  onChange={e => {
-                    handleInputChange(e);
-                    setTimeout(() => calculateTotals(), 100);
-                  }}
-                  min='0'
-                  step='0.01'
-                  className='w-32 px-3 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-right'
-                />
+        <div className='bg-white rounded-lg border border-gray-200 overflow-hidden'>
+          <div className='p-6'>
+            <h2 className='text-base font-semibold text-gray-900 mb-4'>
+              PO Summary
+            </h2>
+            <div className='space-y-3'>
+              <div className='flex justify-between items-center py-2 border-b border-gray-200'>
+                <span className='text-gray-600'>Sub Total:</span>
+                <span className='font-medium text-gray-900'>
+                  ₹{formData.subTotal?.toFixed(2) || '0.00'}
+                </span>
               </div>
-            </div>
-            <div className='flex justify-between items-center py-3 bg-blue-50 rounded-lg px-4'>
-              <span className='text-lg font-semibold text-gray-900'>
-                Grand Total:
-              </span>
-              <span className='text-xl font-bold text-blue-600'>
-                ₹
-                {formData.grandTotal?.toLocaleString('en-IN', {
-                  minimumFractionDigits: 2,
-                  maximumFractionDigits: 2,
-                }) || '0.00'}
-              </span>
+              <div className='flex justify-between items-center py-2 border-b border-gray-200'>
+                <span className='text-gray-600'>Tax Amount:</span>
+                <span className='font-medium text-gray-900'>
+                  ₹{formData.taxAmount?.toFixed(2) || '0.00'}
+                </span>
+              </div>
+              <div className='flex justify-between items-center py-2 border-b border-gray-200'>
+                <span className='text-gray-600'>Discount:</span>
+                <div className='flex items-center space-x-2'>
+                  <input
+                    type='number'
+                    name='discountAmount'
+                    value={formData.discountAmount}
+                    onChange={e => {
+                      handleInputChange(e);
+                      setTimeout(() => calculateTotals(), 100);
+                    }}
+                    min='0'
+                    step='0.01'
+                    className='w-32 px-3 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-right'
+                  />
+                </div>
+              </div>
+              <div className='flex justify-between items-center py-3 bg-blue-50 rounded-lg px-4'>
+                <span className='text-lg font-semibold text-gray-900'>
+                  Grand Total:
+                </span>
+                <span className='text-xl font-bold text-blue-600'>
+                  ₹
+                  {formData.grandTotal?.toLocaleString('en-IN', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  }) || '0.00'}
+                </span>
+              </div>
             </div>
           </div>
         </div>
-      </div>
-    </div>
+      </form>
+    </>
   );
 };
 

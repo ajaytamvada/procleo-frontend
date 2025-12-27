@@ -150,7 +150,7 @@ export const PRStatusPage: React.FC = () => {
   }
 
   return (
-    <div className='min-h-screen bg-[#f8f9fc] p-6'>
+    <div className='min-h-screen bg-[#f8f9fc] p-2'>
       {/* Page Header */}
       <div className='mb-6'>
         <h1 className='text-xl font-semibold text-gray-900'>PR Status</h1>

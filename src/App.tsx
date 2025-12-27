@@ -20,6 +20,7 @@ import {
   CreatePRPage,
   ManagePRPage,
   ApprovePRPage,
+  PRApprovalDetailPage,
   PRStatusPage,
   PRPreviewPage,
 } from '@/features/purchase-requisition';
@@ -201,6 +202,10 @@ const App: React.FC = () => {
                 <Route
                   path='purchase-requisition/approve'
                   element={<ApprovePRPage />}
+                />
+                <Route
+                  path='purchase-requisition/approve/detail'
+                  element={<PRApprovalDetailPage />}
                 />
                 <Route
                   path='purchase-requisition/status'

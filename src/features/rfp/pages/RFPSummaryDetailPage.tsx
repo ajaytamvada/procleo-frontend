@@ -5,7 +5,7 @@
 
 import React from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Printer, Loader2, AlertCircle } from 'lucide-react';
+import { ArrowLeft, Printer, AlertCircle } from 'lucide-react';
 import { useRFPSummary } from '../hooks/useRFPSummary';
 
 export const RFPSummaryDetailPage: React.FC = () => {
@@ -19,27 +19,72 @@ export const RFPSummaryDetailPage: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className='flex items-center justify-center h-screen'>
-        <Loader2 className='w-8 h-8 animate-spin text-purple-600' />
-        <span className='ml-2 text-gray-600'>Loading RFP summary...</span>
+      <div className='min-h-screen bg-[#f8f9fc]'>
+        <div className='p-2'>
+          {/* Header */}
+          <div className='flex items-center gap-3 mb-6'>
+            <button
+              onClick={() => navigate('/rfp/summary')}
+              className='p-1.5 text-gray-500 hover:text-gray-700 rounded-lg transition-colors'
+            >
+              <ArrowLeft size={20} />
+            </button>
+            <h1 className='text-xl font-semibold text-gray-900'>RFP Summary</h1>
+          </div>
+
+          {/* Loading Card */}
+          <div className='bg-white rounded-lg border border-gray-200 p-6'>
+            <div className='flex flex-col items-center justify-center py-12'>
+              <div className='animate-spin rounded-full h-8 w-8 border-2 border-violet-600 border-t-transparent'></div>
+              <p className='text-sm text-gray-500 mt-3'>
+                Loading RFP summary...
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
 
   if (error || !summary) {
     return (
-      <div className='p-6'>
-        <div className='bg-red-50 border border-red-200 rounded-lg p-4 flex items-start'>
-          <AlertCircle className='w-5 h-5 text-red-600 mt-0.5 mr-3' />
-          <div>
-            <h3 className='text-red-800 font-medium'>
-              Error Loading RFP Summary
-            </h3>
-            <p className='text-red-600 text-sm mt-1'>
-              {error instanceof Error
-                ? error.message
-                : 'Unable to load RFP summary'}
-            </p>
+      <div className='min-h-screen bg-[#f8f9fc]'>
+        <div className='p-2'>
+          {/* Header */}
+          <div className='flex items-center gap-3 mb-6'>
+            <button
+              onClick={() => navigate('/rfp/summary')}
+              className='p-1.5 text-gray-500 hover:text-gray-700 rounded-lg transition-colors'
+            >
+              <ArrowLeft size={20} />
+            </button>
+            <h1 className='text-xl font-semibold text-gray-900'>RFP Summary</h1>
+          </div>
+
+          {/* Error Card */}
+          <div className='bg-white rounded-lg border border-gray-200 p-6 max-w-2xl'>
+            <div className='flex items-start gap-3'>
+              <div className='w-10 h-10 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0'>
+                <AlertCircle className='w-5 h-5 text-red-600' />
+              </div>
+              <div>
+                <h3 className='text-base font-semibold text-gray-900'>
+                  Error Loading RFP Summary
+                </h3>
+                <p className='text-sm text-gray-500 mt-1'>
+                  {error instanceof Error
+                    ? error.message
+                    : 'Unable to load RFP summary'}
+                </p>
+                <button
+                  onClick={() => navigate('/rfp/summary')}
+                  className='mt-4 inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-violet-600 bg-violet-50 rounded-md hover:bg-violet-100 transition-colors'
+                >
+                  <ArrowLeft size={15} />
+                  Return to Summary List
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -47,30 +92,39 @@ export const RFPSummaryDetailPage: React.FC = () => {
   }
 
   return (
-    <div className='min-h-screen bg-gray-50'>
+    <div className='min-h-screen bg-[#f8f9fc]'>
       {/* Header - Hidden on print */}
-      <div className='bg-white border-b border-gray-200 px-6 py-4 print:hidden'>
-        <div className='flex items-center justify-between'>
-          <button
-            onClick={() => navigate('/rfp/summary')}
-            className='flex items-center text-gray-600 hover:text-gray-900'
-          >
-            <ArrowLeft size={20} className='mr-2' />
-            Back to List
-          </button>
+      <div className='p-2 print:hidden'>
+        <div className='flex items-center justify-between mb-6'>
+          <div className='flex items-center gap-3'>
+            <button
+              onClick={() => navigate('/rfp/summary')}
+              className='p-1.5 text-gray-500 hover:text-gray-700 rounded-lg transition-colors'
+            >
+              <ArrowLeft size={20} />
+            </button>
+            <div>
+              <h1 className='text-xl font-semibold text-gray-900'>
+                RFP Summary
+              </h1>
+              <p className='text-sm text-gray-500 mt-0.5'>
+                {summary.rfpNumber}
+              </p>
+            </div>
+          </div>
           <button
             onClick={handlePrint}
-            className='inline-flex items-center px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors'
+            className='inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-violet-600 rounded-md hover:bg-violet-700 transition-colors'
           >
-            <Printer size={18} className='mr-2' />
+            <Printer size={15} />
             Print Summary
           </button>
         </div>
       </div>
 
       {/* Print-ready summary document */}
-      <div className='max-w-6xl mx-auto p-6 print:p-0'>
-        <div className='bg-white shadow-sm rounded-lg p-8 print:shadow-none'>
+      <div className='max-w-6xl mx-auto p-2 print:p-0'>
+        <div className='bg-white rounded-lg border border-gray-200 overflow-hidden p-8 print:shadow-none'>
           {/* Summary Header */}
           <div className='border-b-2 border-gray-300 pb-4 mb-6'>
             <h1 className='text-3xl font-bold text-gray-900 text-center'>

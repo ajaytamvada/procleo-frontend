@@ -3,6 +3,7 @@ export { default as PurchaseRequisitionHub } from './pages/PurchaseRequisitionHu
 export { CreatePRPage } from './pages/CreatePRPage';
 export { ManagePRPage } from './pages/ManagePRPage';
 export { ApprovePRPage } from './pages/ApprovePRPage';
+export { PRApprovalDetailPage } from './pages/PRApprovalDetailPage';
 export { PRStatusPage } from './pages/PRStatusPage';
 export { PRPreviewPage } from './pages/PRPreviewPage';
 

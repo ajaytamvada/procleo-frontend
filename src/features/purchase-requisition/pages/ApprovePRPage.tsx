@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Search } from 'lucide-react';
 import { Input } from '@/components/ui/Input';
 import { usePRsPendingApproval } from '../hooks/useApproval';
-import { PRApprovalDetailDialog } from '../components/PRApprovalDetailDialog';
 
 export const ApprovePRPage: React.FC = () => {
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
-  const [selectedPrId, setSelectedPrId] = useState<number | null>(null);
 
   const itemsPerPage = 15;
 
@@ -35,11 +35,7 @@ export const ApprovePRPage: React.FC = () => {
   }, [searchTerm]);
 
   const handleView = (prId: number) => {
-    setSelectedPrId(prId);
-  };
-
-  const handleCloseDialog = () => {
-    setSelectedPrId(null);
+    navigate(`/purchase-requisition/approve/detail?id=${prId}`);
   };
 
   if (isLoading) {
@@ -278,14 +274,6 @@ export const ApprovePRPage: React.FC = () => {
             </div>
           )}
         </>
-      )}
-
-      {/* Approval Detail Dialog */}
-      {selectedPrId && (
-        <PRApprovalDetailDialog
-          prId={selectedPrId}
-          onClose={handleCloseDialog}
-        />
       )}
     </div>
   );

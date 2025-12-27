@@ -1,16 +1,16 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Search, Edit, Trash2 } from 'lucide-react';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { useAllDrafts, useDeletePR, useDeletePRs } from '../hooks/usePR';
-import { PREditDialog } from '../components/PREditDialog';
 
 export const ManagePRPage: React.FC = () => {
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedItems, setSelectedItems] = useState<Set<number>>(new Set());
-  const [editingPrId, setEditingPrId] = useState<number | null>(null);
 
   const itemsPerPage = 15;
 
@@ -67,7 +67,7 @@ export const ManagePRPage: React.FC = () => {
 
   // Handle edit - navigate to create page which will load the PR for editing
   const handleEdit = (id: number) => {
-    setEditingPrId(id);
+    navigate(`/purchase-requisition/create?id=${id}`);
   };
 
   // Handle delete single PR
@@ -394,11 +394,6 @@ export const ManagePRPage: React.FC = () => {
             </div>
           )}
         </>
-      )}
-
-      {/* Edit Dialog */}
-      {editingPrId && (
-        <PREditDialog prId={editingPrId} onClose={() => setEditingPrId(null)} />
       )}
     </div>
   );

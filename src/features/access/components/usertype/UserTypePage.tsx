@@ -33,40 +33,42 @@ const UserTypePage: React.FC = () => {
 
   return (
     <>
-      <div className='p-6'>
-        {/* Header */}
-        <div className='mb-6 flex justify-between items-center'>
-          <div>
-            <h1 className='text-2xl font-bold text-gray-900'>
-              User Type Management
-            </h1>
-            <p className='text-gray-600 mt-1'>
-              Manage user types for access control
-            </p>
+      <div className='min-h-screen bg-[#f8f9fc]'>
+        <div className='p-2'>
+          {/* Page Header - Cashfree Style */}
+          <div className='flex items-center justify-between mb-6'>
+            <div>
+              <h1 className='text-xl font-semibold text-gray-900'>
+                User Type Management
+              </h1>
+              <p className='text-sm text-gray-500 mt-0.5'>
+                Manage user types for access control
+              </p>
+            </div>
+            <button
+              onClick={handleAdd}
+              className='inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-violet-600 rounded-md hover:bg-violet-700 transition-colors'
+            >
+              <Plus size={14} />
+              Add User Type
+            </button>
           </div>
-          <button
-            onClick={handleAdd}
-            className='px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2'
-          >
-            <Plus size={20} />
-            Add User Type
-          </button>
-        </div>
 
-        {/* User Type List */}
-        <UserTypeList
-          onEdit={handleEdit}
-          onImport={() => setShowImportDialog(true)}
-        />
-
-        {/* Form Modal */}
-        {showForm && (
-          <UserTypeForm
-            userType={selectedUserType}
-            onClose={handleCloseForm}
-            onSuccess={handleSuccess}
+          {/* User Type List */}
+          <UserTypeList
+            onEdit={handleEdit}
+            onImport={() => setShowImportDialog(true)}
           />
-        )}
+
+          {/* Form Modal */}
+          {showForm && (
+            <UserTypeForm
+              userType={selectedUserType}
+              onClose={handleCloseForm}
+              onSuccess={handleSuccess}
+            />
+          )}
+        </div>
       </div>
       <ExcelImportDialog
         isOpen={showImportDialog}

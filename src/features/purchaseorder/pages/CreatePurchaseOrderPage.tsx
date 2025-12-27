@@ -204,13 +204,13 @@ const CreatePurchaseOrderPage: React.FC = () => {
       setFormData(prev => ({
         ...prev,
         supplierId: selectedSupplier.id,
-        supplierName: selectedSupplier.name
+        supplierName: selectedSupplier.name,
       }));
     } else {
       setFormData(prev => ({
         ...prev,
         supplierId: 0,
-        supplierName: ''
+        supplierName: '',
       }));
     }
   };
@@ -371,70 +371,58 @@ const CreatePurchaseOrderPage: React.FC = () => {
   }
 
   return (
-    <div className='min-h-screen bg-gray-50'>
-      {/* Header */}
-      <div className='bg-white border-b border-gray-200 px-6 py-4'>
-        <div className='flex items-center justify-between'>
-          <div className='flex items-center space-x-4'>
-            <button
-              onClick={() =>
-                navigate(
-                  rfpIdParam
-                    ? '/purchase-orders/create-from-rfp'
-                    : '/purchase-orders'
-                )
-              }
-              className='p-2 hover:bg-gray-100 rounded-lg transition-colors'
-            >
-              <ArrowLeft className='w-5 h-5 text-gray-600' />
-            </button>
-            <div>
-              <h1 className='text-xl font-semibold text-gray-900'>
-                {formData.rfpNumber
-                  ? 'Create Purchase Order from RFP'
-                  : 'New Purchase Order'}
-              </h1>
-              {formData.rfpNumber && (
-                <p className='text-sm text-gray-600 mt-1'>
-                  RFP: {formData.rfpNumber}
-                </p>
-              )}
-            </div>
+    <>
+      {/* Page Header */}
+      <div className='flex items-center justify-between mb-6'>
+        <div className='flex items-center gap-3'>
+          <button
+            onClick={() =>
+              navigate(
+                rfpIdParam
+                  ? '/purchase-orders/create-from-rfp'
+                  : '/purchase-orders'
+              )
+            }
+            className='p-1.5 text-gray-500 hover:text-gray-700 rounded-lg transition-colors'
+            disabled={loading}
+          >
+            <ArrowLeft size={20} />
+          </button>
+          <div>
+            <h1 className='text-xl font-semibold text-gray-900'>
+              {formData.rfpNumber
+                ? 'Create Purchase Order from RFP'
+                : 'New Purchase Order'}
+            </h1>
+            {formData.rfpNumber && (
+              <p className='text-sm text-gray-600 mt-1'>
+                RFP: {formData.rfpNumber}
+              </p>
+            )}
           </div>
-          <div className='flex items-center space-x-3'>
-            <button
-              onClick={() => handleSubmit(false)}
-              disabled={loading || !formData.items?.length}
-              className='px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors disabled:opacity-50 flex items-center'
-            >
-              {loading ? (
-                <Loader2 className='w-4 h-4 mr-2 animate-spin' />
-              ) : (
-                <Save className='w-4 h-4 mr-2' />
-              )}
-              Save as Draft
-            </button>
-            <button
-              onClick={() => handleSubmit(true)}
-              disabled={loading || !formData.items?.length}
-              className='px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 flex items-center'
-            >
-              {loading ? (
-                <Loader2 className='w-4 h-4 mr-2 animate-spin' />
-              ) : (
-                <Send className='w-4 h-4 mr-2' />
-              )}
-              Submit for Approval
-            </button>
-          </div>
+        </div>
+        <div className='flex items-center gap-3'>
+          <button
+            onClick={() => handleSubmit(false)}
+            disabled={loading || !formData.items?.length}
+            className='px-4 py-2 text-sm font-semibold text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 hover:border-gray-400 transition-all disabled:opacity-50 disabled:cursor-not-allowed'
+          >
+            Save as Draft
+          </button>
+          <button
+            onClick={() => handleSubmit(true)}
+            disabled={loading || !formData.items?.length}
+            className='px-4 py-2 text-sm font-semibold text-white bg-violet-600 rounded-md hover:bg-violet-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed'
+          >
+            Submit
+          </button>
         </div>
       </div>
 
-      {/* Form Content */}
-      <div className='max-w-7xl mx-auto px-6 py-6'>
+      <form className='space-y-6'>
         {/* RFP Info Banner */}
         {formData.rfpNumber && (
-          <div className='bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6'>
+          <div className='bg-blue-50 border border-blue-200 rounded-lg p-4'>
             <div className='flex items-start'>
               <AlertCircle className='w-5 h-5 text-blue-600 mt-0.5 mr-3 flex-shrink-0' />
               <div className='flex-1'>
@@ -465,228 +453,246 @@ const CreatePurchaseOrderPage: React.FC = () => {
         )}
 
         {/* Basic Information */}
-        <div className='bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6'>
-          <div className='grid grid-cols-1 md:grid-cols-3 gap-6'>
-            <div>
-              <label className='block text-sm font-medium text-gray-700 mb-2'>
-                <span className='text-red-500'>*</span> Raised By
-              </label>
-              <select
-                name='raisedBy'
-                value={formData.raisedBy}
-                onChange={handleInputChange}
-                className='w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent'
-              >
-                <option value='Wei'>Wei</option>
-                <option value='Admin'>Admin</option>
-                <option value='Manager'>Manager</option>
-              </select>
-            </div>
-
-            <div>
-              <label className='block text-sm font-medium text-gray-700 mb-2'>
-                <span className='text-red-500'>*</span> RFP Number
-              </label>
-              <select
-                name='rfpNumber'
-                value={approvedRFPs.find(r => r.rfpNumber === formData.rfpNumber)?.id || ''}
-                onChange={handleRFPChange}
-                className='w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent'
-              >
-                <option value=''>Select RFP</option>
-                {approvedRFPs.map((rfp: any) => (
-                  <option key={rfp.id} value={rfp.id}>
-                    {rfp.rfpNumber}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* Supplier info - Dropdown */}
-            <div>
-              <label className='block text-sm font-medium text-gray-700 mb-2'>
-                <span className='text-red-500'>*</span> Supplier
-              </label>
-              <select
-                name='supplierId'
-                value={formData.supplierId || ''}
-                onChange={handleSupplierChange}
-                disabled={!!formData.rfpNumber} // Disable if RFP is selected
-                className='w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed'
-              >
-                <option value=''>Select Supplier</option>
-                {vendors.map((vendor) => (
-                  <option key={vendor.id} value={vendor.id}>
-                    {vendor.name}
-                  </option>
-                ))}
-              </select>
-              {formData.rfpNumber && (
-                <p className='text-xs text-blue-600 mt-1'>
-                  Pre-selected from RFP
-                </p>
-              )}
-            </div>
-
-            <div>
-              <label className='block text-sm font-medium text-gray-700 mb-2'>
-                <span className='text-red-500'>*</span> PO Date
-              </label>
-              <div className='relative'>
-                <input
-                  type='date'
-                  name='poDate'
-                  value={formData.poDate}
+        <div className='bg-white rounded-lg border border-gray-200 overflow-hidden'>
+          <div className='p-6'>
+            <div className='grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-5'>
+              <div>
+                <label className='block text-sm font-medium text-gray-700 mb-2'>
+                  <span className='text-red-500'>*</span> Raised By
+                </label>
+                <select
+                  name='raisedBy'
+                  value={formData.raisedBy}
                   onChange={handleInputChange}
-                  className='w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent'
-                />
-                <Calendar className='absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none' />
+                  className='w-full px-4 py-3 text-sm border rounded-lg bg-white border-gray-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500'
+                >
+                  <option value='Wei'>Wei</option>
+                  <option value='Admin'>Admin</option>
+                  <option value='Manager'>Manager</option>
+                </select>
+              </div>
+
+              <div>
+                <label className='block text-sm font-medium text-gray-700 mb-2'>
+                  <span className='text-red-500'>*</span> RFP Number
+                </label>
+                <select
+                  name='rfpNumber'
+                  value={
+                    approvedRFPs.find(r => r.rfpNumber === formData.rfpNumber)
+                      ?.id || ''
+                  }
+                  onChange={handleRFPChange}
+                  className='w-full px-4 py-3 text-sm border rounded-lg bg-white border-gray-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500'
+                >
+                  <option value=''>Select RFP</option>
+                  {approvedRFPs.map((rfp: any) => (
+                    <option key={rfp.id} value={rfp.id}>
+                      {rfp.rfpNumber}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Supplier info - Dropdown */}
+              <div>
+                <label className='block text-sm font-medium text-gray-700 mb-2'>
+                  <span className='text-red-500'>*</span> Supplier
+                </label>
+                <select
+                  name='supplierId'
+                  value={formData.supplierId || ''}
+                  onChange={handleSupplierChange}
+                  disabled={!!formData.rfpNumber} // Disable if RFP is selected
+                  className='w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed resize-none'
+                >
+                  <option value=''>Select Supplier</option>
+                  {vendors.map(vendor => (
+                    <option key={vendor.id} value={vendor.id}>
+                      {vendor.name}
+                    </option>
+                  ))}
+                </select>
+                {formData.rfpNumber && (
+                  <p className='text-xs text-blue-600 mt-1'>
+                    Pre-selected from RFP
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <label className='block text-sm font-medium text-gray-700 mb-2'>
+                  <span className='text-red-500'>*</span> PO Date
+                </label>
+                <div className='relative'>
+                  <input
+                    type='date'
+                    name='poDate'
+                    value={formData.poDate}
+                    onChange={handleInputChange}
+                    className='w-full px-4 py-3 text-sm border rounded-lg bg-white border-gray-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500'
+                  />
+                  <Calendar className='absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none' />
+                </div>
+              </div>
+
+              <div>
+                <label className='block text-sm font-medium text-gray-700 mb-2'>
+                  <span className='text-red-500'>*</span> Delivery Date
+                </label>
+                <div className='relative'>
+                  <input
+                    type='date'
+                    name='deliveryDate'
+                    value={formData.deliveryDate}
+                    onChange={handleInputChange}
+                    min={formData.poDate}
+                    className='w-full px-4 py-3 text-sm border rounded-lg bg-white border-gray-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500'
+                  />
+                  <Calendar className='absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none' />
+                </div>
+              </div>
+
+              <div>
+                <label className='block text-sm font-medium text-gray-700 mb-2'>
+                  <span className='text-red-500'>*</span> Terms & Conditions
+                </label>
+                <select
+                  name='termsConditions'
+                  value={formData.termsConditions}
+                  onChange={handleInputChange}
+                  className='w-full px-4 py-3 text-sm border rounded-lg bg-white border-gray-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500'
+                >
+                  <option value='DELIEVERY AS PER SCHEDULE'>
+                    DELIEVERY AS PER SCHEDULE
+                  </option>
+                  <option value='IMMEDIATE DELIVERY'>IMMEDIATE DELIVERY</option>
+                  <option value='PARTIAL DELIVERY ALLOWED'>
+                    PARTIAL DELIVERY ALLOWED
+                  </option>
+                </select>
+              </div>
+
+              <div>
+                <label className='block text-sm font-medium text-gray-700 mb-2'>
+                  <span className='text-red-500'>*</span> Payment Terms
+                </label>
+                <select
+                  name='paymentTerms'
+                  value={formData.paymentTerms}
+                  onChange={handleInputChange}
+                  className='w-full px-4 py-3 text-sm border rounded-lg bg-white border-gray-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500'
+                >
+                  <option value=''>Select</option>
+                  <option value='NETT 30 DAYS'>NETT 30 DAYS</option>
+                  <option value='NETT 45 DAYS'>NETT 45 DAYS</option>
+                  <option value='NETT 60 DAYS'>NETT 60 DAYS</option>
+                  <option value='IMMEDIATE'>IMMEDIATE</option>
+                </select>
+              </div>
+
+              <div>
+                <label className='block text-sm font-medium text-gray-700 mb-2'>
+                  <span className='text-red-500'>*</span> Approval Group
+                </label>
+                <select
+                  name='approvalGroup'
+                  value={formData.approvalGroup}
+                  onChange={handleInputChange}
+                  className='w-full px-4 py-3 text-sm border rounded-lg bg-white border-gray-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500'
+                >
+                  <option value=''>Select</option>
+                  <option value='HOD/CTO/COO/CEO'>HOD/CTO/COO/CEO</option>
+                  <option value='MANAGER/DIRECTOR'>MANAGER/DIRECTOR</option>
+                  <option value='FINANCE/CFO'>FINANCE/CFO</option>
+                </select>
               </div>
             </div>
 
-            <div>
-              <label className='block text-sm font-medium text-gray-700 mb-2'>
-                <span className='text-red-500'>*</span> Delivery Date
-              </label>
-              <div className='relative'>
-                <input
-                  type='date'
-                  name='deliveryDate'
-                  value={formData.deliveryDate}
+            <div className='grid grid-cols-1 md:grid-cols-2 gap-6 mt-6'>
+              <div>
+                <label className='block text-sm font-medium text-gray-700 mb-2'>
+                  <span className='text-red-500'>*</span> Ship To
+                </label>
+                <textarea
+                  name='shipToAddress'
+                  value={formData.shipToAddress}
                   onChange={handleInputChange}
-                  min={formData.poDate}
-                  className='w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent'
+                  rows={3}
+                  className='w-full px-4 py-3 text-sm border rounded-lg bg-white border-gray-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500'
+                  placeholder='Enter shipping address...'
                 />
-                <Calendar className='absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none' />
+              </div>
+
+              <div>
+                <label className='block text-sm font-medium text-gray-700 mb-2'>
+                  Bill To <input type='checkbox' className='ml-2' /> Bill To
+                  address same as Ship To address.
+                </label>
+                <textarea
+                  name='billToAddress'
+                  value={formData.billToAddress}
+                  onChange={handleInputChange}
+                  rows={3}
+                  className='w-full px-4 py-3 text-sm border rounded-lg bg-white border-gray-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500'
+                  placeholder='Enter billing address...'
+                />
               </div>
             </div>
 
-            <div>
+            <div className='mt-6'>
               <label className='block text-sm font-medium text-gray-700 mb-2'>
-                <span className='text-red-500'>*</span> Terms & Conditions
-              </label>
-              <select
-                name='termsConditions'
-                value={formData.termsConditions}
-                onChange={handleInputChange}
-                className='w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent'
-              >
-                <option value='DELIEVERY AS PER SCHEDULE'>
-                  DELIEVERY AS PER SCHEDULE
-                </option>
-                <option value='IMMEDIATE DELIVERY'>IMMEDIATE DELIVERY</option>
-                <option value='PARTIAL DELIVERY ALLOWED'>
-                  PARTIAL DELIVERY ALLOWED
-                </option>
-              </select>
-            </div>
-
-            <div>
-              <label className='block text-sm font-medium text-gray-700 mb-2'>
-                <span className='text-red-500'>*</span> Payment Terms
-              </label>
-              <select
-                name='paymentTerms'
-                value={formData.paymentTerms}
-                onChange={handleInputChange}
-                className='w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent'
-              >
-                <option value=''>Select</option>
-                <option value='NETT 30 DAYS'>NETT 30 DAYS</option>
-                <option value='NETT 45 DAYS'>NETT 45 DAYS</option>
-                <option value='NETT 60 DAYS'>NETT 60 DAYS</option>
-                <option value='IMMEDIATE'>IMMEDIATE</option>
-              </select>
-            </div>
-
-            <div>
-              <label className='block text-sm font-medium text-gray-700 mb-2'>
-                <span className='text-red-500'>*</span> Approval Group
-              </label>
-              <select
-                name='approvalGroup'
-                value={formData.approvalGroup}
-                onChange={handleInputChange}
-                className='w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent'
-              >
-                <option value=''>Select</option>
-                <option value='HOD/CTO/COO/CEO'>HOD/CTO/COO/CEO</option>
-                <option value='MANAGER/DIRECTOR'>MANAGER/DIRECTOR</option>
-                <option value='FINANCE/CFO'>FINANCE/CFO</option>
-              </select>
-            </div>
-          </div>
-
-          <div className='grid grid-cols-1 md:grid-cols-2 gap-6 mt-6'>
-            <div>
-              <label className='block text-sm font-medium text-gray-700 mb-2'>
-                <span className='text-red-500'>*</span> Ship To
+                Remarks
               </label>
               <textarea
-                name='shipToAddress'
-                value={formData.shipToAddress}
+                name='remarks'
+                value={formData.remarks}
                 onChange={handleInputChange}
-                rows={3}
-                className='w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent'
-                placeholder='Enter shipping address...'
+                rows={2}
+                className='w-full px-4 py-3 text-sm border rounded-lg bg-white border-gray-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 resize-none'
               />
             </div>
 
-            <div>
+            <div className='mt-6'>
               <label className='block text-sm font-medium text-gray-700 mb-2'>
-                Bill To <input type='checkbox' className='ml-2' /> Bill To
-                address same as Ship To address.
+                Description (T&C)
               </label>
               <textarea
-                name='billToAddress'
-                value={formData.billToAddress}
+                name='descriptionTC'
+                value={formData.descriptionTC}
                 onChange={handleInputChange}
-                rows={3}
-                className='w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent'
-                placeholder='Enter billing address...'
+                rows={2}
+                className='w-full px-4 py-3 text-sm border rounded-lg bg-white border-gray-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 resize-none'
               />
             </div>
-          </div>
-
-          <div className='mt-6'>
-            <label className='block text-sm font-medium text-gray-700 mb-2'>
-              Remarks
-            </label>
-            <textarea
-              name='remarks'
-              value={formData.remarks}
-              onChange={handleInputChange}
-              rows={2}
-              className='w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent'
-            />
-          </div>
-
-          <div className='mt-6'>
-            <label className='block text-sm font-medium text-gray-700 mb-2'>
-              Description (T&C)
-            </label>
-            <textarea
-              name='descriptionTC'
-              value={formData.descriptionTC}
-              onChange={handleInputChange}
-              rows={2}
-              className='w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent'
-            />
           </div>
         </div>
 
         {/* Item Details Tab */}
-        <div className='bg-white rounded-lg shadow-sm border border-gray-200 mb-6'>
+        <div className='bg-white rounded-lg border border-gray-200 overflow-hidden'>
           <div className='border-b border-gray-200'>
-            <nav className='flex -mb-px'>
+            <nav className='-mb-px flex gap-6 px-6 mt-3'>
               <button
                 onClick={() => setActiveTab('itemDetails')}
-                className={`py-3 px-6 border-b-2 font-medium text-sm transition-colors ${activeTab === 'itemDetails'
-                    ? 'border-primary-500 text-primary-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                  }`}
+                className={`
+                  group relative flex items-center gap-2 pb-4 px-1 font-medium text-sm transition-all duration-200
+                  border-0 outline-none bg-transparent
+                  ${
+                    activeTab === 'itemDetails'
+                      ? 'text-violet-600'
+                      : 'text-gray-500 hover:text-gray-700'
+                  }
+                `}
               >
-                Item Details
+                <span>Item Details</span>
+                {/* Active/Hover/Focus indicator */}
+                <span
+                  className={`absolute bottom-0 left-0 right-0 h-0.5 rounded-t-full transition-all duration-200 ${
+                    activeTab === 'itemDetails'
+                      ? 'bg-violet-600'
+                      : 'bg-transparent group-hover:bg-gray-300 group-focus:bg-violet-400'
+                  }`}
+                />
               </button>
             </nav>
           </div>
@@ -706,7 +712,7 @@ const CreatePurchaseOrderPage: React.FC = () => {
                       value={newItem.itemName}
                       onChange={handleItemChange}
                       placeholder='Enter item name'
-                      className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent'
+                      className='w-full px-4 py-3 text-sm border rounded-lg bg-white border-gray-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500'
                     />
                   </div>
                   <div>
@@ -718,7 +724,7 @@ const CreatePurchaseOrderPage: React.FC = () => {
                       name='deliveryDate'
                       value={newItem.deliveryDate}
                       onChange={handleItemChange}
-                      className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent'
+                      className='w-full px-4 py-3 text-sm border rounded-lg bg-white border-gray-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500'
                     />
                   </div>
                   <div>
@@ -731,7 +737,7 @@ const CreatePurchaseOrderPage: React.FC = () => {
                       value={newItem.quantity}
                       onChange={handleItemChange}
                       min='1'
-                      className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent'
+                      className='w-full px-4 py-3 text-sm border rounded-lg bg-white border-gray-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500'
                     />
                   </div>
                   <div>
@@ -745,14 +751,14 @@ const CreatePurchaseOrderPage: React.FC = () => {
                       onChange={handleItemChange}
                       min='0'
                       step='0.01'
-                      className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent'
+                      className='w-full px-4 py-3 text-sm border rounded-lg bg-white border-gray-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500'
                     />
                   </div>
                   <div className='flex items-end'>
                     <button
                       onClick={addItem}
                       disabled={!newItem.itemName || !newItem.quantity}
-                      className='w-full px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed'
+                      className='w-full px-4 py-3 text-sm font-semibold text-white bg-violet-600 rounded-md hover:bg-violet-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed'
                     >
                       <Plus className='w-4 h-4 inline mr-2' />
                       Add Item
@@ -764,7 +770,8 @@ const CreatePurchaseOrderPage: React.FC = () => {
 
             {formData.rfpNumber && (
               <div className='bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4 text-sm text-blue-800'>
-                Items are populated from the selected RFP and cannot be modified here.
+                Items are populated from the selected RFP and cannot be modified
+                here.
               </div>
             )}
 
@@ -839,12 +846,18 @@ const CreatePurchaseOrderPage: React.FC = () => {
                           {item.unitPrice.toFixed(2)}
                         </td>
                         <td className='px-4 py-3 text-sm text-gray-900'>
-                          <select className='px-2 py-1 border border-gray-300 rounded text-xs' disabled={!!formData.rfpNumber}>
+                          <select
+                            className='px-2 py-1 border border-gray-300 rounded text-xs'
+                            disabled={!!formData.rfpNumber}
+                          >
                             <option>{item.tax1Type}</option>
                           </select>
                         </td>
                         <td className='px-4 py-3 text-sm text-gray-900'>
-                          <select className='px-2 py-1 border border-gray-300 rounded text-xs' disabled={!!formData.rfpNumber}>
+                          <select
+                            className='px-2 py-1 border border-gray-300 rounded text-xs'
+                            disabled={!!formData.rfpNumber}
+                          >
                             <option>{item.tax2Type}</option>
                           </select>
                         </td>
@@ -896,8 +909,8 @@ const CreatePurchaseOrderPage: React.FC = () => {
             </div>
           </div>
         </div>
-      </div>
-    </div>
+      </form>
+    </>
   );
 };
 

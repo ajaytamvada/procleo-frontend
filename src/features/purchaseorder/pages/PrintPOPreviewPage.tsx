@@ -69,35 +69,51 @@ export const PrintPOPreviewPage: React.FC = () => {
     }
   };
 
+  const handleBack = () => {
+    navigate('/purchase-orders/print');
+  };
+
   if (isLoading) {
     return (
-      <div className='flex items-center justify-center h-screen'>
-        <Loader2 className='w-8 h-8 animate-spin text-blue-600' />
-        <span className='ml-2 text-gray-600'>Loading PO...</span>
+      <div className='min-h-screen bg-[#f8f9fc] p-6'>
+        <div className='flex items-center justify-center h-64'>
+          <div className='flex flex-col items-center'>
+            <div className='animate-spin rounded-full h-8 w-8 border-2 border-violet-600 border-t-transparent'></div>
+            <p className='text-sm text-gray-500 mt-3'>Loading...</p>
+          </div>
+        </div>
       </div>
     );
   }
 
   if (error || !po) {
     return (
-      <div className='p-6'>
-        <div className='bg-red-50 border border-red-200 rounded-lg p-4 flex items-start'>
-          <AlertCircle className='w-5 h-5 text-red-600 mt-0.5 mr-3' />
-          <div>
-            <h3 className='text-red-800 font-medium'>Error Loading PO</h3>
-            <p className='text-red-600 text-sm mt-1'>
+      <div className='min-h-screen bg-[#f8f9fc] p-6'>
+        <div className='mb-6'>
+          <h1 className='text-xl font-semibold text-gray-900'>PO Preview</h1>
+          <p className='text-sm text-gray-500 mt-1'>
+            Preview and print purchase orders
+          </p>
+        </div>
+        <div className='bg-white rounded-lg border border-gray-200 py-16'>
+          <div className='text-center'>
+            <div className='w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4'>
+              <AlertCircle className='w-8 h-8 text-gray-400' />
+            </div>
+            <p className='text-gray-600 font-medium'>Error Loading PO</p>
+            <p className='text-gray-400 text-sm mt-1'>
               {error instanceof Error
                 ? error.message
                 : 'Purchase Order not found'}
             </p>
+            <button
+              onClick={handleBack}
+              className='mt-4 px-4 py-2 text-sm font-semibold text-white bg-violet-600 rounded-md hover:bg-violet-700 transition-colors'
+            >
+              Back to List
+            </button>
           </div>
         </div>
-        <button
-          onClick={() => navigate('/purchase-orders/print')}
-          className='mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700'
-        >
-          Back to List
-        </button>
       </div>
     );
   }
@@ -108,45 +124,43 @@ export const PrintPOPreviewPage: React.FC = () => {
   const grandTotal = po.grandTotal || 0;
 
   return (
-    <div className='min-h-screen bg-gray-50'>
-      {/* Action Bar - Hidden when printing */}
-      <div className='bg-white border-b border-gray-200 px-6 py-4 print:hidden'>
-        <div className='flex items-center justify-between'>
-          <div className='flex items-center space-x-4'>
-            <button
-              onClick={() => navigate('/purchase-orders/print')}
-              className='p-2 hover:bg-gray-100 rounded-lg transition-colors'
-            >
-              <ArrowLeft className='w-5 h-5 text-gray-600' />
-            </button>
-            <div>
-              <h1 className='text-xl font-semibold text-gray-900'>
-                Print Preview
-              </h1>
-              <p className='text-sm text-gray-600 mt-1'>PO #{po.poNumber}</p>
-            </div>
+    <div className='min-h-screen bg-[#f8f9fc] p-2'>
+      {/* Page Header */}
+      <div className='flex items-center justify-between mb-6 print:hidden'>
+        <div className='flex items-center space-x-4'>
+          <button
+            onClick={handleBack}
+            className='text-gray-600 hover:text-gray-900 transition-colors'
+          >
+            <ArrowLeft className='h-6 w-6' />
+          </button>
+          <div>
+            <h1 className='text-xl font-semibold text-gray-900'>PO Preview</h1>
+            <p className='text-sm text-gray-500 mt-1'>
+              Preview and print purchase orders
+            </p>
           </div>
-          <div className='flex items-center space-x-3'>
-            <button
-              onClick={handlePrint}
-              className='inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors'
-            >
-              <Printer className='w-4 h-4 mr-2' />
-              Print
-            </button>
-            <button
-              onClick={handleDownloadPDF}
-              disabled={isDownloading}
-              className='inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50'
-            >
-              {isDownloading ? (
-                <Loader2 className='w-4 h-4 mr-2 animate-spin' />
-              ) : (
-                <Download className='w-4 h-4 mr-2' />
-              )}
-              Download PDF
-            </button>
-          </div>
+        </div>
+        <div className='flex items-center space-x-3'>
+          <button
+            onClick={handlePrint}
+            className='inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-violet-600 rounded-md hover:bg-violet-700 transition-colors'
+          >
+            <Printer className='h-4 w-4' />
+            <span>Print</span>
+          </button>
+          <button
+            onClick={handleDownloadPDF}
+            disabled={isDownloading}
+            className='inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-green-600 rounded-md hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed'
+          >
+            {isDownloading ? (
+              <Loader2 className='h-4 w-4 animate-spin' />
+            ) : (
+              <Download className='h-4 w-4' />
+            )}
+            <span>Download PDF</span>
+          </button>
         </div>
       </div>
 
@@ -258,64 +272,67 @@ export const PrintPOPreviewPage: React.FC = () => {
               Order Items
             </h3>
             <div className='overflow-x-auto'>
-              <table className='min-w-full divide-y divide-gray-200'>
-                <thead className='bg-gray-50'>
-                  <tr>
-                    <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase'>
+              <table className='min-w-full'>
+                <thead>
+                  <tr className='bg-[#fafbfc]'>
+                    <th className='px-4 py-3.5 text-center text-xs font-semibold text-gray-600 tracking-wide w-16'>
                       SL No.
                     </th>
-                    <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase'>
+                    <th className='px-4 py-3.5 text-left text-xs font-semibold text-gray-600 tracking-wide'>
                       Item Name
                     </th>
-                    <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase'>
+                    <th className='px-4 py-3.5 text-left text-xs font-semibold text-gray-600 tracking-wide'>
                       Item Code
                     </th>
-                    <th className='px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase'>
+                    <th className='px-4 py-3.5 text-right text-xs font-semibold text-gray-600 tracking-wide'>
                       Quantity
                     </th>
-                    <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase'>
+                    <th className='px-4 py-3.5 text-left text-xs font-semibold text-gray-600 tracking-wide'>
                       UOM
                     </th>
-                    <th className='px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase'>
+                    <th className='px-4 py-3.5 text-right text-xs font-semibold text-gray-600 tracking-wide'>
                       Unit Price
                     </th>
-                    <th className='px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase'>
+                    <th className='px-4 py-3.5 text-right text-xs font-semibold text-gray-600 tracking-wide'>
                       Tax
                     </th>
-                    <th className='px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase'>
+                    <th className='px-4 py-3.5 text-right text-xs font-semibold text-gray-600 tracking-wide'>
                       Total
                     </th>
                   </tr>
                 </thead>
-                <tbody className='bg-white divide-y divide-gray-200'>
+                <tbody className='divide-y divide-gray-100'>
                   {po.items && po.items.length > 0 ? (
                     po.items.map((item: any, index: number) => {
                       const itemTax =
                         (item.tax1Value || 0) + (item.tax2Value || 0);
                       return (
-                        <tr key={index}>
-                          <td className='px-4 py-3 text-sm text-gray-900'>
+                        <tr
+                          key={index}
+                          className='hover:bg-gray-50 transition-colors'
+                        >
+                          <td className='px-4 py-3.5 text-sm text-gray-600 text-center'>
                             {index + 1}
                           </td>
-                          <td className='px-4 py-3 text-sm text-gray-900'>
+                          <td className='px-4 py-3.5 text-sm text-gray-700'>
                             {item.itemName}
                           </td>
-                          <td className='px-4 py-3 text-sm text-gray-600'>
+                          <td className='px-4 py-3.5 text-sm text-gray-600'>
                             {item.itemCode || '-'}
                           </td>
-                          <td className='px-4 py-3 text-sm text-gray-900 text-right'>
+                          <td className='px-4 py-3.5 text-sm text-gray-600 text-right'>
                             {item.quantity}
                           </td>
-                          <td className='px-4 py-3 text-sm text-gray-600'>
+                          <td className='px-4 py-3.5 text-sm text-gray-600'>
                             {item.unitOfMeasurement || 'PCS'}
                           </td>
-                          <td className='px-4 py-3 text-sm text-gray-900 text-right'>
+                          <td className='px-4 py-3.5 text-sm text-gray-600 text-right'>
                             ₹{item.unitPrice?.toFixed(2) || '0.00'}
                           </td>
-                          <td className='px-4 py-3 text-sm text-gray-900 text-right'>
+                          <td className='px-4 py-3.5 text-sm text-gray-600 text-right'>
                             ₹{itemTax.toFixed(2)}
                           </td>
-                          <td className='px-4 py-3 text-sm font-medium text-gray-900 text-right'>
+                          <td className='px-4 py-3.5 text-sm font-medium text-gray-900 text-right'>
                             ₹{item.grandTotal?.toFixed(2) || '0.00'}
                           </td>
                         </tr>
@@ -325,7 +342,7 @@ export const PrintPOPreviewPage: React.FC = () => {
                     <tr>
                       <td
                         colSpan={8}
-                        className='px-4 py-8 text-center text-sm text-gray-500'
+                        className='px-4 py-8 text-center text-gray-500'
                       >
                         No items found
                       </td>

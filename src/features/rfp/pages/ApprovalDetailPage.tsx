@@ -78,29 +78,64 @@ export const ApprovalDetailPage: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className='flex items-center justify-center h-screen'>
-        <Loader2 className='w-8 h-8 animate-spin text-purple-600' />
-        <span className='ml-2 text-gray-600'>Loading RFP details...</span>
+      <div className='min-h-screen bg-[#f8f9fc]'>
+        <div className='p-2'>
+          <div className='flex items-center gap-3 mb-6'>
+            <button
+              onClick={() => navigate('/rfp/approval')}
+              className='p-1.5 text-gray-500 hover:text-gray-700 rounded-lg transition-colors'
+            >
+              <ArrowLeft size={20} />
+            </button>
+            <h1 className='text-xl font-semibold text-gray-900'>Review RFP</h1>
+          </div>
+          <div className='bg-white rounded-lg border border-gray-200 p-6'>
+            <div className='flex flex-col items-center justify-center py-12'>
+              <div className='animate-spin rounded-full h-8 w-8 border-2 border-violet-600 border-t-transparent'></div>
+              <p className='text-sm text-gray-500 mt-3'>
+                Loading RFP details...
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
 
   if (error || !rfp) {
     return (
-      <div className='p-6'>
-        <div className='bg-red-50 border border-red-200 rounded-lg p-4 flex items-start'>
-          <AlertCircle className='w-5 h-5 text-red-600 mt-0.5 mr-3' />
-          <div>
-            <h3 className='text-red-800 font-medium'>Error Loading RFP</h3>
-            <p className='text-red-600 text-sm mt-1'>
-              {error instanceof Error ? error.message : 'RFP not found'}
-            </p>
+      <div className='min-h-screen bg-[#f8f9fc]'>
+        <div className='p-2'>
+          <div className='flex items-center gap-3 mb-6'>
             <button
               onClick={() => navigate('/rfp/approval')}
-              className='mt-3 text-sm text-red-700 hover:text-red-800 underline'
+              className='p-1.5 text-gray-500 hover:text-gray-700 rounded-lg transition-colors'
             >
-              Return to Approval List
+              <ArrowLeft size={20} />
             </button>
+            <h1 className='text-xl font-semibold text-gray-900'>Review RFP</h1>
+          </div>
+          <div className='bg-white rounded-lg border border-gray-200 p-6 max-w-2xl'>
+            <div className='flex items-start gap-3'>
+              <div className='w-10 h-10 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0'>
+                <AlertCircle className='w-5 h-5 text-red-600' />
+              </div>
+              <div>
+                <h3 className='text-base font-semibold text-gray-900'>
+                  Error Loading RFP
+                </h3>
+                <p className='text-sm text-gray-500 mt-1'>
+                  {error instanceof Error ? error.message : 'RFP not found'}
+                </p>
+                <button
+                  onClick={() => navigate('/rfp/approval')}
+                  className='mt-4 inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-violet-600 bg-violet-50 rounded-md hover:bg-violet-100 transition-colors'
+                >
+                  <ArrowLeft size={15} />
+                  Return to Approval List
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -111,50 +146,54 @@ export const ApprovalDetailPage: React.FC = () => {
   const selectedQuotations = quotations.filter(q => q.isSelected);
 
   return (
-    <div className='h-full flex flex-col bg-gray-50'>
-      {/* Header */}
-      <div className='bg-white border-b border-gray-200 px-6 py-4'>
-        <div className='flex items-center justify-between'>
-          <div className='flex items-center space-x-3'>
+    <div className='min-h-screen bg-[#f8f9fc]'>
+      <div className='p-2'>
+        {/* Page Header - Cashfree Style */}
+        <div className='flex items-center justify-between mb-6'>
+          <div className='flex items-center gap-3'>
             <button
               onClick={() => navigate('/rfp/approval')}
-              className='p-2 hover:bg-gray-100 rounded-lg transition-colors'
+              className='p-1.5 text-gray-500 hover:text-gray-700 rounded-lg transition-colors'
             >
               <ArrowLeft size={20} />
             </button>
             <div>
-              <h1 className='text-2xl font-bold text-gray-900'>Review RFP</h1>
-              <p className='text-sm text-gray-600'>{rfp.rfpNumber}</p>
+              <h1 className='text-xl font-semibold text-gray-900'>
+                Review RFP
+              </h1>
+              <p className='text-sm text-gray-500 mt-0.5'>{rfp.rfpNumber}</p>
             </div>
           </div>
-          <div className='flex items-center space-x-3'>
+          <div className='flex items-center gap-3'>
             <button
               onClick={() => setShowRejectModal(true)}
               disabled={approveRejectMutation.isPending}
-              className='px-6 py-2 border border-red-300 text-red-700 rounded-lg hover:bg-red-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2'
+              className='inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-red-700 bg-white border border-red-300 rounded-md hover:bg-red-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed'
             >
-              <X size={16} />
-              <span>Reject</span>
+              <X size={15} />
+              Reject
             </button>
             <button
               onClick={handleApprove}
               disabled={approveRejectMutation.isPending}
-              className='px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2'
+              className='inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-green-600 rounded-md hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed'
             >
               {approveRejectMutation.isPending ? (
-                <Loader2 size={16} className='animate-spin' />
+                <>
+                  <div className='animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent'></div>
+                  <span>Approving...</span>
+                </>
               ) : (
-                <Check size={16} />
+                <>
+                  <Check size={15} />
+                  <span>Approve</span>
+                </>
               )}
-              <span>Approve</span>
             </button>
           </div>
         </div>
-      </div>
 
-      {/* Content */}
-      <div className='flex-1 overflow-auto p-6'>
-        <div className='max-w-7xl mx-auto space-y-6'>
+        <div className='space-y-6'>
           {/* RFP Info Card */}
           <div className='bg-white rounded-lg border border-gray-200 p-6'>
             <h2 className='text-lg font-semibold text-gray-900 mb-4'>

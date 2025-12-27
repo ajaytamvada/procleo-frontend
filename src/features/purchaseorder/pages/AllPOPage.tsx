@@ -19,23 +19,21 @@ export const AllPOPage: React.FC = () => {
   ];
 
   return (
-    <div className='h-full flex flex-col bg-gray-50'>
+    <div className='space-y-6'>
       {/* Header */}
-      <div className='bg-white border-b border-gray-200 px-6 py-4'>
-        <div>
-          <h1 className='text-2xl font-bold text-gray-900'>
-            All Purchase Orders
-          </h1>
-          <p className='text-sm text-gray-600 mt-1'>
-            Manage purchase order operations including cancellation, short
-            close, and amendments
-          </p>
-        </div>
+      <div>
+        <h1 className='text-xl font-semibold text-gray-800'>
+          All Purchase Orders
+        </h1>
+        <p className='text-sm text-gray-500 mt-1'>
+          Manage purchase order operations including cancellation, short close,
+          and amendments
+        </p>
       </div>
 
       {/* Tabs */}
-      <div className='bg-white border-b border-gray-200'>
-        <nav className='flex px-6' aria-label='Tabs'>
+      <div className='border-b border-gray-200'>
+        <nav className='-mb-px flex gap-6' aria-label='Tabs'>
           {tabs.map(tab => {
             const Icon = tab.icon;
             return (
@@ -43,16 +41,27 @@ export const AllPOPage: React.FC = () => {
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
                 className={`
-                  flex items-center px-4 py-3 text-sm font-medium border-b-2 transition-colors
+                  group relative flex items-center gap-2 pb-3 px-1 font-medium text-sm transition-all duration-200
+                  border-0 outline-none bg-transparent
                   ${
                     activeTab === tab.id
-                      ? 'border-blue-600 text-blue-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                      ? 'text-violet-600'
+                      : 'text-gray-500 hover:text-gray-700'
                   }
                 `}
               >
-                <Icon className='w-4 h-4 mr-2' />
-                {tab.label}
+                <Icon
+                  className={`w-5 h-5 transition-colors ${activeTab === tab.id ? 'text-violet-600' : 'text-gray-400 group-hover:text-gray-500'}`}
+                />
+                <span>{tab.label}</span>
+                {/* Active/Hover/Focus indicator */}
+                <span
+                  className={`absolute bottom-0 left-0 right-0 h-0.5 rounded-t-full transition-all duration-200 ${
+                    activeTab === tab.id
+                      ? 'bg-violet-600'
+                      : 'bg-transparent group-hover:bg-gray-300 group-focus:bg-violet-400'
+                  }`}
+                />
               </button>
             );
           })}
@@ -60,29 +69,33 @@ export const AllPOPage: React.FC = () => {
       </div>
 
       {/* Tab Content */}
-      <div className='flex-1 overflow-hidden'>
+      <div>
         {activeTab === 'cancel' && <CancelPOTab />}
         {activeTab === 'shortClose' && (
-          <div className='h-full flex items-center justify-center'>
+          <div className='bg-white rounded-lg border border-gray-200 py-16'>
             <div className='text-center'>
-              <MinusCircle className='w-16 h-16 text-gray-400 mx-auto mb-4' />
-              <h3 className='text-lg font-medium text-gray-900 mb-2'>
+              <div className='inline-flex items-center justify-center w-16 h-16 bg-violet-100 rounded-full mb-4'>
+                <MinusCircle className='w-7 h-7 text-violet-600' />
+              </div>
+              <h3 className='text-lg font-semibold text-gray-900 mb-2'>
                 Short Close PO
               </h3>
-              <p className='text-gray-600 max-w-md'>
+              <p className='text-gray-500 text-sm max-w-md mx-auto'>
                 Short close functionality for purchase orders coming soon...
               </p>
             </div>
           </div>
         )}
         {activeTab === 'amend' && (
-          <div className='h-full flex items-center justify-center'>
+          <div className='bg-white rounded-lg border border-gray-200 py-16'>
             <div className='text-center'>
-              <Edit3 className='w-16 h-16 text-gray-400 mx-auto mb-4' />
-              <h3 className='text-lg font-medium text-gray-900 mb-2'>
+              <div className='inline-flex items-center justify-center w-16 h-16 bg-violet-100 rounded-full mb-4'>
+                <Edit3 className='w-7 h-7 text-violet-600' />
+              </div>
+              <h3 className='text-lg font-semibold text-gray-900 mb-2'>
                 Amend PO
               </h3>
-              <p className='text-gray-600 max-w-md'>
+              <p className='text-gray-500 text-sm max-w-md mx-auto'>
                 Amendment functionality for purchase orders coming soon...
               </p>
             </div>

@@ -8,7 +8,6 @@ import { useNavigate, useParams } from 'react-router-dom';
 import {
   ArrowLeft,
   Check,
-  Loader2,
   AlertCircle,
   Building2,
   Calendar,
@@ -121,29 +120,74 @@ export const SendForApprovalPage: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className='flex items-center justify-center h-screen'>
-        <Loader2 className='w-8 h-8 animate-spin text-purple-600' />
-        <span className='ml-2 text-gray-600'>Loading RFP details...</span>
+      <div className='min-h-screen bg-[#f8f9fc]'>
+        <div className='p-2'>
+          {/* Header */}
+          <div className='flex items-center gap-3 mb-6'>
+            <button
+              onClick={() => navigate('/rfp/send-for-approval')}
+              className='p-1.5 text-gray-500 hover:text-gray-700 rounded-lg transition-colors'
+            >
+              <ArrowLeft size={20} />
+            </button>
+            <h1 className='text-xl font-semibold text-gray-900'>
+              Send For Approval
+            </h1>
+          </div>
+
+          {/* Loading Card */}
+          <div className='bg-white rounded-lg border border-gray-200 p-6'>
+            <div className='flex flex-col items-center justify-center py-12'>
+              <div className='animate-spin rounded-full h-8 w-8 border-2 border-violet-600 border-t-transparent'></div>
+              <p className='text-sm text-gray-500 mt-3'>
+                Loading RFP details...
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
 
   if (error || !rfp) {
     return (
-      <div className='p-6'>
-        <div className='bg-red-50 border border-red-200 rounded-lg p-4 flex items-start'>
-          <AlertCircle className='w-5 h-5 text-red-600 mt-0.5 mr-3' />
-          <div>
-            <h3 className='text-red-800 font-medium'>Error Loading RFP</h3>
-            <p className='text-red-600 text-sm mt-1'>
-              {error instanceof Error ? error.message : 'RFP not found'}
-            </p>
+      <div className='min-h-screen bg-[#f8f9fc]'>
+        <div className='p-2'>
+          {/* Header */}
+          <div className='flex items-center gap-3 mb-6'>
             <button
               onClick={() => navigate('/rfp/send-for-approval')}
-              className='mt-3 text-sm text-red-700 hover:text-red-800 underline'
+              className='p-1.5 text-gray-500 hover:text-gray-700 rounded-lg transition-colors'
             >
-              Return to RFP List
+              <ArrowLeft size={20} />
             </button>
+            <h1 className='text-xl font-semibold text-gray-900'>
+              Send For Approval
+            </h1>
+          </div>
+
+          {/* Error Card */}
+          <div className='bg-white rounded-lg border border-gray-200 p-6 max-w-2xl'>
+            <div className='flex items-start gap-3'>
+              <div className='w-10 h-10 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0'>
+                <AlertCircle className='w-5 h-5 text-red-600' />
+              </div>
+              <div>
+                <h3 className='text-base font-semibold text-gray-900'>
+                  Error Loading RFP
+                </h3>
+                <p className='text-sm text-gray-500 mt-1'>
+                  {error instanceof Error ? error.message : 'RFP not found'}
+                </p>
+                <button
+                  onClick={() => navigate('/rfp/send-for-approval')}
+                  className='mt-4 inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-violet-600 bg-violet-50 rounded-md hover:bg-violet-100 transition-colors'
+                >
+                  <ArrowLeft size={15} />
+                  Return to RFP List
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -159,95 +203,99 @@ export const SendForApprovalPage: React.FC = () => {
   );
 
   return (
-    <div className='h-full flex flex-col bg-gray-50'>
-      {/* Header */}
-      <div className='bg-white border-b border-gray-200 px-6 py-4'>
-        <div className='flex items-center justify-between'>
-          <div className='flex items-center space-x-3'>
+    <div className='min-h-screen bg-[#f8f9fc]'>
+      <div className='p-2'>
+        {/* Page Header - Cashfree Style */}
+        <div className='flex items-center justify-between mb-6'>
+          <div className='flex items-center gap-3'>
             <button
               onClick={() => navigate('/rfp/send-for-approval')}
-              className='p-2 hover:bg-gray-100 rounded-lg transition-colors'
+              className='p-1.5 text-gray-500 hover:text-gray-700 rounded-lg transition-colors'
             >
               <ArrowLeft size={20} />
             </button>
             <div>
-              <h1 className='text-2xl font-bold text-gray-900'>
+              <h1 className='text-xl font-semibold text-gray-900'>
                 Send For Approval
               </h1>
-              <p className='text-sm text-gray-600'>{rfp.rfpNumber}</p>
+              <p className='text-sm text-gray-500 mt-0.5'>{rfp.rfpNumber}</p>
             </div>
           </div>
           <button
             onClick={handleSubmit}
             disabled={sendForApprovalMutation.isPending}
-            className='px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2'
+            className='inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-violet-600 rounded-md hover:bg-violet-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed'
           >
             {sendForApprovalMutation.isPending ? (
-              <Loader2 size={16} className='animate-spin' />
+              <>
+                <div className='animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent'></div>
+                <span>Submitting...</span>
+              </>
             ) : (
-              <Check size={16} />
+              <>
+                <Check size={15} />
+                <span>Send For Approval</span>
+              </>
             )}
-            <span>Send For Approval</span>
           </button>
         </div>
-      </div>
 
-      {/* Content */}
-      <div className='flex-1 overflow-auto p-6'>
-        <div className='max-w-7xl mx-auto space-y-6'>
+        <div className='space-y-6'>
           {/* RFP Info Card */}
-          <div className='bg-white rounded-lg border border-gray-200 p-6'>
-            <h2 className='text-lg font-semibold text-gray-900 mb-4'>
-              RFP Information
-            </h2>
-            <div className='grid grid-cols-1 md:grid-cols-4 gap-4'>
-              <div>
-                <p className='text-xs font-medium text-gray-500 uppercase'>
-                  RFP Number
-                </p>
-                <p className='mt-1 text-sm font-semibold text-gray-900'>
-                  {rfp.rfpNumber}
-                </p>
-              </div>
-              <div>
-                <p className='text-xs font-medium text-gray-500 uppercase'>
-                  Request Date
-                </p>
-                <p className='mt-1 text-sm text-gray-900'>
-                  {new Date(rfp.requestDate).toLocaleDateString()}
-                </p>
-              </div>
-              <div>
-                <p className='text-xs font-medium text-gray-500 uppercase'>
-                  Closing Date
-                </p>
-                <p className='mt-1 text-sm text-gray-900'>
-                  {new Date(rfp.closingDate).toLocaleDateString()}
-                </p>
-              </div>
-              <div>
-                <p className='text-xs font-medium text-gray-500 uppercase'>
-                  Quotations Received
-                </p>
-                <p className='mt-1 text-sm font-semibold text-green-600'>
-                  {quotations.length}
-                </p>
+          <div className='bg-white rounded-lg border border-gray-200 overflow-hidden'>
+            <div className='p-6'>
+              <h2 className='text-base font-semibold text-gray-900 mb-5'>
+                RFP Information
+              </h2>
+              <div className='grid grid-cols-1 md:grid-cols-4 gap-6'>
+                <div>
+                  <p className='text-xs font-medium text-gray-500 uppercase mb-1.5'>
+                    RFP Number
+                  </p>
+                  <p className='text-sm font-semibold text-gray-900'>
+                    {rfp.rfpNumber}
+                  </p>
+                </div>
+                <div>
+                  <p className='text-xs font-medium text-gray-500 uppercase mb-1.5'>
+                    Request Date
+                  </p>
+                  <p className='text-sm text-gray-600'>
+                    {new Date(rfp.requestDate).toLocaleDateString()}
+                  </p>
+                </div>
+                <div>
+                  <p className='text-xs font-medium text-gray-500 uppercase mb-1.5'>
+                    Closing Date
+                  </p>
+                  <p className='text-sm text-gray-600'>
+                    {new Date(rfp.closingDate).toLocaleDateString()}
+                  </p>
+                </div>
+                <div>
+                  <p className='text-xs font-medium text-gray-500 uppercase mb-1.5'>
+                    Quotations Received
+                  </p>
+                  <p className='text-sm font-semibold text-green-600'>
+                    {quotations.length}
+                  </p>
+                </div>
               </div>
             </div>
           </div>
 
           {/* Quotations Display */}
-          <div className='bg-white rounded-lg border border-gray-200'>
-            <div className='px-6 py-4 border-b border-gray-200'>
-              <h2 className='text-lg font-semibold text-gray-900'>
+          <div className='bg-white rounded-lg border border-gray-200 overflow-hidden'>
+            <div className='p-6 border-b border-gray-200'>
+              <h2 className='text-base font-semibold text-gray-900'>
                 Submitted Quotations
               </h2>
-              <p className='text-sm text-gray-600 mt-1'>
+              <p className='text-sm text-gray-500 mt-1'>
                 Review and select vendors for each item
               </p>
             </div>
 
-            <div className='divide-y divide-gray-200'>
+            <div className='divide-y divide-gray-100'>
               {quotations.map((quotation, index) => (
                 <div key={quotation.id} className='p-6'>
                   {/* Quotation Header */}
@@ -256,8 +304,10 @@ export const SendForApprovalPage: React.FC = () => {
                     onClick={() => toggleQuotation(quotation.id!)}
                   >
                     <div className='flex-1 grid grid-cols-1 md:grid-cols-4 gap-4'>
-                      <div className='flex items-center'>
-                        <Building2 size={16} className='text-gray-400 mr-2' />
+                      <div className='flex items-center gap-2'>
+                        <div className='w-8 h-8 bg-violet-100 rounded-full flex items-center justify-center flex-shrink-0'>
+                          <Building2 size={14} className='text-violet-600' />
+                        </div>
                         <div>
                           <p className='text-xs text-gray-500'>Supplier Name</p>
                           <p className='text-sm font-semibold text-gray-900'>
@@ -265,24 +315,24 @@ export const SendForApprovalPage: React.FC = () => {
                           </p>
                         </div>
                       </div>
-                      <div className='flex items-center'>
-                        <Package size={16} className='text-gray-400 mr-2' />
+                      <div className='flex items-center gap-2'>
+                        <Package size={16} className='text-gray-400' />
                         <div>
                           <p className='text-xs text-gray-500'>
                             Quotation Number
                           </p>
-                          <p className='text-sm font-semibold text-gray-900'>
+                          <p className='text-sm font-medium text-gray-700'>
                             {quotation.quotationNumber || 'N/A'}
                           </p>
                         </div>
                       </div>
-                      <div className='flex items-center'>
-                        <Calendar size={16} className='text-gray-400 mr-2' />
+                      <div className='flex items-center gap-2'>
+                        <Calendar size={16} className='text-gray-400' />
                         <div>
                           <p className='text-xs text-gray-500'>
                             Quotation Date
                           </p>
-                          <p className='text-sm text-gray-900'>
+                          <p className='text-sm text-gray-600'>
                             {quotation.quotationDate
                               ? new Date(
                                   quotation.quotationDate
@@ -293,7 +343,7 @@ export const SendForApprovalPage: React.FC = () => {
                       </div>
                       <div>
                         <p className='text-xs text-gray-500'>Total Amount</p>
-                        <p className='text-sm font-bold text-purple-600'>
+                        <p className='text-sm font-bold text-violet-600'>
                           ₹
                           {(
                             quotation.netAmount ||
@@ -317,41 +367,41 @@ export const SendForApprovalPage: React.FC = () => {
 
                   {/* Quotation Items (Expandable) */}
                   {expandedQuotations.has(quotation.id!) && (
-                    <div className='mt-4 overflow-x-auto'>
-                      <table className='min-w-full divide-y divide-gray-200'>
-                        <thead className='bg-gray-50'>
+                    <div className='mt-6 border border-gray-200 rounded-lg overflow-hidden'>
+                      <table className='min-w-full'>
+                        <thead className='bg-[#fafbfc]'>
                           <tr>
-                            <th className='px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase'>
+                            <th className='px-4 py-3 text-left text-xs font-semibold text-gray-600 tracking-wide'>
                               Item Name
                             </th>
-                            <th className='px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase'>
+                            <th className='px-4 py-3 text-center text-xs font-semibold text-gray-600 tracking-wide'>
                               Quantity
                             </th>
-                            <th className='px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase'>
+                            <th className='px-4 py-3 text-right text-xs font-semibold text-gray-600 tracking-wide'>
                               Unit Price
                             </th>
-                            <th className='px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase'>
+                            <th className='px-4 py-3 text-right text-xs font-semibold text-gray-600 tracking-wide'>
                               Total Price
                             </th>
                           </tr>
                         </thead>
-                        <tbody className='bg-white divide-y divide-gray-200'>
+                        <tbody className='bg-white divide-y divide-gray-100'>
                           {quotation.items && quotation.items.length > 0 ? (
                             quotation.items.map((item, itemIndex) => (
                               <tr key={itemIndex}>
-                                <td className='px-4 py-2 text-sm text-gray-900'>
+                                <td className='px-4 py-3 text-sm text-gray-700'>
                                   {item.itemName}
                                 </td>
-                                <td className='px-4 py-2 text-center text-sm text-gray-600'>
+                                <td className='px-4 py-3 text-center text-sm text-gray-600'>
                                   {item.quantity}
                                 </td>
-                                <td className='px-4 py-2 text-right text-sm text-gray-900'>
+                                <td className='px-4 py-3 text-right text-sm text-gray-700'>
                                   ₹
                                   {item.unitPrice.toLocaleString('en-IN', {
                                     minimumFractionDigits: 2,
                                   })}
                                 </td>
-                                <td className='px-4 py-2 text-right text-sm font-medium text-gray-900'>
+                                <td className='px-4 py-3 text-right text-sm font-medium text-gray-900'>
                                   ₹
                                   {(item.totalPrice || 0).toLocaleString(
                                     'en-IN',
@@ -364,7 +414,7 @@ export const SendForApprovalPage: React.FC = () => {
                             <tr>
                               <td
                                 colSpan={4}
-                                className='px-4 py-4 text-center text-sm text-gray-500'
+                                className='px-4 py-8 text-center text-sm text-gray-500'
                               >
                                 No items available
                               </td>
@@ -380,201 +430,208 @@ export const SendForApprovalPage: React.FC = () => {
           </div>
 
           {/* Vendor Selection Section */}
-          <div className='bg-white rounded-lg border border-gray-200 p-6'>
-            <h2 className='text-lg font-semibold text-gray-900 mb-4'>
-              Finalize Vendor Selection
-            </h2>
-            <p className='text-sm text-gray-600 mb-6'>
-              Select the winning vendor for each item
-            </p>
+          <div className='bg-white rounded-lg border border-gray-200 overflow-hidden'>
+            <div className='p-6'>
+              <h2 className='text-base font-semibold text-gray-900 mb-1.5'>
+                Finalize Vendor Selection
+              </h2>
+              <p className='text-sm text-gray-500 mb-6'>
+                Select the winning vendor for each item
+              </p>
 
-            <div className='space-y-4'>
-              {uniqueItemNames.map(itemName => {
-                // Get all quotations for this item
-                const itemQuotations = quotations
-                  .map(q => ({
-                    quotation: q,
-                    item: q.items?.find(i => i.itemName === itemName),
-                  }))
-                  .filter(q => q.item !== undefined);
+              <div className='space-y-4'>
+                {uniqueItemNames.map(itemName => {
+                  // Get all quotations for this item
+                  const itemQuotations = quotations
+                    .map(q => ({
+                      quotation: q,
+                      item: q.items?.find(i => i.itemName === itemName),
+                    }))
+                    .filter(q => q.item !== undefined);
 
-                const firstItem = itemQuotations[0]?.item;
-                if (!firstItem) return null;
+                  const firstItem = itemQuotations[0]?.item;
+                  if (!firstItem) return null;
 
-                return (
-                  <div
-                    key={itemName}
-                    className='border border-gray-200 rounded-lg p-4'
-                  >
-                    <h3 className='font-medium text-gray-900 mb-3'>
-                      {itemName}
-                    </h3>
-                    <div className='grid grid-cols-1 md:grid-cols-2 gap-3'>
-                      <div>
-                        <label className='block text-sm font-medium text-gray-700 mb-1'>
-                          Select Vendor <span className='text-red-600'>*</span>
-                        </label>
-                        <select
-                          value={
-                            vendorSelections[firstItem.id!]?.supplierId || ''
-                          }
-                          onChange={e => {
-                            const supplierId = parseInt(e.target.value);
-                            const supplier = quotations.find(
-                              q => q.supplierId === supplierId
-                            );
-                            if (supplier) {
-                              handleVendorSelection(
-                                firstItem.id!,
-                                supplierId,
-                                supplier.supplierName || ''
-                              );
+                  return (
+                    <div
+                      key={itemName}
+                      className='border border-gray-200 rounded-lg p-4'
+                    >
+                      <h3 className='text-sm font-medium text-gray-900 mb-3'>
+                        {itemName}
+                      </h3>
+                      <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+                        <div>
+                          <label className='block text-sm font-medium text-gray-700 mb-2'>
+                            Select Vendor{' '}
+                            <span className='text-red-500'>*</span>
+                          </label>
+                          <select
+                            value={
+                              vendorSelections[firstItem.id!]?.supplierId || ''
                             }
-                          }}
-                          className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500'
-                        >
-                          <option value=''>Select Vendor</option>
-                          {itemQuotations.map(({ quotation, item }) => (
-                            <option
-                              key={quotation.supplierId}
-                              value={quotation.supplierId}
-                            >
-                              {quotation.supplierName} - ₹
-                              {item?.unitPrice.toLocaleString('en-IN', {
-                                minimumFractionDigits: 2,
-                              })}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                      <div>
-                        <label className='block text-sm font-medium text-gray-700 mb-1'>
-                          Selection Remarks
-                        </label>
-                        <input
-                          type='text'
-                          value={vendorSelections[firstItem.id!]?.remarks || ''}
-                          onChange={e =>
-                            handleRemarksChange(firstItem.id!, e.target.value)
-                          }
-                          placeholder='Enter reason for selection...'
-                          className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500'
-                        />
+                            onChange={e => {
+                              const supplierId = parseInt(e.target.value);
+                              const supplier = quotations.find(
+                                q => q.supplierId === supplierId
+                              );
+                              if (supplier) {
+                                handleVendorSelection(
+                                  firstItem.id!,
+                                  supplierId,
+                                  supplier.supplierName || ''
+                                );
+                              }
+                            }}
+                            className='w-full px-4 py-3 text-sm border border-gray-200 rounded-lg bg-white focus:ring-2 focus:ring-violet-500 focus:border-violet-500'
+                          >
+                            <option value=''>Select Vendor</option>
+                            {itemQuotations.map(({ quotation, item }) => (
+                              <option
+                                key={quotation.supplierId}
+                                value={quotation.supplierId}
+                              >
+                                {quotation.supplierName} - ₹
+                                {item?.unitPrice.toLocaleString('en-IN', {
+                                  minimumFractionDigits: 2,
+                                })}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                        <div>
+                          <label className='block text-sm font-medium text-gray-700 mb-2'>
+                            Selection Remarks
+                          </label>
+                          <input
+                            type='text'
+                            value={
+                              vendorSelections[firstItem.id!]?.remarks || ''
+                            }
+                            onChange={e =>
+                              handleRemarksChange(firstItem.id!, e.target.value)
+                            }
+                            placeholder='Enter reason for selection...'
+                            className='w-full px-4 py-3 text-sm border border-gray-200 rounded-lg bg-white focus:ring-2 focus:ring-violet-500 focus:border-violet-500'
+                          />
+                        </div>
                       </div>
                     </div>
-                  </div>
-                );
-              })}
+                  );
+                })}
+              </div>
             </div>
           </div>
 
           {/* Approval Details Section */}
-          <div className='bg-white rounded-lg border border-gray-200 p-6'>
-            <h2 className='text-lg font-semibold text-gray-900 mb-4'>
-              Approval Details
-            </h2>
-            <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
-              <div>
-                <label className='block text-sm font-medium text-gray-700 mb-1'>
-                  Finalization Date <span className='text-red-600'>*</span>
-                </label>
-                <input
-                  type='date'
-                  value={finalizationDate}
-                  onChange={e => setFinalizationDate(e.target.value)}
-                  className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500'
-                />
-              </div>
-              <div>
-                <label className='block text-sm font-medium text-gray-700 mb-1'>
-                  Approval Group <span className='text-red-600'>*</span>
-                </label>
-                <select
-                  value={approvalGroup}
-                  onChange={e => setApprovalGroup(e.target.value)}
-                  className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500'
-                >
-                  <option value=''>Select Approval Group</option>
-                  <option value='1'>Finance Team</option>
-                  <option value='2'>Management</option>
-                  <option value='3'>Board</option>
-                </select>
-              </div>
-            </div>
-
-            {/* Bidding Questions */}
-            <div className='mt-6 space-y-4'>
-              <div>
-                <p className='text-sm font-medium text-gray-700 mb-2'>
-                  Did you competitively bid the RFP with multiple suppliers?
-                </p>
-                <div className='flex items-center space-x-4'>
-                  <label className='flex items-center'>
-                    <input
-                      type='radio'
-                      checked={competitiveBidding}
-                      onChange={() => setCompetitiveBidding(true)}
-                      className='mr-2'
-                    />
-                    <span className='text-sm text-gray-700'>Yes</span>
+          <div className='bg-white rounded-lg border border-gray-200 overflow-hidden'>
+            <div className='p-6'>
+              <h2 className='text-base font-semibold text-gray-900 mb-5'>
+                Approval Details
+              </h2>
+              <div className='grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-5'>
+                <div>
+                  <label className='block text-sm font-medium text-gray-700 mb-2'>
+                    <span className='text-red-500'>*</span> Finalization Date
                   </label>
-                  <label className='flex items-center'>
-                    <input
-                      type='radio'
-                      checked={!competitiveBidding}
-                      onChange={() => setCompetitiveBidding(false)}
-                      className='mr-2'
-                    />
-                    <span className='text-sm text-gray-700'>No</span>
-                  </label>
-                </div>
-              </div>
-
-              <div>
-                <p className='text-sm font-medium text-gray-700 mb-2'>
-                  Did you select the supplier with the lowest bid?
-                </p>
-                <div className='flex items-center space-x-4'>
-                  <label className='flex items-center'>
-                    <input
-                      type='radio'
-                      checked={lowestBidSelected}
-                      onChange={() => {
-                        setLowestBidSelected(true);
-                        setShowJustification(false);
-                      }}
-                      className='mr-2'
-                    />
-                    <span className='text-sm text-gray-700'>Yes</span>
-                  </label>
-                  <label className='flex items-center'>
-                    <input
-                      type='radio'
-                      checked={!lowestBidSelected}
-                      onChange={() => {
-                        setLowestBidSelected(false);
-                        setShowJustification(true);
-                      }}
-                      className='mr-2'
-                    />
-                    <span className='text-sm text-gray-700'>No</span>
-                  </label>
-                </div>
-              </div>
-
-              {showJustification && (
-                <div className='bg-yellow-50 border border-yellow-200 rounded-lg p-4'>
-                  <p className='text-sm font-medium text-yellow-800 mb-3'>
-                    Please provide justification for not selecting the lowest
-                    bid:
-                  </p>
-                  <textarea
-                    rows={3}
-                    placeholder='Enter justification...'
-                    className='w-full px-3 py-2 border border-yellow-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500 resize-none'
+                  <input
+                    type='date'
+                    value={finalizationDate}
+                    onChange={e => setFinalizationDate(e.target.value)}
+                    className='w-full px-4 py-3 text-sm border border-gray-200 rounded-lg bg-white focus:ring-2 focus:ring-violet-500 focus:border-violet-500'
                   />
                 </div>
-              )}
+                <div>
+                  <label className='block text-sm font-medium text-gray-700 mb-2'>
+                    <span className='text-red-500'>*</span> Approval Group
+                  </label>
+                  <select
+                    value={approvalGroup}
+                    onChange={e => setApprovalGroup(e.target.value)}
+                    className='w-full px-4 py-3 text-sm border border-gray-200 rounded-lg bg-white focus:ring-2 focus:ring-violet-500 focus:border-violet-500'
+                  >
+                    <option value=''>Select Approval Group</option>
+                    <option value='1'>Finance Team</option>
+                    <option value='2'>Management</option>
+                    <option value='3'>Board</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Bidding Questions */}
+              <div className='mt-6 space-y-5'>
+                <div>
+                  <p className='text-sm font-medium text-gray-700 mb-3'>
+                    Did you competitively bid the RFP with multiple suppliers?
+                  </p>
+                  <div className='flex items-center gap-6'>
+                    <label className='flex items-center cursor-pointer'>
+                      <input
+                        type='radio'
+                        checked={competitiveBidding}
+                        onChange={() => setCompetitiveBidding(true)}
+                        className='w-4 h-4 text-violet-600 border-gray-300 focus:ring-violet-500'
+                      />
+                      <span className='ml-2 text-sm text-gray-700'>Yes</span>
+                    </label>
+                    <label className='flex items-center cursor-pointer'>
+                      <input
+                        type='radio'
+                        checked={!competitiveBidding}
+                        onChange={() => setCompetitiveBidding(false)}
+                        className='w-4 h-4 text-violet-600 border-gray-300 focus:ring-violet-500'
+                      />
+                      <span className='ml-2 text-sm text-gray-700'>No</span>
+                    </label>
+                  </div>
+                </div>
+
+                <div>
+                  <p className='text-sm font-medium text-gray-700 mb-3'>
+                    Did you select the supplier with the lowest bid?
+                  </p>
+                  <div className='flex items-center gap-6'>
+                    <label className='flex items-center cursor-pointer'>
+                      <input
+                        type='radio'
+                        checked={lowestBidSelected}
+                        onChange={() => {
+                          setLowestBidSelected(true);
+                          setShowJustification(false);
+                        }}
+                        className='w-4 h-4 text-violet-600 border-gray-300 focus:ring-violet-500'
+                      />
+                      <span className='ml-2 text-sm text-gray-700'>Yes</span>
+                    </label>
+                    <label className='flex items-center cursor-pointer'>
+                      <input
+                        type='radio'
+                        checked={!lowestBidSelected}
+                        onChange={() => {
+                          setLowestBidSelected(false);
+                          setShowJustification(true);
+                        }}
+                        className='w-4 h-4 text-violet-600 border-gray-300 focus:ring-violet-500'
+                      />
+                      <span className='ml-2 text-sm text-gray-700'>No</span>
+                    </label>
+                  </div>
+                </div>
+
+                {showJustification && (
+                  <div className='bg-amber-50 border border-amber-200 rounded-lg p-4'>
+                    <p className='text-sm font-medium text-amber-800 mb-3'>
+                      Please provide justification for not selecting the lowest
+                      bid:
+                    </p>
+                    <textarea
+                      rows={3}
+                      placeholder='Enter justification...'
+                      className='w-full px-4 py-3 text-sm border border-amber-300 rounded-lg bg-white focus:ring-2 focus:ring-amber-500 focus:border-amber-500 resize-none'
+                    />
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
