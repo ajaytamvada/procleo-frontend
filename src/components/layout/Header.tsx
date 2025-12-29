@@ -137,10 +137,10 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
           <Menu className='w-5 h-5' />
         </button>
 
-        <div className='flex items-center gap-3'>
-          <div className='w-8 h-8 bg-gradient-to-br from-purple-400 to-pink-400 rounded-lg flex items-center justify-center shadow-lg'>
+        <div className='flex items-center gap-1'>
+          <div className='w-8 h-8 rounded-lg flex items-center justify-center shadow-lg'>
             <img
-              src='/riditstack-logo.png'
+              src='/riditstack-logo-white.png'
               alt='RiditStack Logo'
               className='h-9 w-auto'
             />
