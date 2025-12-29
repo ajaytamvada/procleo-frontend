@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Package, CheckCircle } from 'lucide-react';
+import { ArrowLeft, Package, CheckCircle, ChevronDown } from 'lucide-react';
 import toast from 'react-hot-toast';
 import {
   useInvoicesForGRN,
@@ -114,14 +114,12 @@ const CreateGRNPage: React.FC = () => {
       return false;
     }
 
-    // Check if any item has received quantity > 0
     const hasReceivedItems = items.some(item => item.receivedQuantity > 0);
     if (!hasReceivedItems) {
       toast.error('Please enter received quantity for at least one item');
       return false;
     }
 
-    // Validate received quantities
     for (const item of items) {
       if (item.receivedQuantity > item.remainingQuantity) {
         toast.error(
@@ -181,81 +179,143 @@ const CreateGRNPage: React.FC = () => {
   };
 
   return (
-    <div className='space-y-6 p-6'>
-      {/* Header */}
-      <div>
-        <h1 className='text-2xl font-bold text-gray-900'>Create GRN</h1>
-        <p className='text-sm text-gray-500 mt-1'>
-          Create Goods Receipt Note from invoice
-        </p>
+    <div className='min-h-screen bg-[#f8f9fc] p-2'>
+      {/* Page Header */}
+      <div className='flex items-center justify-between mb-6'>
+        <div className='flex items-center gap-3'>
+          <button
+            onClick={() => navigate('/grn/modify')}
+            className='p-1.5 text-gray-500 hover:text-gray-700 rounded-lg transition-colors'
+          >
+            <ArrowLeft size={20} />
+          </button>
+          <div>
+            <h1 className='text-xl font-semibold text-gray-900'>Create GRN</h1>
+            <p className='text-sm text-gray-500 mt-0.5'>
+              Create Goods Receipt Note from invoice
+            </p>
+          </div>
+        </div>
+        {selectedInvoiceId && items.length > 0 && (
+          <div className='flex items-center gap-3'>
+            <button
+              onClick={() => navigate('/grn/modify')}
+              className='inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors'
+            >
+              Cancel
+            </button>
+            <button
+              onClick={() => handleSubmit(true)}
+              disabled={createMutation.isPending}
+              className='inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-violet-600 bg-white border border-violet-200 rounded-md hover:bg-violet-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed'
+            >
+              <Package size={15} />
+              Save as Draft
+            </button>
+            <button
+              onClick={() => handleSubmit(false)}
+              disabled={createMutation.isPending}
+              className='inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-violet-600 rounded-md hover:bg-violet-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed'
+            >
+              <CheckCircle size={15} />
+              Create GRN
+            </button>
+          </div>
+        )}
       </div>
 
-      {/* Invoice Selection */}
-      <div className='bg-white rounded-lg shadow-sm border border-gray-200'>
-        <div className='px-6 py-4 border-b border-gray-200'>
-          <h2 className='text-lg font-semibold text-gray-900'>
+      {/* Invoice Selection Card */}
+      <div className='bg-white rounded-lg border border-gray-200 overflow-hidden mb-6'>
+        <div className='px-6 py-4 border-b border-gray-100 bg-[#fafbfc]'>
+          <h2 className='text-base font-semibold text-gray-900'>
             Invoice Selection
           </h2>
         </div>
         <div className='p-6'>
-          <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
+          <div className='grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-5'>
             <div>
               <label className='block text-sm font-medium text-gray-700 mb-2'>
-                Invoice Number <span className='text-red-500'>*</span>
+                <span className='text-red-500'>*</span> Invoice Number
               </label>
               {isLoadingInvoices ? (
-                <div className='text-sm text-gray-500'>Loading invoices...</div>
+                <div className='flex items-center gap-2 px-4 py-3 bg-gray-50 rounded-lg border border-gray-200'>
+                  <div className='animate-spin rounded-full h-4 w-4 border-2 border-violet-600 border-t-transparent'></div>
+                  <span className='text-sm text-gray-500'>
+                    Loading invoices...
+                  </span>
+                </div>
               ) : (
-                <select
-                  value={selectedInvoiceId || ''}
-                  onChange={e => setSelectedInvoiceId(Number(e.target.value))}
-                  className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500'
-                  required
-                >
-                  <option value=''>Select Invoice</option>
-                  {availableInvoices?.map(invoice => (
-                    <option key={invoice.invoiceId} value={invoice.invoiceId}>
-                      {invoice.invoiceNumber} - {invoice.supplierName} (
-                      {invoice.invoiceDate})
-                    </option>
-                  ))}
-                </select>
+                <div className='relative'>
+                  <select
+                    value={selectedInvoiceId || ''}
+                    onChange={e => setSelectedInvoiceId(Number(e.target.value))}
+                    className='w-full px-4 py-3 text-sm border border-gray-200 rounded-lg bg-white appearance-none focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500'
+                    required
+                  >
+                    <option value=''>Select Invoice</option>
+                    {availableInvoices?.map(invoice => (
+                      <option key={invoice.invoiceId} value={invoice.invoiceId}>
+                        {invoice.invoiceNumber} - {invoice.supplierName} (
+                        {invoice.invoiceDate})
+                      </option>
+                    ))}
+                  </select>
+                  <ChevronDown className='absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none' />
+                </div>
               )}
             </div>
 
             <div>
               <label className='block text-sm font-medium text-gray-700 mb-2'>
-                Received Date <span className='text-red-500'>*</span>
+                <span className='text-red-500'>*</span> Received Date
               </label>
               <input
                 type='date'
                 value={receivedDate}
                 onChange={e => setReceivedDate(e.target.value)}
-                className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500'
+                className='w-full px-4 py-3 text-sm border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500'
                 required
               />
             </div>
           </div>
 
           {invoiceDetails && (
-            <div className='mt-4 p-4 bg-blue-50 rounded-lg'>
-              <div className='grid grid-cols-2 md:grid-cols-4 gap-4 text-sm'>
+            <div className='mt-6 p-4 bg-violet-50 rounded-lg border border-violet-100'>
+              <div className='grid grid-cols-2 md:grid-cols-4 gap-4'>
                 <div>
-                  <span className='text-gray-600'>PO Number:</span>
-                  <p className='font-semibold'>{invoiceDetails.poNumber}</p>
+                  <p className='text-xs font-medium text-gray-500 mb-1'>
+                    PO Number
+                  </p>
+                  <p className='text-sm font-semibold text-violet-600'>
+                    {invoiceDetails.poNumber}
+                  </p>
                 </div>
                 <div>
-                  <span className='text-gray-600'>Supplier:</span>
-                  <p className='font-semibold'>{invoiceDetails.supplierName}</p>
+                  <p className='text-xs font-medium text-gray-500 mb-1'>
+                    Supplier
+                  </p>
+                  <p className='text-sm font-medium text-gray-900'>
+                    {invoiceDetails.supplierName}
+                  </p>
                 </div>
                 <div>
-                  <span className='text-gray-600'>Invoice Date:</span>
-                  <p className='font-semibold'>{invoiceDetails.invoiceDate}</p>
+                  <p className='text-xs font-medium text-gray-500 mb-1'>
+                    Invoice Date
+                  </p>
+                  <p className='text-sm font-medium text-gray-900'>
+                    {invoiceDetails.invoiceDate}
+                  </p>
                 </div>
                 <div>
-                  <span className='text-gray-600'>Invoice Amount:</span>
-                  <p className='font-semibold'>
-                    ₹{invoiceDetails.invoiceAmount.toFixed(2)}
+                  <p className='text-xs font-medium text-gray-500 mb-1'>
+                    Invoice Amount
+                  </p>
+                  <p className='text-sm font-semibold text-gray-900'>
+                    ₹
+                    {invoiceDetails.invoiceAmount.toLocaleString('en-IN', {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })}
                   </p>
                 </div>
               </div>
@@ -264,16 +324,16 @@ const CreateGRNPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Delivery Details */}
+      {/* Delivery Details Card */}
       {selectedInvoiceId && (
-        <div className='bg-white rounded-lg shadow-sm border border-gray-200'>
-          <div className='px-6 py-4 border-b border-gray-200'>
-            <h2 className='text-lg font-semibold text-gray-900'>
+        <div className='bg-white rounded-lg border border-gray-200 overflow-hidden mb-6'>
+          <div className='px-6 py-4 border-b border-gray-100 bg-[#fafbfc]'>
+            <h2 className='text-base font-semibold text-gray-900'>
               Delivery Details
             </h2>
           </div>
           <div className='p-6'>
-            <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
+            <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-5'>
               <div>
                 <label className='block text-sm font-medium text-gray-700 mb-2'>
                   Warehouse Location
@@ -282,7 +342,7 @@ const CreateGRNPage: React.FC = () => {
                   type='text'
                   value={warehouseLocation}
                   onChange={e => setWarehouseLocation(e.target.value)}
-                  className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500'
+                  className='w-full px-4 py-3 text-sm border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500'
                   placeholder='Enter warehouse location'
                 />
               </div>
@@ -295,7 +355,7 @@ const CreateGRNPage: React.FC = () => {
                   type='text'
                   value={deliveryChallanNumber}
                   onChange={e => setDeliveryChallanNumber(e.target.value)}
-                  className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500'
+                  className='w-full px-4 py-3 text-sm border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500'
                   placeholder='Enter challan number'
                 />
               </div>
@@ -308,7 +368,7 @@ const CreateGRNPage: React.FC = () => {
                   type='date'
                   value={deliveryChallanDate}
                   onChange={e => setDeliveryChallanDate(e.target.value)}
-                  className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500'
+                  className='w-full px-4 py-3 text-sm border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500'
                 />
               </div>
 
@@ -320,7 +380,7 @@ const CreateGRNPage: React.FC = () => {
                   type='text'
                   value={vehicleNumber}
                   onChange={e => setVehicleNumber(e.target.value)}
-                  className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500'
+                  className='w-full px-4 py-3 text-sm border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500'
                   placeholder='Enter vehicle number'
                 />
               </div>
@@ -333,7 +393,7 @@ const CreateGRNPage: React.FC = () => {
                   type='text'
                   value={transporterName}
                   onChange={e => setTransporterName(e.target.value)}
-                  className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500'
+                  className='w-full px-4 py-3 text-sm border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500'
                   placeholder='Enter transporter name'
                 />
               </div>
@@ -346,7 +406,7 @@ const CreateGRNPage: React.FC = () => {
                   value={remarks}
                   onChange={e => setRemarks(e.target.value)}
                   rows={2}
-                  className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500'
+                  className='w-full px-4 py-3 text-sm border border-gray-200 rounded-lg bg-white resize-none focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500'
                   placeholder='Enter any remarks'
                 />
               </div>
@@ -355,69 +415,80 @@ const CreateGRNPage: React.FC = () => {
         </div>
       )}
 
-      {/* Items Table */}
+      {/* Items Table Card */}
       {selectedInvoiceId && items.length > 0 && (
-        <div className='bg-white rounded-lg shadow-sm border border-gray-200'>
-          <div className='px-6 py-4 border-b border-gray-200'>
-            <h2 className='text-lg font-semibold text-gray-900'>
-              Items ({items.length})
-            </h2>
+        <div className='bg-white rounded-lg border border-gray-200 overflow-hidden'>
+          <div className='px-6 py-4 border-b border-gray-100 bg-[#fafbfc] flex items-center justify-between'>
+            <h2 className='text-base font-semibold text-gray-900'>Items</h2>
+            <span className='inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-violet-100 text-violet-700'>
+              {items.length} items
+            </span>
           </div>
           <div className='overflow-x-auto'>
             <table className='w-full'>
-              <thead className='bg-gray-50 border-b border-gray-200'>
-                <tr>
-                  <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase'>
+              <thead>
+                <tr className='bg-[#fafbfc]'>
+                  <th className='px-4 py-3.5 text-left text-xs font-semibold text-gray-600 tracking-wide whitespace-nowrap'>
                     Item Name
                   </th>
-                  <th className='px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase'>
+                  <th className='px-4 py-3.5 text-center text-xs font-semibold text-gray-600 tracking-wide whitespace-nowrap'>
                     PO Qty
                   </th>
-                  <th className='px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase'>
+                  <th className='px-4 py-3.5 text-center text-xs font-semibold text-gray-600 tracking-wide whitespace-nowrap'>
                     Already Received
                   </th>
-                  <th className='px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase'>
+                  <th className='px-4 py-3.5 text-center text-xs font-semibold text-gray-600 tracking-wide whitespace-nowrap'>
                     Remaining Qty
                   </th>
-                  <th className='px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase'>
+                  <th className='px-4 py-3.5 text-center text-xs font-semibold text-gray-600 tracking-wide whitespace-nowrap'>
                     Received Qty *
                   </th>
-                  <th className='px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase'>
+                  <th className='px-4 py-3.5 text-center text-xs font-semibold text-gray-600 tracking-wide whitespace-nowrap'>
                     Accepted Qty
                   </th>
-                  <th className='px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase'>
+                  <th className='px-4 py-3.5 text-center text-xs font-semibold text-gray-600 tracking-wide whitespace-nowrap'>
                     Rejected Qty
                   </th>
-                  <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase'>
+                  <th className='px-4 py-3.5 text-left text-xs font-semibold text-gray-600 tracking-wide whitespace-nowrap'>
                     Batch/Serial
                   </th>
                 </tr>
               </thead>
-              <tbody className='divide-y divide-gray-200'>
+              <tbody className='divide-y divide-gray-100'>
                 {items.map((item, index) => (
-                  <tr key={index} className='hover:bg-gray-50'>
-                    <td className='px-4 py-3'>
+                  <tr
+                    key={index}
+                    className='hover:bg-gray-50 transition-colors'
+                  >
+                    <td className='px-4 py-3.5'>
                       <div>
-                        <div className='font-medium text-gray-900'>
+                        <p className='text-sm font-medium text-gray-900'>
                           {item.itemName}
-                        </div>
+                        </p>
                         {item.itemCode && (
-                          <div className='text-xs text-gray-500'>
+                          <p className='text-xs text-gray-500 mt-0.5'>
                             {item.itemCode}
-                          </div>
+                          </p>
                         )}
                       </div>
                     </td>
-                    <td className='px-4 py-3 text-center text-sm'>
-                      {item.poQuantity} {item.unitOfMeasurement}
+                    <td className='px-4 py-3.5 text-center text-sm text-gray-600'>
+                      {item.poQuantity}{' '}
+                      <span className='text-xs text-gray-400'>
+                        {item.unitOfMeasurement}
+                      </span>
                     </td>
-                    <td className='px-4 py-3 text-center text-sm text-blue-600'>
-                      {item.alreadyReceived}
+                    <td className='px-4 py-3.5 text-center'>
+                      <span className='text-sm font-medium text-blue-600'>
+                        {item.alreadyReceived}
+                      </span>
                     </td>
-                    <td className='px-4 py-3 text-center text-sm font-semibold text-orange-600'>
-                      {item.remainingQuantity}
+                    <td className='px-4 py-3.5 text-center'>
+                      <span className='text-sm font-semibold text-amber-600'>
+                        {item.remainingQuantity}
+                      </span>
                     </td>
-                    <td className='px-4 py-3'>
+                    <td className='px-4 py-3.5'>
                       <input
                         type='number'
                         value={item.receivedQuantity}
@@ -431,10 +502,10 @@ const CreateGRNPage: React.FC = () => {
                         min='0'
                         max={item.remainingQuantity}
                         step='0.01'
-                        className='w-24 px-2 py-1 border border-gray-300 rounded text-center focus:ring-2 focus:ring-blue-500'
+                        className='w-24 px-3 py-2 text-sm text-center border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500'
                       />
                     </td>
-                    <td className='px-4 py-3'>
+                    <td className='px-4 py-3.5'>
                       <input
                         type='number'
                         value={item.acceptedQuantity}
@@ -448,13 +519,15 @@ const CreateGRNPage: React.FC = () => {
                         min='0'
                         max={item.receivedQuantity}
                         step='0.01'
-                        className='w-24 px-2 py-1 border border-gray-300 rounded text-center focus:ring-2 focus:ring-blue-500'
+                        className='w-24 px-3 py-2 text-sm text-center border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500'
                       />
                     </td>
-                    <td className='px-4 py-3 text-center text-sm text-red-600'>
-                      {(item.rejectedQuantity || 0).toFixed(2)}
+                    <td className='px-4 py-3.5 text-center'>
+                      <span className='text-sm font-medium text-red-600'>
+                        {(item.rejectedQuantity || 0).toFixed(2)}
+                      </span>
                     </td>
-                    <td className='px-4 py-3'>
+                    <td className='px-4 py-3.5'>
                       <input
                         type='text'
                         value={item.batchNumber || ''}
@@ -462,7 +535,7 @@ const CreateGRNPage: React.FC = () => {
                           handleItemChange(index, 'batchNumber', e.target.value)
                         }
                         placeholder='Batch/Serial'
-                        className='w-32 px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500'
+                        className='w-32 px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500'
                       />
                     </td>
                   </tr>
@@ -470,38 +543,6 @@ const CreateGRNPage: React.FC = () => {
               </tbody>
             </table>
           </div>
-        </div>
-      )}
-
-      {/* Action Buttons */}
-      {selectedInvoiceId && items.length > 0 && (
-        <div className='flex justify-end gap-4'>
-          <button
-            onClick={() => navigate('/grn/modify')}
-            className='px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors'
-          >
-            Cancel
-          </button>
-          <button
-            onClick={() => handleSubmit(true)}
-            disabled={createMutation.isPending}
-            className='px-6 py-2 border border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50 transition-colors disabled:opacity-50'
-          >
-            <div className='flex items-center gap-2'>
-              <Package className='w-4 h-4' />
-              Save as Draft
-            </div>
-          </button>
-          <button
-            onClick={() => handleSubmit(false)}
-            disabled={createMutation.isPending}
-            className='px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50'
-          >
-            <div className='flex items-center gap-2'>
-              <CheckCircle className='w-4 h-4' />
-              Create GRN
-            </div>
-          </button>
         </div>
       )}
     </div>
