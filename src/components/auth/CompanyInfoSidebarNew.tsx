@@ -270,7 +270,7 @@ export function CompanyInfoSidebar({
             </div>
 
             {/* Client Logos */}
-            <div className='mt-6'>
+            {/* <div className='mt-6'>
               <p className='text-xs opacity-70 mb-3'>
                 Trusted by Industry Leaders
               </p>
@@ -279,7 +279,7 @@ export function CompanyInfoSidebar({
                   <div key={i} className='bg-white/10 rounded p-3 h-10' />
                 ))}
               </div>
-            </div>
+            </div> */}
           </div>
         );
 
@@ -404,7 +404,7 @@ export function CompanyInfoSidebar({
         onMouseLeave={() => setIsPaused(false)}
       >
         {/* Company Header */}
-        <div className='mb-5'>
+        {/* <div className='mb-5'>
           <div className='flex items-center mb-3'>
             <img
               src='/riditstack-logo.png'
@@ -416,7 +416,7 @@ export function CompanyInfoSidebar({
               <p className='text-xs opacity-80'>Autovitica P2P Platform</p>
             </div>
           </div>
-        </div>
+        </div> */}
 
         {/* Section Indicators - Horizontal lines like Cashfree */}
         <div className='flex space-x-2 mb-5'>
@@ -444,7 +444,7 @@ export function CompanyInfoSidebar({
         </div>
 
         {/* Contact Info - Always Visible */}
-        <div className='mt-4 pt-4 border-t border-white/20'>
+        {/* <div className='mt-4 pt-4 border-t border-white/20'>
           <div className='flex flex-col gap-2 text-xs'>
             <a
               href='mailto:info@riditstack.com'
@@ -468,7 +468,7 @@ export function CompanyInfoSidebar({
               riditstack.com
             </a>
           </div>
-        </div>
+        </div> */}
       </div>
 
       {/* CSS for animations */}

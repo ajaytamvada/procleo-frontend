@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import {
   User,
   Menu,
@@ -9,6 +9,7 @@ import {
   LogOut,
   Settings,
   UserCircle,
+  Command,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { AuthService } from '@/services/auth';
@@ -18,12 +19,54 @@ interface HeaderProps {
   onMenuClick: () => void;
 }
 
+interface QuickAction {
+  label: string;
+  shortLabel: string;
+  description: string;
+  icon: React.ElementType;
+  route: string;
+  shortcutKey: string;
+  shortcutDisplay: string[];
+}
+
 const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
   const navigate = useNavigate();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const userMenuRef = useRef<HTMLDivElement>(null);
+
+  // Quick actions with keyboard shortcuts
+  const quickActions: QuickAction[] = [
+    {
+      label: 'Purchase Requisition',
+      shortLabel: 'Create PR',
+      description: 'Start a new purchase request',
+      icon: FileText,
+      route: '/purchase-requisition/create',
+      shortcutKey: 'r',
+      shortcutDisplay: ['⌘', '⇧', 'R'],
+    },
+    {
+      label: 'Purchase Order',
+      shortLabel: 'Create PO',
+      description: 'Create a new purchase order',
+      icon: ShoppingCart,
+      route: '/purchase-orders/create',
+      shortcutKey: 'o',
+      shortcutDisplay: ['⌘', '⇧', 'O'],
+    },
+    {
+      label: 'Request for Proposal',
+      shortLabel: 'Create RFP',
+      description: 'Request for proposal from vendors',
+      icon: Users,
+      route: '/rfp/create',
+      shortcutKey: 'p',
+      shortcutDisplay: ['⌘', '⇧', 'P'],
+    },
+  ];
 
   // Close dropdowns when clicking outside
   useEffect(() => {
@@ -46,32 +89,34 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const shortcuts = [
-    {
-      label: 'Create Purchase Requisition',
-      shortLabel: 'Create PR',
-      icon: FileText,
-      route: '/purchase-requisition/create',
-      color: 'from-blue-500 to-blue-600',
-      description: 'Start a new purchase request',
+  // Keyboard shortcut handler
+  const handleKeyDown = useCallback(
+    (event: KeyboardEvent) => {
+      // Check for Cmd/Ctrl + Shift + Key
+      if ((event.metaKey || event.ctrlKey) && event.shiftKey) {
+        const key = event.key.toLowerCase();
+        const action = quickActions.find(a => a.shortcutKey === key);
+
+        if (action) {
+          event.preventDefault();
+          navigate(action.route);
+          setIsDropdownOpen(false);
+        }
+      }
+
+      // Close dropdown on Escape
+      if (event.key === 'Escape') {
+        setIsDropdownOpen(false);
+        setIsUserMenuOpen(false);
+      }
     },
-    {
-      label: 'Create Purchase Order',
-      shortLabel: 'Create PO',
-      icon: ShoppingCart,
-      route: '/purchase-orders/create',
-      color: 'from-green-500 to-green-600',
-      description: 'Create a new purchase order',
-    },
-    {
-      label: 'Create RFP',
-      shortLabel: 'Create RFP',
-      icon: Users,
-      route: '/rfp/create',
-      color: 'from-purple-500 to-purple-600',
-      description: 'Request for proposal from vendors',
-    },
-  ];
+    [navigate, quickActions]
+  );
+
+  useEffect(() => {
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [handleKeyDown]);
 
   const handleShortcutClick = (route: string) => {
     navigate(route);
@@ -140,7 +185,7 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
         <div className='flex items-center gap-1'>
           <div className='w-8 h-8 rounded-lg flex items-center justify-center shadow-lg'>
             <img
-              src='/riditstack-logo-white.png'
+              src='/riditstack-logo-icon-white.png'
               alt='RiditStack Logo'
               className='h-9 w-auto'
             />
@@ -153,11 +198,15 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
 
       {/* Right side */}
       <div className='flex items-center gap-2'>
-        {/* Quick Actions Dropdown */}
+        {/* Quick Actions Dropdown - Cashfree Style */}
         <div className='relative' ref={dropdownRef}>
           <button
             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-            className='flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-transparent border border-indigo-400/60 text-white text-xs font-semibold hover:bg-indigo-500/20 hover:border-indigo-400 transition-all duration-200 group'
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-transparent border text-white text-sm font-semibold transition-all duration-200 group ${
+              isDropdownOpen
+                ? 'bg-indigo-500/20 border-indigo-400'
+                : 'border-indigo-400/60 hover:bg-indigo-500/20 hover:border-indigo-400'
+            }`}
             title='Quick Actions'
           >
             <span>+ Create</span>
@@ -165,42 +214,61 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
               className={`w-3 h-3 transition-transform duration-200 ${isDropdownOpen ? 'rotate-180' : ''}`}
             />
           </button>
-          {/* Dropdown Menu */}
+
+          {/* Cashfree Style Dropdown Menu */}
           {isDropdownOpen && (
-            <div className='absolute right-0 mt-2 w-72 bg-white rounded-lg shadow-xl border border-gray-200 py-2 z-50 animate-in slide-in-from-top-2 duration-200'>
-              <div className='px-4 py-2 border-b border-gray-100'>
-                <h3 className='text-sm font-semibold text-gray-900'>
-                  Quick Actions
-                </h3>
-                <p className='text-xs text-gray-500 mt-1'>
-                  Create new procurement items
-                </p>
+            <div className='absolute right-0 mt-2 w-[400px] bg-white rounded-xl shadow-2xl border border-gray-200 overflow-hidden z-50 animate-in slide-in-from-top-2 fade-in duration-200'>
+              {/* Dropdown Items */}
+              <div className='py-1'>
+                {quickActions.map((action, index) => {
+                  const isHovered = hoveredIndex === index;
+
+                  return (
+                    <button
+                      key={action.route}
+                      onClick={() => handleShortcutClick(action.route)}
+                      onMouseEnter={() => setHoveredIndex(index)}
+                      onMouseLeave={() => setHoveredIndex(null)}
+                      className={`w-full flex items-start justify-between px-5 py-4 text-left transition-colors duration-150 border-l-4 ${
+                        isHovered
+                          ? 'bg-gray-50 border-l-violet-600'
+                          : 'border-l-transparent'
+                      }`}
+                    >
+                      <div className='flex-1 pr-4'>
+                        <div className='text-base font-semibold text-gray-900'>
+                          {action.label}
+                        </div>
+                        <p className='text-sm text-gray-500 mt-1'>
+                          {action.description}
+                        </p>
+                      </div>
+
+                      {/* Keyboard Shortcut Display */}
+                      <div className='flex items-center gap-1 flex-shrink-0 pt-0.5'>
+                        {action.shortcutDisplay.map((key, keyIndex) => (
+                          <React.Fragment key={keyIndex}>
+                            <kbd className='inline-flex items-center justify-center min-w-[24px] h-6 px-1.5 text-xs font-medium text-gray-600 bg-gray-100 border border-gray-300 rounded shadow-sm'>
+                              {key}
+                            </kbd>
+                            {keyIndex < action.shortcutDisplay.length - 1 && (
+                              <span className='text-gray-400 text-xs'>+</span>
+                            )}
+                          </React.Fragment>
+                        ))}
+                      </div>
+                    </button>
+                  );
+                })}
               </div>
 
-              {shortcuts.map(shortcut => {
-                const IconComponent = shortcut.icon;
-                return (
-                  <button
-                    key={shortcut.route}
-                    onClick={() => handleShortcutClick(shortcut.route)}
-                    className='w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-gray-50 transition-colors duration-150 group'
-                  >
-                    <div
-                      className={`w-8 h-8 bg-gradient-to-r ${shortcut.color} rounded-md flex items-center justify-center group-hover:scale-105 transition-transform duration-200 shadow-sm`}
-                    >
-                      <IconComponent className='w-4 h-4 text-white' />
-                    </div>
-                    <div className='flex-1'>
-                      <div className='text-sm font-medium text-gray-900'>
-                        {shortcut.label}
-                      </div>
-                      <div className='text-xs text-gray-500'>
-                        {shortcut.description}
-                      </div>
-                    </div>
-                  </button>
-                );
-              })}
+              {/* Footer with hint */}
+              <div className='px-5 py-3 bg-gray-50 border-t border-gray-100'>
+                <div className='flex items-center gap-2 text-xs text-gray-500'>
+                  <Command size={12} />
+                  <span>Use keyboard shortcuts for quick access</span>
+                </div>
+              </div>
             </div>
           )}
         </div>
@@ -214,14 +282,14 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
           className='p-2 rounded-lg text-white/80 hover:text-white hover:bg-white/10 transition-all duration-200'
           title='Settings'
         >
-          <Settings className='w-4 h-4' />
+          <Settings className='w-5 h-5' />
         </button>
 
         {/* User menu */}
         <div className='relative' ref={userMenuRef}>
           <button
             onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-            className='flex items-center gap-2 hover:bg-indigo-500/20 rounded-lg px-2 py-1 transition-colors duration-200'
+            className='flex items-center gap-2 hover:bg-white/10 rounded-lg px-2 py-1.5 transition-colors duration-200'
           >
             <div className='hidden sm:block text-right'>
               <div className='text-xs font-medium text-white'>
@@ -231,25 +299,25 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
                 {currentUser.roles?.[0] || 'User'}
               </div>
             </div>
-            <div className='p-1.5 rounded-full bg-white/10 hover:bg-white/20 transition-colors'>
+            <div className='w-8 h-8 rounded-full bg-white/10 flex items-center justify-center'>
               <User className='w-4 h-4 text-white' />
             </div>
           </button>
 
           {/* User Dropdown Menu */}
           {isUserMenuOpen && (
-            <div className='absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-xl border border-gray-200 py-2 z-50 animate-in slide-in-from-top-2 duration-200'>
+            <div className='absolute right-0 mt-2 w-64 bg-white rounded-xl shadow-2xl border border-gray-200 overflow-hidden z-50 animate-in slide-in-from-top-2 fade-in duration-200'>
               {/* User Info Header */}
-              <div className='px-4 py-3 border-b border-gray-100'>
+              <div className='px-4 py-4 bg-gray-50 border-b border-gray-100'>
                 <div className='flex items-center gap-3'>
-                  <div className='w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center'>
+                  <div className='w-10 h-10 bg-gradient-to-br from-violet-500 to-violet-600 rounded-full flex items-center justify-center'>
                     <UserCircle className='w-6 h-6 text-white' />
                   </div>
-                  <div>
-                    <div className='font-medium text-gray-900'>
+                  <div className='flex-1 min-w-0'>
+                    <div className='font-semibold text-gray-900 truncate'>
                       {currentUser.employeeName || currentUser.username}
                     </div>
-                    <div className='text-sm text-gray-500'>
+                    <div className='text-sm text-gray-500 truncate'>
                       {currentUser.email}
                     </div>
                   </div>
@@ -257,31 +325,35 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
               </div>
 
               {/* Menu Items */}
-              <div className='py-1'>
+              <div className='py-2'>
                 <button
                   onClick={() => handleUserMenuAction('profile')}
-                  className='w-full flex items-center gap-3 px-4 py-2 text-left hover:bg-gray-50 transition-colors duration-150'
+                  className='w-full flex items-center gap-3 px-4 py-2.5 text-left hover:bg-gray-50 transition-colors duration-150'
                 >
                   <UserCircle className='w-4 h-4 text-gray-500' />
-                  <span className='text-sm text-gray-700'>My Profile</span>
+                  <span className='text-sm font-medium text-gray-700'>
+                    My Profile
+                  </span>
                 </button>
 
                 <button
                   onClick={() => handleUserMenuAction('settings')}
-                  className='w-full flex items-center gap-3 px-4 py-2 text-left hover:bg-gray-50 transition-colors duration-150'
+                  className='w-full flex items-center gap-3 px-4 py-2.5 text-left hover:bg-gray-50 transition-colors duration-150'
                 >
                   <Settings className='w-4 h-4 text-gray-500' />
-                  <span className='text-sm text-gray-700'>Settings</span>
+                  <span className='text-sm font-medium text-gray-700'>
+                    Settings
+                  </span>
                 </button>
 
-                <div className='border-t border-gray-100 my-1'></div>
+                <div className='border-t border-gray-100 my-2'></div>
 
                 <button
                   onClick={handleLogout}
-                  className='w-full flex items-center gap-3 px-4 py-2 text-left hover:bg-red-50 transition-colors duration-150 group'
+                  className='w-full flex items-center gap-3 px-4 py-2.5 text-left hover:bg-red-50 transition-colors duration-150 group'
                 >
                   <LogOut className='w-4 h-4 text-gray-500 group-hover:text-red-500' />
-                  <span className='text-sm text-gray-700 group-hover:text-red-600'>
+                  <span className='text-sm font-medium text-gray-700 group-hover:text-red-600'>
                     Log out
                   </span>
                 </button>

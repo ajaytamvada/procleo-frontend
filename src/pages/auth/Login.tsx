@@ -20,7 +20,7 @@ export function LoginPage() {
         <header className='flex items-center justify-between px-6 sm:px-10 lg:px-12 py-5'>
           <a href='/' className='flex items-center'>
             <img
-              src='/riditstack-logo.png'
+              src='/riditstack-logo-c.png'
               alt='RiditStack Logo'
               className='h-9 w-auto'
             />
@@ -47,7 +47,7 @@ export function LoginPage() {
         </main>
 
         {/* Footer */}
-        <footer className='px-6 sm:px-10 lg:px-12 py-4'>
+        {/* <footer className='px-6 sm:px-10 lg:px-12 py-4'>
           <div className='flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-gray-500 font-medium'>
             <p>© 2024 ProcLeo by RiditStack Pvt Ltd. All rights reserved.</p>
             <nav className='flex items-center gap-5'>
@@ -71,7 +71,7 @@ export function LoginPage() {
               </a>
             </nav>
           </div>
-        </footer>
+        </footer> */}
       </div>
 
       {/* RIGHT SECTION - Sidebar */}

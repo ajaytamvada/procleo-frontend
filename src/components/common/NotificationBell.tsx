@@ -96,7 +96,7 @@ const NotificationBell: React.FC = () => {
         onClick={() => setIsOpen(!isOpen)}
         className='relative p-1.5 text-white hover:text-white/80 hover:bg-indigo-500/20 rounded-full transition-colors focus:outline-none'
       >
-        <Bell className='w-4 h-4' />
+        <Bell className='w-6 h-6' />
         {unreadCount > 0 && (
           <span className='absolute -top-0.5 -right-0.5 flex items-center justify-center w-3.5 h-3.5 text-[10px] font-bold text-white bg-red-500 rounded-full'>
             {unreadCount > 9 ? '9+' : unreadCount}
