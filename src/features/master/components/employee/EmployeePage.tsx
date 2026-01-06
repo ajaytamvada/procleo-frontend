@@ -32,22 +32,36 @@ const EmployeePage: React.FC = () => {
     setSelectedEmployee(null);
   };
 
+  // Show form view
+  if (showForm) {
+    return (
+      <EmployeeForm
+        employee={selectedEmployee}
+        onClose={handleCloseForm}
+        onSuccess={handleSuccess}
+      />
+    );
+  }
+
+  // Show list view
   return (
-    <div className='space-y-6'>
-      {/* Header */}
-      <div className='flex justify-between items-center'>
+    <div className='min-h-screen bg-[#f8f9fc] p-2'>
+      {/* Page Header */}
+      <div className='flex items-center justify-between mb-6'>
         <div>
-          <h1 className='text-2xl font-bold text-gray-900'>Employee Master</h1>
-          <p className='text-sm text-gray-600 mt-1'>
+          <h1 className='text-xl font-semibold text-gray-900'>
+            Employee Master
+          </h1>
+          <p className='text-sm text-gray-500 mt-0.5'>
             Manage employee records and information
           </p>
         </div>
         <button
           onClick={handleAdd}
-          className='flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm'
+          className='inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-violet-600 rounded-md hover:bg-violet-700 transition-colors'
         >
-          <Plus size={20} />
-          <span>Add Employee</span>
+          <Plus size={15} />
+          Add Employee
         </button>
       </div>
 
@@ -56,15 +70,6 @@ const EmployeePage: React.FC = () => {
         onEdit={handleEdit}
         onImport={() => setShowImportDialog(true)}
       />
-
-      {/* Employee Form Modal */}
-      {showForm && (
-        <EmployeeForm
-          employee={selectedEmployee}
-          onClose={handleCloseForm}
-          onSuccess={handleSuccess}
-        />
-      )}
 
       {/* Excel Import Dialog */}
       <ExcelImportDialog

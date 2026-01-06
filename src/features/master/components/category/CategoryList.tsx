@@ -1,5 +1,15 @@
 import React, { useState } from 'react';
-import { Trash2, Edit, Plus, Search, Download, Upload, X } from 'lucide-react';
+import {
+  Trash2,
+  Plus,
+  Search,
+  Download,
+  Upload,
+  X,
+  Folder,
+  ChevronLeft,
+  ChevronRight,
+} from 'lucide-react';
 import type { Category, CategoryFilters } from '../../hooks/useCategoryAPI';
 import categoryAPI from '../../hooks/useCategoryAPI';
 
@@ -32,6 +42,7 @@ const CategoryList: React.FC<CategoryListProps> = ({
 }) => {
   const [filters, setFilters] = useState<CategoryFilters>({});
   const [isExporting, setIsExporting] = useState(false);
+  const pageSize = 15;
 
   const handleSearch = () => {
     onFiltersChange(filters);
@@ -70,57 +81,83 @@ const CategoryList: React.FC<CategoryListProps> = ({
     }
   };
 
+  // Generate page numbers with ellipsis
+  const getPageNumbers = () => {
+    const pages: (number | string)[] = [];
+    if (totalPages <= 7) {
+      for (let i = 0; i < totalPages; i++) pages.push(i);
+    } else {
+      pages.push(0);
+      if (page > 2) pages.push('...');
+      const start = Math.max(1, page - 1);
+      const end = Math.min(totalPages - 2, page + 1);
+      for (let i = start; i <= end; i++) {
+        if (!pages.includes(i)) pages.push(i);
+      }
+      if (page < totalPages - 3) pages.push('...');
+      if (!pages.includes(totalPages - 1)) pages.push(totalPages - 1);
+    }
+    return pages;
+  };
+
+  const startRecord = totalElements > 0 ? page * pageSize + 1 : 0;
+  const endRecord = Math.min((page + 1) * pageSize, totalElements);
+
   return (
-    <div className='bg-white rounded-lg shadow-md'>
-      {/* Header */}
-      <div className='border-b border-gray-200 p-6'>
-        <div className='flex items-center justify-between'>
-          <div>
-            <h2 className='text-2xl font-bold text-gray-900'>Category</h2>
-            <p className='text-sm text-gray-600 mt-1'>
-              Manage category master records
-            </p>
-          </div>
-          <button
-            onClick={onCreate}
-            className='px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 flex items-center gap-2'
-          >
-            <Plus size={20} />
-            <span>New</span>
-          </button>
+    <div className='min-h-screen bg-[#f8f9fc] p-2'>
+      {/* Page Header */}
+      <div className='flex items-center justify-between mb-6'>
+        <div>
+          <h1 className='text-xl font-semibold text-gray-900'>Category</h1>
+          <p className='text-sm text-gray-500 mt-0.5'>
+            Manage category master records
+          </p>
         </div>
+        <button
+          onClick={onCreate}
+          className='inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-violet-600 rounded-md hover:bg-violet-700 transition-colors'
+        >
+          <Plus size={15} />
+          New Category
+        </button>
       </div>
 
-      {/* Filter Section */}
-      <div className='p-6 bg-gray-50 border-b'>
+      {/* Filters Card */}
+      <div className='bg-white rounded-lg border border-gray-200 p-5 mb-6'>
         <div className='grid grid-cols-1 md:grid-cols-4 gap-4'>
-          <input
-            type='text'
-            placeholder='Search by name...'
-            value={filters.name || ''}
-            onChange={e => setFilters({ ...filters, name: e.target.value })}
-            onKeyPress={e => e.key === 'Enter' && handleSearch()}
-            className='px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500'
-          />
-          <input
-            type='text'
-            placeholder='Search by code...'
-            value={filters.code || ''}
-            onChange={e => setFilters({ ...filters, code: e.target.value })}
-            onKeyPress={e => e.key === 'Enter' && handleSearch()}
-            className='px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500'
-          />
+          <div className='relative'>
+            <Search className='absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400' />
+            <input
+              type='text'
+              placeholder='Search by name...'
+              value={filters.name || ''}
+              onChange={e => setFilters({ ...filters, name: e.target.value })}
+              onKeyPress={e => e.key === 'Enter' && handleSearch()}
+              className='w-full pl-10 pr-4 py-2.5 text-sm border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500'
+            />
+          </div>
+          <div className='relative'>
+            <Search className='absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400' />
+            <input
+              type='text'
+              placeholder='Search by code...'
+              value={filters.code || ''}
+              onChange={e => setFilters({ ...filters, code: e.target.value })}
+              onKeyPress={e => e.key === 'Enter' && handleSearch()}
+              className='w-full pl-10 pr-4 py-2.5 text-sm border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500'
+            />
+          </div>
           <div className='flex gap-2'>
             <button
               onClick={handleSearch}
-              className='flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex-1'
+              className='flex-1 inline-flex items-center justify-center gap-1.5 px-4 py-2.5 text-sm font-semibold text-white bg-violet-600 rounded-lg hover:bg-violet-700 transition-colors'
             >
-              <Search size={18} />
-              <span>Search</span>
+              <Search size={15} />
+              Search
             </button>
             <button
               onClick={handleClearFilters}
-              className='flex items-center justify-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors'
+              className='p-2.5 text-gray-500 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 hover:text-gray-700 transition-colors'
             >
               <X size={18} />
             </button>
@@ -128,126 +165,149 @@ const CategoryList: React.FC<CategoryListProps> = ({
           <div className='flex gap-2'>
             <button
               onClick={onImport}
-              className='flex items-center justify-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors flex-1'
+              className='flex-1 inline-flex items-center justify-center gap-1.5 px-4 py-2.5 text-sm font-semibold text-violet-600 bg-violet-50 border border-violet-200 rounded-lg hover:bg-violet-100 transition-colors'
             >
-              <Upload size={18} />
-              <span>Import</span>
+              <Upload size={15} />
+              Import
             </button>
             <button
               onClick={handleExport}
               disabled={isExporting}
-              className='flex items-center justify-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex-1'
+              className='flex-1 inline-flex items-center justify-center gap-1.5 px-4 py-2.5 text-sm font-semibold text-white bg-green-600 rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed'
             >
-              <Download size={18} />
-              <span>{isExporting ? 'Exporting...' : 'Export'}</span>
+              <Download size={15} />
+              {isExporting ? 'Exporting...' : 'Export'}
             </button>
           </div>
         </div>
       </div>
 
       {/* Table */}
-      <div className='overflow-x-auto'>
-        {isLoading ? (
-          <div className='flex items-center justify-center h-64'>
-            <div className='text-lg'>Loading categories...</div>
-          </div>
-        ) : (
-          <table className='w-full'>
-            <thead className='bg-gray-50 border-b border-gray-200'>
-              <tr>
-                <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
-                  S.No
-                </th>
-                <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
-                  Category Name
-                </th>
-                <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
-                  Category Code
-                </th>
-                <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
-                  Description
-                </th>
-                <th className='px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider'>
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody className='bg-white divide-y divide-gray-200'>
-              {categories.length === 0 ? (
-                <tr>
-                  <td
-                    colSpan={5}
-                    className='px-6 py-12 text-center text-gray-500'
-                  >
-                    No categories found. Click "New" to create one.
-                  </td>
+      <div className='bg-white rounded-lg border border-gray-200 overflow-hidden'>
+        <div className='overflow-x-auto'>
+          {isLoading ? (
+            <div className='flex flex-col items-center justify-center py-16'>
+              <div className='animate-spin rounded-full h-8 w-8 border-2 border-violet-600 border-t-transparent'></div>
+              <p className='text-sm text-gray-500 mt-3'>
+                Loading categories...
+              </p>
+            </div>
+          ) : categories.length === 0 ? (
+            <div className='flex flex-col items-center justify-center py-16'>
+              <div className='w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-3'>
+                <Folder className='w-6 h-6 text-gray-400' />
+              </div>
+              <p className='text-gray-600 font-medium'>No categories found</p>
+              <p className='text-gray-400 text-sm mt-1'>
+                Click "New Category" to create one
+              </p>
+            </div>
+          ) : (
+            <table className='w-full'>
+              <thead>
+                <tr className='bg-[#fafbfc]'>
+                  <th className='px-4 py-3.5 text-center text-xs font-semibold text-gray-600 tracking-wide whitespace-nowrap w-16'>
+                    S.No
+                  </th>
+                  <th className='px-4 py-3.5 text-left text-xs font-semibold text-gray-600 tracking-wide whitespace-nowrap'>
+                    Category Name
+                  </th>
+                  <th className='px-4 py-3.5 text-left text-xs font-semibold text-gray-600 tracking-wide whitespace-nowrap'>
+                    Category Code
+                  </th>
+                  <th className='px-4 py-3.5 text-left text-xs font-semibold text-gray-600 tracking-wide whitespace-nowrap'>
+                    Description
+                  </th>
+                  <th className='px-4 py-3.5 text-center text-xs font-semibold text-gray-600 tracking-wide whitespace-nowrap w-24'>
+                    Actions
+                  </th>
                 </tr>
-              ) : (
-                categories.map((category, index) => (
+              </thead>
+              <tbody className='divide-y divide-gray-100'>
+                {categories.map((category, index) => (
                   <tr
                     key={category.id}
                     onClick={() => onEdit(category)}
                     className='hover:bg-gray-50 cursor-pointer transition-colors'
                   >
-                    <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-900'>
-                      {page * 15 + index + 1}
+                    <td className='px-4 py-3.5 text-center text-sm text-gray-600'>
+                      {page * pageSize + index + 1}
                     </td>
-                    <td className='px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900'>
-                      {category.name}
+                    <td className='px-4 py-3.5'>
+                      <span className='text-sm font-medium text-violet-600'>
+                        {category.name}
+                      </span>
                     </td>
-                    <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-600'>
+                    <td className='px-4 py-3.5 text-sm text-gray-700'>
                       {category.code || '-'}
                     </td>
-                    <td className='px-6 py-4 text-sm text-gray-600'>
+                    <td className='px-4 py-3.5 text-sm text-gray-700'>
                       {category.description || '-'}
                     </td>
-                    <td className='px-6 py-4 whitespace-nowrap text-right text-sm font-medium'>
+                    <td className='px-4 py-3.5 text-center'>
                       <button
                         onClick={e => {
                           e.stopPropagation();
                           handleDelete(category.id, category.name);
                         }}
-                        className='text-red-600 hover:text-red-900 ml-4'
+                        className='p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors'
+                        title='Delete'
                       >
-                        Delete
+                        <Trash2 size={16} />
                       </button>
                     </td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </div>
+
+        {/* Pagination */}
+        {totalPages > 0 && !isLoading && categories.length > 0 && (
+          <div className='px-6 py-4 border-t border-gray-200 flex items-center justify-between'>
+            <p className='text-sm text-gray-600'>
+              Showing <span className='font-medium'>{startRecord}</span> to{' '}
+              <span className='font-medium'>{endRecord}</span> of{' '}
+              <span className='font-medium'>{totalElements}</span> results
+            </p>
+            <div className='flex items-center gap-1'>
+              <button
+                onClick={() => onPageChange(page - 1)}
+                disabled={page === 0}
+                className='p-2 rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50 hover:border-gray-300 disabled:opacity-40 disabled:cursor-not-allowed transition-colors'
+              >
+                <ChevronLeft className='w-4 h-4' />
+              </button>
+              {getPageNumbers().map((pageNum, idx) => (
+                <React.Fragment key={idx}>
+                  {pageNum === '...' ? (
+                    <span className='px-3 py-2 text-sm text-gray-400'>...</span>
+                  ) : (
+                    <button
+                      onClick={() => onPageChange(pageNum as number)}
+                      className={`min-w-[36px] h-9 px-3 rounded-lg text-sm font-medium transition-colors ${
+                        page === pageNum
+                          ? 'bg-violet-600 text-white border border-violet-600'
+                          : 'text-gray-600 border border-gray-200 hover:bg-gray-50 hover:border-gray-300'
+                      }`}
+                    >
+                      {(pageNum as number) + 1}
+                    </button>
+                  )}
+                </React.Fragment>
+              ))}
+              <button
+                onClick={() => onPageChange(page + 1)}
+                disabled={page >= totalPages - 1}
+                className='p-2 rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50 hover:border-gray-300 disabled:opacity-40 disabled:cursor-not-allowed transition-colors'
+              >
+                <ChevronRight className='w-4 h-4' />
+              </button>
+            </div>
+          </div>
         )}
       </div>
-
-      {/* Pagination */}
-      {totalPages > 0 && (
-        <div className='p-4 border-t flex justify-between items-center'>
-          <div className='text-sm text-gray-600'>
-            Showing {page * 15 + 1}-{Math.min((page + 1) * 15, totalElements)}{' '}
-            of {totalElements} records
-          </div>
-          <div className='flex gap-2 items-center'>
-            <button
-              onClick={() => onPageChange(page - 1)}
-              disabled={page === 0}
-              className='px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors'
-            >
-              Previous
-            </button>
-            <span className='text-sm text-gray-700'>
-              Page {page + 1} of {totalPages}
-            </span>
-            <button
-              onClick={() => onPageChange(page + 1)}
-              disabled={page >= totalPages - 1}
-              className='px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors'
-            >
-              Next
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

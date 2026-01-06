@@ -83,7 +83,7 @@ const CompanyPage: React.FC = () => {
 
   return (
     <>
-      <div className='p-6'>
+      <div className='p-2'>
         <CompanyForm
           mode={company?.id ? 'edit' : 'create'}
           company={company}

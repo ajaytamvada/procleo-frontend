@@ -1,21 +1,51 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { ArrowLeft, Save } from 'lucide-react';
+import { ArrowLeft, MapPin, Building2 } from 'lucide-react';
 import type { Location } from '../../hooks/useLocationAPI';
-import { useCountries } from '../../hooks/useCountryAPI';
 
+// Validation schema
 const locationSchema = z.object({
-  countryId: z.number().min(1, 'Country is required'),
   name: z
     .string()
     .min(1, 'Location name is required')
-    .max(110, 'Location name cannot exceed 110 characters'),
+    .max(100, 'Name cannot exceed 100 characters'),
   code: z
     .string()
-    .min(1, 'Location code is required')
-    .max(70, 'Location code cannot exceed 70 characters'),
+    .max(50, 'Code cannot exceed 50 characters')
+    .optional()
+    .or(z.literal('')),
+  address: z
+    .string()
+    .max(200, 'Address cannot exceed 200 characters')
+    .optional()
+    .or(z.literal('')),
+  city: z
+    .string()
+    .max(100, 'City cannot exceed 100 characters')
+    .optional()
+    .or(z.literal('')),
+  state: z
+    .string()
+    .max(100, 'State cannot exceed 100 characters')
+    .optional()
+    .or(z.literal('')),
+  country: z
+    .string()
+    .max(100, 'Country cannot exceed 100 characters')
+    .optional()
+    .or(z.literal('')),
+  pinCode: z
+    .string()
+    .max(20, 'PIN code cannot exceed 20 characters')
+    .optional()
+    .or(z.literal('')),
+  remarks: z
+    .string()
+    .max(500, 'Remarks cannot exceed 500 characters')
+    .optional()
+    .or(z.literal('')),
 });
 
 type LocationFormData = z.infer<typeof locationSchema>;
@@ -33,20 +63,17 @@ const LocationForm: React.FC<LocationFormProps> = ({
   onCancel,
   isSubmitting = false,
 }) => {
-  const { data: countries = [] } = useCountries();
+  const isEditMode = !!location?.id;
 
   const {
     register,
     handleSubmit,
-    formState: { errors },
+    formState: { errors, isValid },
     reset,
   } = useForm<LocationFormData>({
     resolver: zodResolver(locationSchema),
-    defaultValues: location || {
-      countryId: 0,
-      name: '',
-      code: '',
-    },
+    defaultValues: location || {},
+    mode: 'onChange',
   });
 
   React.useEffect(() => {
@@ -55,119 +82,202 @@ const LocationForm: React.FC<LocationFormProps> = ({
     }
   }, [location, reset]);
 
+  const handleFormSubmit = (data: LocationFormData) => {
+    onSubmit(data);
+  };
+
+  const handleReset = () => {
+    if (location) {
+      reset(location);
+    } else {
+      reset({});
+    }
+  };
+
   return (
-    <div className='bg-white rounded-lg shadow-md'>
-      <div className='border-b border-gray-200 p-6'>
-        <div className='flex items-center gap-4'>
+    <div className='min-h-screen bg-[#f8f9fc] p-6'>
+      {/* Page Header */}
+      <div className='flex items-center justify-between mb-6'>
+        <div className='flex items-center gap-3'>
           <button
             onClick={onCancel}
-            className='text-gray-600 hover:text-gray-800 transition-colors'
+            className='p-1.5 text-gray-500 hover:text-gray-700 rounded-lg transition-colors'
+          >
+            <ArrowLeft size={20} />
+          </button>
+          <div>
+            <h1 className='text-xl font-semibold text-gray-900'>
+              {isEditMode ? 'Edit Location' : 'Create Location'}
+            </h1>
+            <p className='text-sm text-gray-500 mt-0.5'>
+              {isEditMode
+                ? 'Update location information'
+                : 'Add a new location to the system'}
+            </p>
+          </div>
+        </div>
+        <div className='flex items-center gap-3'>
+          <button
+            type='button'
+            onClick={handleReset}
+            className='px-4 py-2 text-sm font-semibold text-gray-600 bg-white border border-gray-200 rounded-md hover:bg-gray-50 transition-colors'
             disabled={isSubmitting}
           >
-            <ArrowLeft size={24} />
+            Reset
           </button>
-          <h2 className='text-2xl font-bold text-gray-800'>
-            {location?.id ? 'Edit Location' : 'New Location'}
-          </h2>
+          <button
+            type='button'
+            onClick={onCancel}
+            className='px-4 py-2 text-sm font-semibold text-gray-600 bg-white border border-gray-200 rounded-md hover:bg-gray-50 transition-colors'
+            disabled={isSubmitting}
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleSubmit(handleFormSubmit)}
+            className='px-4 py-2 text-sm font-semibold text-white bg-violet-600 rounded-md hover:bg-violet-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed'
+            disabled={isSubmitting || !isValid}
+          >
+            {isSubmitting
+              ? 'Saving...'
+              : isEditMode
+                ? 'Update Location'
+                : 'Create Location'}
+          </button>
         </div>
       </div>
 
-      <form onSubmit={handleSubmit(onSubmit)} className='p-6'>
-        <div className='space-y-6 max-w-2xl'>
-          {/* Country Selection */}
-          <div>
-            <label
-              htmlFor='countryId'
-              className='block text-sm font-medium text-gray-700 mb-2'
-            >
-              Country <span className='text-red-500'>*</span>
-            </label>
-            <select
-              {...register('countryId', { valueAsNumber: true })}
-              id='countryId'
-              className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                errors.countryId ? 'border-red-500' : 'border-gray-300'
-              }`}
-              disabled={isSubmitting}
-            >
-              <option value={0}>Select a country</option>
-              {countries.map(country => (
-                <option key={country.id} value={country.id}>
-                  {country.name}
-                </option>
-              ))}
-            </select>
-            {errors.countryId && (
-              <p className='mt-1 text-sm text-red-600'>
-                {errors.countryId.message}
-              </p>
-            )}
+      <form onSubmit={handleSubmit(handleFormSubmit)} className='space-y-6'>
+        {/* Basic Information */}
+        <div className='bg-white rounded-lg border border-gray-200 overflow-hidden'>
+          <div className='bg-[#fafbfc] px-5 py-4 border-b border-gray-200'>
+            <div className='flex items-center gap-2'>
+              <MapPin size={16} className='text-violet-600' />
+              <h3 className='text-base font-semibold text-gray-900'>
+                Basic Information
+              </h3>
+            </div>
           </div>
+          <div className='p-5'>
+            <div className='grid grid-cols-1 md:grid-cols-2 gap-5'>
+              <div>
+                <label className='block text-sm font-medium text-gray-700 mb-2'>
+                  Location Name <span className='text-red-500'>*</span>
+                </label>
+                <input
+                  type='text'
+                  {...register('name')}
+                  className={`w-full px-4 py-2.5 text-sm border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 ${
+                    errors.name ? 'border-red-300' : 'border-gray-200'
+                  }`}
+                  placeholder='Enter location name'
+                />
+                {errors.name && (
+                  <p className='mt-1.5 text-sm text-red-600'>
+                    {errors.name.message}
+                  </p>
+                )}
+              </div>
 
-          {/* Location Name */}
-          <div>
-            <label
-              htmlFor='name'
-              className='block text-sm font-medium text-gray-700 mb-2'
-            >
-              Location Name <span className='text-red-500'>*</span>
-            </label>
-            <input
-              {...register('name')}
-              type='text'
-              id='name'
-              className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                errors.name ? 'border-red-500' : 'border-gray-300'
-              }`}
-              placeholder='Enter location name'
-              disabled={isSubmitting}
-            />
-            {errors.name && (
-              <p className='mt-1 text-sm text-red-600'>{errors.name.message}</p>
-            )}
+              <div>
+                <label className='block text-sm font-medium text-gray-700 mb-2'>
+                  Location Code
+                </label>
+                <input
+                  type='text'
+                  {...register('code')}
+                  className='w-full px-4 py-2.5 text-sm border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500'
+                  placeholder='Enter location code'
+                />
+              </div>
+            </div>
           </div>
+        </div>
 
-          {/* Location Code */}
-          <div>
-            <label
-              htmlFor='code'
-              className='block text-sm font-medium text-gray-700 mb-2'
-            >
-              Location Code <span className='text-red-500'>*</span>
-            </label>
-            <input
-              {...register('code')}
-              type='text'
-              id='code'
-              className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                errors.code ? 'border-red-500' : 'border-gray-300'
-              }`}
-              placeholder='Enter location code'
-              disabled={isSubmitting}
-            />
-            {errors.code && (
-              <p className='mt-1 text-sm text-red-600'>{errors.code.message}</p>
-            )}
+        {/* Address Information */}
+        <div className='bg-white rounded-lg border border-gray-200 overflow-hidden'>
+          <div className='bg-[#fafbfc] px-5 py-4 border-b border-gray-200'>
+            <div className='flex items-center gap-2'>
+              <Building2 size={16} className='text-violet-600' />
+              <h3 className='text-base font-semibold text-gray-900'>
+                Address Information
+              </h3>
+            </div>
           </div>
+          <div className='p-5'>
+            <div className='grid grid-cols-1 md:grid-cols-2 gap-5'>
+              <div className='md:col-span-2'>
+                <label className='block text-sm font-medium text-gray-700 mb-2'>
+                  Address
+                </label>
+                <textarea
+                  {...register('address')}
+                  rows={3}
+                  className='w-full px-4 py-2.5 text-sm border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 resize-none'
+                  placeholder='Enter full address'
+                />
+              </div>
 
-          {/* Action Buttons */}
-          <div className='flex gap-4 pt-4'>
-            <button
-              type='submit'
-              disabled={isSubmitting}
-              className='flex items-center gap-2 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed'
-            >
-              <Save size={20} />
-              <span>{isSubmitting ? 'Saving...' : 'Save'}</span>
-            </button>
-            <button
-              type='button'
-              onClick={onCancel}
-              disabled={isSubmitting}
-              className='px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors disabled:bg-gray-100 disabled:cursor-not-allowed'
-            >
-              Cancel
-            </button>
+              <div>
+                <label className='block text-sm font-medium text-gray-700 mb-2'>
+                  City
+                </label>
+                <input
+                  type='text'
+                  {...register('city')}
+                  className='w-full px-4 py-2.5 text-sm border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500'
+                  placeholder='Enter city'
+                />
+              </div>
+
+              <div>
+                <label className='block text-sm font-medium text-gray-700 mb-2'>
+                  State
+                </label>
+                <input
+                  type='text'
+                  {...register('state')}
+                  className='w-full px-4 py-2.5 text-sm border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500'
+                  placeholder='Enter state'
+                />
+              </div>
+
+              <div>
+                <label className='block text-sm font-medium text-gray-700 mb-2'>
+                  Country
+                </label>
+                <input
+                  type='text'
+                  {...register('country')}
+                  className='w-full px-4 py-2.5 text-sm border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500'
+                  placeholder='Enter country'
+                />
+              </div>
+
+              <div>
+                <label className='block text-sm font-medium text-gray-700 mb-2'>
+                  PIN Code
+                </label>
+                <input
+                  type='text'
+                  {...register('pinCode')}
+                  className='w-full px-4 py-2.5 text-sm border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500'
+                  placeholder='Enter PIN code'
+                />
+              </div>
+
+              <div className='md:col-span-2'>
+                <label className='block text-sm font-medium text-gray-700 mb-2'>
+                  Remarks
+                </label>
+                <textarea
+                  {...register('remarks')}
+                  rows={3}
+                  className='w-full px-4 py-2.5 text-sm border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 resize-none'
+                  placeholder='Enter any additional remarks'
+                />
+              </div>
+            </div>
           </div>
         </div>
       </form>
