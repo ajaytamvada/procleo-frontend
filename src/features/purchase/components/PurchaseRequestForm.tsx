@@ -26,6 +26,7 @@ import {
 } from '../utils/excelUtils';
 import { apiClient } from '@/lib/api';
 import ExcelImportDialog from '@/components/ExcelImportDialog';
+import { FileUpload } from '@/components/common/FileUpload';
 
 type PurchaseRequestItemFormData = {
   id: number;
@@ -49,6 +50,7 @@ const purchaseRequestSchema = z.object({
   projectCode: z.string().optional(),
   projectName: z.string().min(1, 'Project Name is required'),
   remarks: z.string().optional(),
+  attachments: z.string().optional(),
   items: z
     .array(
       z.object({
@@ -167,7 +169,7 @@ const PurchaseRequestForm: React.FC<PurchaseRequestFormProps> = ({
     setValue,
     reset,
   } = useForm<PurchaseRequestFormData>({
-    resolver: zodResolver(purchaseRequestSchema),
+    resolver: zodResolver(purchaseRequestSchema) as any,
     defaultValues: purchaseRequest || {
       requestDate: new Date().toISOString().split('T')[0],
       requestedBy: AuthService.getUserFullName(),
@@ -177,6 +179,7 @@ const PurchaseRequestForm: React.FC<PurchaseRequestFormProps> = ({
       projectCode: '',
       projectName: '',
       remarks: '',
+      attachments: '',
       items: [
         {
           itemId: 0,
@@ -215,6 +218,7 @@ const PurchaseRequestForm: React.FC<PurchaseRequestFormProps> = ({
         projectCode: purchaseRequest.projectCode || '',
         projectName: purchaseRequest.projectName || '',
         remarks: purchaseRequest.remarks || '',
+        attachments: purchaseRequest.attachments || '',
       };
 
       reset({
@@ -243,7 +247,7 @@ const PurchaseRequestForm: React.FC<PurchaseRequestFormProps> = ({
           approvalRemarks: item.approvalRemarks,
         }));
 
-        replace(mappedItems);
+        replace(mappedItems as any);
 
         const newSearchQueries: Record<number, string> = {};
         purchaseRequest.items.forEach((item, index) => {
@@ -269,7 +273,9 @@ const PurchaseRequestForm: React.FC<PurchaseRequestFormProps> = ({
         }
         if (user.locationName && cities.length > 0) {
           const matchedLoc = cities.find(
-            c => c.name.toLowerCase() === user.locationName?.toLowerCase()
+            c =>
+              c.name.toLowerCase() === user.locationName?.toLowerCase() ||
+              c.stateName?.toLowerCase() === user.locationName?.toLowerCase()
           );
           if (matchedLoc && matchedLoc.id) {
             setValue('locationId', matchedLoc.id);
@@ -356,7 +362,7 @@ const PurchaseRequestForm: React.FC<PurchaseRequestFormProps> = ({
 
   const handleFormSubmit = (sendForApproval: boolean) => {
     handleSubmit(
-      data => {
+      (data: PurchaseRequestFormData) => {
         if (sendForApproval) {
           setPendingSubmission(true);
           setShowConfirmDialog(true);
@@ -400,7 +406,7 @@ const PurchaseRequestForm: React.FC<PurchaseRequestFormProps> = ({
   const handleConfirmSubmit = () => {
     setShowConfirmDialog(false);
     setTimeout(() => {
-      handleSubmit(data => onSubmit(data, true))();
+      handleSubmit((data: PurchaseRequestFormData) => onSubmit(data, true))();
     }, 100);
   };
 
@@ -432,7 +438,7 @@ const PurchaseRequestForm: React.FC<PurchaseRequestFormProps> = ({
       }
 
       const mappedItems = await searchAndMapExcelItemsInBatch(excelItems);
-      replace(mappedItems);
+      replace(mappedItems as any);
 
       const newSearchQueries: Record<number, string> = {};
       mappedItems.forEach((item, index) => {
@@ -779,6 +785,17 @@ const PurchaseRequestForm: React.FC<PurchaseRequestFormProps> = ({
                     placeholder='Enter justification for this request...'
                   />
                 </div>
+
+                {/* Attachments */}
+                <div className='md:col-span-2'>
+                  <label className='block text-sm font-medium text-gray-700 mb-2'>
+                    Attachments
+                  </label>
+                  <FileUpload
+                    value={watch('attachments') || ''}
+                    onChange={val => setValue('attachments', val)}
+                  />
+                </div>
               </div>
             </div>
           </div>
@@ -790,15 +807,6 @@ const PurchaseRequestForm: React.FC<PurchaseRequestFormProps> = ({
             </h2>
             <div className='flex items-center gap-3'>
               {/* Download Template Button */}
-              <button
-                type='button'
-                onClick={handleDownloadTemplate}
-                disabled={isSubmitting}
-                className='inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-violet-600 rounded-md hover:bg-violet-700 transition-colors disabled:opacity-50'
-              >
-                <Download size={15} />
-                Download Template
-              </button>
 
               {/* Upload Excel Button */}
               <button
@@ -834,7 +842,7 @@ const PurchaseRequestForm: React.FC<PurchaseRequestFormProps> = ({
                 className='inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-violet-600 rounded-md hover:bg-violet-700 transition-colors disabled:opacity-50'
               >
                 <Plus size={15} />
-                Add Line Item
+                Add Row
               </button>
             </div>
           </div>
@@ -847,7 +855,7 @@ const PurchaseRequestForm: React.FC<PurchaseRequestFormProps> = ({
                 <thead>
                   <tr className='bg-[#fafbfc]'>
                     <th className='px-4 py-3.5 text-left text-xs font-semibold text-gray-600 tracking-wide w-16'>
-                      S.No
+                      SN
                     </th>
                     <th className='px-4 py-3.5 text-left text-xs font-semibold text-gray-600 tracking-wide min-w-[180px]'>
                       Model
@@ -864,11 +872,11 @@ const PurchaseRequestForm: React.FC<PurchaseRequestFormProps> = ({
                     <th className='px-4 py-3.5 text-left text-xs font-semibold text-gray-600 tracking-wide w-20'>
                       UOM
                     </th>
-                    <th className='px-4 py-3.5 text-left text-xs font-semibold text-gray-600 tracking-wide min-w-[150px]'>
-                      Description
-                    </th>
                     <th className='px-4 py-3.5 text-left text-xs font-semibold text-gray-600 tracking-wide w-24'>
                       Quantity
+                    </th>
+                    <th className='px-4 py-3.5 text-left text-xs font-semibold text-gray-600 tracking-wide min-w-[150px]'>
+                      Description
                     </th>
                     <th className='px-4 py-3.5 text-left text-xs font-semibold text-gray-600 tracking-wide w-28'>
                       Unit Price
@@ -972,14 +980,6 @@ const PurchaseRequestForm: React.FC<PurchaseRequestFormProps> = ({
                           />
                         </td>
                         <td className='px-4 py-3'>
-                          <input
-                            {...register(`items.${index}.description`)}
-                            className={`w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 ${isAccepted ? 'bg-gray-100' : 'bg-white'}`}
-                            disabled={isSubmitting || isAccepted}
-                            placeholder='Description'
-                          />
-                        </td>
-                        <td className='px-4 py-3'>
                           <Controller
                             name={`items.${index}.quantity`}
                             control={control}
@@ -995,6 +995,14 @@ const PurchaseRequestForm: React.FC<PurchaseRequestFormProps> = ({
                                 disabled={isSubmitting || isAccepted}
                               />
                             )}
+                          />
+                        </td>
+                        <td className='px-4 py-3'>
+                          <input
+                            {...register(`items.${index}.description`)}
+                            className={`w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 ${isAccepted ? 'bg-gray-100' : 'bg-white'}`}
+                            disabled={isSubmitting || isAccepted}
+                            placeholder='Description'
                           />
                         </td>
                         <td className='px-4 py-3'>

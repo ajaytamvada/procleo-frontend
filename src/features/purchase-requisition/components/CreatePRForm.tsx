@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/Input';
 import { PRItemsTable } from './PRItemsTable';
 import { Edit, Plus } from 'lucide-react';
 import { useCities } from '@/features/master/hooks/useCityAPI';
+import { FileUpload } from '@/components/common/FileUpload';
 
 interface PurchaseRequisitionItem {
   id: string;
@@ -28,6 +29,7 @@ interface CreatePRFormData {
   department: string;
   justification: string;
   items: Omit<PurchaseRequisitionItem, 'id' | 'subTotal'>[];
+  attachments?: string;
 }
 
 const createPRSchema = z.object({
@@ -318,6 +320,16 @@ export const CreatePRForm: React.FC<CreatePRFormProps> = ({
               rows={3}
               className='w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
               placeholder='Enter justification for this purchase requisition...'
+            />
+          </div>
+
+          <div className='mt-6'>
+            <label className='block text-sm font-medium text-gray-700 mb-2'>
+              Attachments
+            </label>
+            <FileUpload
+              value={watch('attachments') || ''}
+              onChange={val => setValue('attachments', val)}
             />
           </div>
         </div>

@@ -232,6 +232,7 @@ export function useAuth() {
     isActive: true,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
+    vendorId: undefined as number | undefined,
   };
 
   const isAuthenticated = DEV_MODE ? true : AuthService.isAuthenticated();

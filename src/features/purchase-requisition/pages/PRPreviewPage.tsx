@@ -14,6 +14,7 @@ import {
   useSubmittedPurchaseRequests,
   usePurchaseRequest,
 } from '@/features/purchase/hooks/usePurchaseRequestAPI';
+import { FilePreviewModal } from '@/components/common/FilePreviewModal';
 
 const getStatusColor = (status: string) => {
   const lowerStatus = status?.toLowerCase() || '';
@@ -52,6 +53,7 @@ export const PRPreviewPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('');
   const [currentPage, setCurrentPage] = useState(1);
+  const [previewFile, setPreviewFile] = useState<string | null>(null);
   const itemsPerPage = 15;
 
   // If ID is provided, fetch single PR details. Otherwise fetch all submitted PRs
@@ -493,7 +495,34 @@ export const PRPreviewPage: React.FC = () => {
                   </span>
                 </div>
               </div>
+              {singlePR.attachments && (
+                <div className='flex flex-col mt-4 col-span-2'>
+                  <span className='text-sm font-medium text-gray-500 w-32 mb-1'>
+                    Attachments:
+                  </span>
+                  <div className='flex flex-wrap gap-2'>
+                    {singlePR.attachments
+                      .split(',')
+                      .filter(f => f.trim())
+                      .map((filename, idx) => (
+                        <button
+                          key={idx}
+                          onClick={() => setPreviewFile(filename)}
+                          className='inline-flex items-center px-3 py-1 bg-gray-100 border border-gray-300 rounded text-sm text-blue-600 hover:bg-gray-200 hover:underline cursor-pointer'
+                        >
+                          {filename}
+                        </button>
+                      ))}
+                  </div>
+                </div>
+              )}
             </div>
+
+            <FilePreviewModal
+              isOpen={!!previewFile}
+              onClose={() => setPreviewFile(null)}
+              filename={previewFile || ''}
+            />
 
             {/* Items Table */}
             <div>

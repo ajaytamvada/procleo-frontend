@@ -116,11 +116,13 @@ export const QuotationComparisonPage: React.FC = () => {
   // Group quotations by supplier
   const quotations = rfp.quotations || [];
 
-  // Check if all quotations are received
+  // Check if all quotations are received or date has passed
   const totalSuppliers = rfp.totalSuppliers || 0;
   const respondedSuppliers = rfp.respondedSuppliers || 0;
+  const isDatePassed = new Date() > new Date(rfp.closingDate);
   const allQuotationsReceived =
-    respondedSuppliers >= totalSuppliers && totalSuppliers > 0;
+    (respondedSuppliers >= totalSuppliers && totalSuppliers > 0) ||
+    isDatePassed;
 
   return (
     <div className='min-h-screen bg-[#f8f9fc]'>
@@ -141,7 +143,7 @@ export const QuotationComparisonPage: React.FC = () => {
               <p className='text-sm text-gray-500 mt-0.5'>{rfp.rfpNumber}</p>
             </div>
           </div>
-          {rfp.status === 'FLOATED' && (
+          {rfp.status === 'FLOATED' && !isDatePassed && (
             <button
               onClick={() => setIsExtendDialogOpen(true)}
               className='inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 hover:border-gray-400 transition-all'
@@ -443,7 +445,9 @@ export const QuotationComparisonPage: React.FC = () => {
                     onClick={() => handleNegotiate(quotation.id!)}
                     disabled={
                       negotiateMutation.isPending ||
-                      quotation.status === 'NEGOTIATION'
+                      quotation.status === 'NEGOTIATION' ||
+                      rfp.status === 'APPROVED' ||
+                      rfp.status === 'CANCELLED'
                     }
                     className='inline-flex items-center gap-1.5 px-4 py-2.5 text-sm font-semibold text-white bg-violet-600 rounded-md hover:bg-violet-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed'
                   >
