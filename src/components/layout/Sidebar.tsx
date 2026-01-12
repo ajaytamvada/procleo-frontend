@@ -26,7 +26,6 @@ interface NavigationItem {
 }
 
 const navigation: NavigationItem[] = [
-  { name: 'Dashboardsss', href: '/', icon: Home },
   {
     name: 'Purchase Requisition',
     href: '/purchase-requisition',

@@ -1,4 +1,10 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, {
+  useState,
+  useRef,
+  useEffect,
+  useCallback,
+  useMemo,
+} from 'react';
 import {
   User,
   Menu,
@@ -9,7 +15,6 @@ import {
   LogOut,
   Settings,
   UserCircle,
-  Command,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { AuthService } from '@/services/auth';
@@ -26,7 +31,6 @@ interface QuickAction {
   icon: React.ElementType;
   route: string;
   shortcutKey: string;
-  shortcutDisplay: string[];
 }
 
 const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
@@ -37,6 +41,34 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
   const dropdownRef = useRef<HTMLDivElement>(null);
   const userMenuRef = useRef<HTMLDivElement>(null);
 
+  // Detect if user is on Mac
+  const isMac = useMemo(() => {
+    if (typeof navigator !== 'undefined') {
+      return (
+        /Mac|iPod|iPhone|iPad/.test(navigator.platform) ||
+        /Mac|iPod|iPhone|iPad/.test(navigator.userAgent)
+      );
+    }
+    return false;
+  }, []);
+
+  // Get modifier key display based on OS
+  const getModifierKey = useCallback(() => {
+    return isMac ? '⌘' : 'Ctrl';
+  }, [isMac]);
+
+  // Get shortcut display array based on OS
+  const getShortcutDisplay = useCallback(
+    (key: string) => {
+      if (isMac) {
+        return ['⌘', '⇧', key.toUpperCase()];
+      } else {
+        return ['Ctrl', 'Shift', key.toUpperCase()];
+      }
+    },
+    [isMac]
+  );
+
   // Quick actions with keyboard shortcuts
   const quickActions: QuickAction[] = [
     {
@@ -46,7 +78,6 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
       icon: FileText,
       route: '/purchase-requisition/create',
       shortcutKey: 'r',
-      shortcutDisplay: ['⌘', '⇧', 'R'],
     },
     {
       label: 'Purchase Order',
@@ -55,7 +86,6 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
       icon: ShoppingCart,
       route: '/purchase-orders/create',
       shortcutKey: 'o',
-      shortcutDisplay: ['⌘', '⇧', 'O'],
     },
     {
       label: 'Request for Proposal',
@@ -64,7 +94,6 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
       icon: Users,
       route: '/rfp/create',
       shortcutKey: 'p',
-      shortcutDisplay: ['⌘', '⇧', 'P'],
     },
   ];
 
@@ -160,6 +189,49 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
     roles: ['ADMIN'],
   };
 
+  // Keyboard shortcut key component
+  const ShortcutKey: React.FC<{ keyLabel: string }> = ({ keyLabel }) => (
+    <kbd
+      className='inline-flex items-center justify-center min-w-[24px] h-6 px-1.5 text-xs font-medium text-gray-600 bg-gray-100 border border-gray-300 rounded shadow-sm'
+      style={{
+        fontFamily:
+          keyLabel === '⌘' || keyLabel === '⇧'
+            ? '-apple-system, BlinkMacSystemFont, sans-serif'
+            : 'inherit',
+      }}
+    >
+      {keyLabel}
+    </kbd>
+  );
+
+  // Command/Ctrl icon component
+  const ModifierIcon: React.FC = () => {
+    if (isMac) {
+      // Mac Command symbol
+      return (
+        <svg
+          width='12'
+          height='12'
+          viewBox='0 0 24 24'
+          fill='none'
+          stroke='currentColor'
+          strokeWidth='2'
+          strokeLinecap='round'
+          strokeLinejoin='round'
+        >
+          <path d='M18 3a3 3 0 0 0-3 3v12a3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3H6a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3V6a3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3h12a3 3 0 0 0 3-3 3 3 0 0 0-3-3z' />
+        </svg>
+      );
+    } else {
+      // Windows logo
+      return (
+        <svg width='12' height='12' viewBox='0 0 24 24' fill='currentColor'>
+          <path d='M0 3.449L9.75 2.1v9.451H0m10.949-9.602L24 0v11.4H10.949M0 12.6h9.75v9.451L0 20.699M10.949 12.6H24V24l-12.9-1.801' />
+        </svg>
+      );
+    }
+  };
+
   return (
     <header
       style={{
@@ -199,6 +271,7 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
       {/* Right side */}
       <div className='flex items-center gap-2'>
         {/* Quick Actions Dropdown - Cashfree Style */}
+        <img src='/ai-icon.png' alt='AI' className='h-9 w-auto' />
         <div className='relative' ref={dropdownRef}>
           <button
             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
@@ -222,6 +295,9 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
               <div className='py-1'>
                 {quickActions.map((action, index) => {
                   const isHovered = hoveredIndex === index;
+                  const shortcutDisplay = getShortcutDisplay(
+                    action.shortcutKey
+                  );
 
                   return (
                     <button
@@ -246,12 +322,10 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
 
                       {/* Keyboard Shortcut Display */}
                       <div className='flex items-center gap-1 flex-shrink-0 pt-0.5'>
-                        {action.shortcutDisplay.map((key, keyIndex) => (
+                        {shortcutDisplay.map((key, keyIndex) => (
                           <React.Fragment key={keyIndex}>
-                            <kbd className='inline-flex items-center justify-center min-w-[24px] h-6 px-1.5 text-xs font-medium text-gray-600 bg-gray-100 border border-gray-300 rounded shadow-sm'>
-                              {key}
-                            </kbd>
-                            {keyIndex < action.shortcutDisplay.length - 1 && (
+                            <ShortcutKey keyLabel={key} />
+                            {keyIndex < shortcutDisplay.length - 1 && (
                               <span className='text-gray-400 text-xs'>+</span>
                             )}
                           </React.Fragment>
@@ -265,8 +339,11 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
               {/* Footer with hint */}
               <div className='px-5 py-3 bg-gray-50 border-t border-gray-100'>
                 <div className='flex items-center gap-2 text-xs text-gray-500'>
-                  <Command size={12} />
-                  <span>Use keyboard shortcuts for quick access</span>
+                  <ModifierIcon />
+                  <span>
+                    Use {isMac ? 'keyboard shortcuts' : 'Ctrl + Shift + Key'}{' '}
+                    for quick access
+                  </span>
                 </div>
               </div>
             </div>

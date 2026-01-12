@@ -834,7 +834,7 @@ const PurchaseRequestForm: React.FC<PurchaseRequestFormProps> = ({
                 className='inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-violet-600 rounded-md hover:bg-violet-700 transition-colors disabled:opacity-50'
               >
                 <Plus size={15} />
-                Add Line Item
+                Add Row
               </button>
             </div>
           </div>

@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Layout from '@/components/layout/Layout';
+import SettingsLayout from '@/components/layout/SettingsLayout';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import RootRedirect from '@/components/auth/RootRedirect';
 import AuthLayout from '@/components/auth/AuthLayout';
@@ -124,6 +125,8 @@ import '@/styles/globals.css';
 
 // Placeholder components for remaining routes
 import Settings from './pages/Settings';
+import Analytics from './pages/Analytics';
+import Overview from './pages/Overview';
 
 const Documents: React.FC = () => (
   <div className='space-y-6'>
@@ -182,7 +185,12 @@ const App: React.FC = () => {
                   </ProtectedRoute>
                 }
               >
-                <Route path='dashboard' element={<Dashboard />} />
+                <Route
+                  path='dashboard'
+                  element={<Navigate to='/dashboard/overview' replace />}
+                />
+                <Route path='dashboard/analytics' element={<Analytics />} />
+                <Route path='dashboard/overview' element={<Overview />} />
 
                 {/* Purchase Requisition Routes */}
                 <Route
@@ -703,7 +711,6 @@ const App: React.FC = () => {
                 />
 
                 <Route path='documents' element={<Documents />} />
-                <Route path='settings' element={<Settings />} />
                 <Route path='components' element={<ComponentShowcase />} />
                 <Route path='cache-debug' element={<CacheManagerDebug />} />
 
@@ -808,6 +815,17 @@ const App: React.FC = () => {
                     </div>
                   }
                 />
+              </Route>
+
+              {/* ========== SETTINGS ROUTES (No Sidebar) ========== */}
+              <Route
+                element={
+                  <ProtectedRoute>
+                    <SettingsLayout />
+                  </ProtectedRoute>
+                }
+              >
+                <Route path='settings' element={<Settings />} />
               </Route>
 
               {/* Fallback route */}

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { Bell } from 'lucide-react';
 import { notificationService } from '@/services/notificationService';
 import { AppNotification } from '@/types/notification';
@@ -13,7 +13,7 @@ const NotificationBell: React.FC = () => {
   const dropdownRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
 
-  const fetchNotifications = async () => {
+  const fetchNotifications = useCallback(async () => {
     try {
       const user = AuthService.getStoredUser();
       if (user) {
@@ -30,13 +30,13 @@ const NotificationBell: React.FC = () => {
     } catch (error) {
       console.error('Failed to fetch notifications', error);
     }
-  };
+  }, [isOpen]);
 
   useEffect(() => {
     fetchNotifications();
     const interval = setInterval(fetchNotifications, 30000); // Poll every 30s
     return () => clearInterval(interval);
-  }, [isOpen, fetchNotifications]);
+  }, [fetchNotifications]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -94,12 +94,17 @@ const NotificationBell: React.FC = () => {
     <div className='relative' ref={dropdownRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className='relative p-1.5 text-white hover:text-white/80 hover:bg-indigo-500/20 rounded-full transition-colors focus:outline-none'
+        className='relative p-2 text-white hover:text-white/80 hover:bg-indigo-500/20 rounded-lg transition-all duration-200 focus:outline-none'
+        title={
+          unreadCount > 0
+            ? `${unreadCount} unread notification${unreadCount > 1 ? 's' : ''}`
+            : 'Notifications'
+        }
       >
-        <Bell className='w-6 h-6' />
+        <Bell className='w-5 h-5' />
         {unreadCount > 0 && (
-          <span className='absolute -top-0.5 -right-0.5 flex items-center justify-center w-3.5 h-3.5 text-[10px] font-bold text-white bg-red-500 rounded-full'>
-            {unreadCount > 9 ? '9+' : unreadCount}
+          <span className='absolute -top-1 -right-1 flex items-center justify-center min-w-[18px] h-[18px] px-1 text-[10px] font-bold text-white bg-red-500 rounded-full border-2 border-[rgb(19,9,81)] shadow-lg'>
+            {unreadCount > 99 ? '99+' : unreadCount}
           </span>
         )}
       </button>
