@@ -1,5 +1,6 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import { ArrowLeft, Printer } from 'lucide-react';
+import { FilePreviewModal } from '@/components/common/FilePreviewModal';
 import type { PurchaseRequest } from '../types';
 
 interface PurchaseRequestPreviewProps {
@@ -12,6 +13,7 @@ const PurchaseRequestPreview: React.FC<PurchaseRequestPreviewProps> = ({
   onBack,
 }) => {
   const printRef = useRef<HTMLDivElement>(null);
+  const [previewFile, setPreviewFile] = useState<string | null>(null);
 
   const handlePrint = () => {
     const printWindow = window.open('', '_blank');
@@ -185,88 +187,116 @@ const PurchaseRequestPreview: React.FC<PurchaseRequestPreviewProps> = ({
                 </p>
               </div>
             )}
-          </div>
 
-          {/* Line Items Table */}
-          <div className='mb-6'>
-            <h2 className='text-lg font-semibold text-gray-800 mb-4'>
-              Line Items
-            </h2>
-            <table className='w-full border-collapse border border-gray-300'>
-              <thead>
-                <tr className='bg-gray-100'>
-                  <th className='border border-gray-300 px-4 py-2 text-left text-sm font-semibold'>
-                    S.No
-                  </th>
-                  <th className='border border-gray-300 px-4 py-2 text-left text-sm font-semibold'>
-                    Model
-                  </th>
-                  <th className='border border-gray-300 px-4 py-2 text-left text-sm font-semibold'>
-                    Make
-                  </th>
-                  <th className='border border-gray-300 px-4 py-2 text-left text-sm font-semibold'>
-                    Description
-                  </th>
-                  <th className='border border-gray-300 px-4 py-2 text-center text-sm font-semibold'>
-                    Quantity
-                  </th>
-                  <th className='border border-gray-300 px-4 py-2 text-right text-sm font-semibold'>
-                    Unit Price
-                  </th>
-                  <th className='border border-gray-300 px-4 py-2 text-right text-sm font-semibold'>
-                    Sub Total
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {purchaseRequest.items.map((item, index) => (
-                  <tr key={item.id || index}>
-                    <td className='border border-gray-300 px-4 py-2 text-sm'>
-                      {index + 1}
-                    </td>
-                    <td className='border border-gray-300 px-4 py-2 text-sm'>
-                      {item.modelName || '-'}
-                    </td>
-                    <td className='border border-gray-300 px-4 py-2 text-sm'>
-                      {item.make || '-'}
-                    </td>
-                    <td className='border border-gray-300 px-4 py-2 text-sm'>
-                      {item.description || '-'}
-                    </td>
-                    <td className='border border-gray-300 px-4 py-2 text-center text-sm'>
-                      {item.quantity}
-                    </td>
-                    <td className='border border-gray-300 px-4 py-2 text-right text-sm'>
-                      ₹{item.unitPrice?.toFixed(2) || '0.00'}
-                    </td>
-                    <td className='border border-gray-300 px-4 py-2 text-right text-sm font-medium'>
-                      ₹{calculateLineTotal(item.quantity, item.unitPrice || 0)}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-              <tfoot>
-                <tr className='bg-gray-100 font-bold'>
-                  <td
-                    colSpan={6}
-                    className='border border-gray-300 px-4 py-3 text-right text-sm'
-                  >
-                    Grand Total:
-                  </td>
-                  <td className='border border-gray-300 px-4 py-3 text-right text-base'>
-                    ₹{purchaseRequest.grandTotal?.toFixed(2) || '0.00'}
-                  </td>
-                </tr>
-              </tfoot>
-            </table>
-          </div>
+            {purchaseRequest.attachments && (
+              <div className='mt-4 pt-4 border-t border-gray-200'>
+                <span className='font-semibold text-gray-700 block mb-2'>
+                  Attachments:
+                </span>
+                <div className='flex flex-wrap gap-2'>
+                  {purchaseRequest.attachments
+                    .split(',')
+                    .filter(f => f.trim())
+                    .map((filename, idx) => (
+                      <button
+                        key={idx}
+                        onClick={() => setPreviewFile(filename)}
+                        className='inline-flex items-center px-3 py-1 bg-gray-100 border border-gray-300 rounded text-sm text-blue-600 hover:bg-gray-200 hover:underline cursor-pointer'
+                      >
+                        {filename}
+                      </button>
+                    ))}
+                </div>
+              </div>
+            )}
 
-          {/* Footer */}
-          <div className='mt-8 pt-6 border-t border-gray-300 text-center text-sm text-gray-600'>
-            <p>
-              This is a computer-generated document. No signature is required.
-            </p>
+            <FilePreviewModal
+              isOpen={!!previewFile}
+              onClose={() => setPreviewFile(null)}
+              filename={previewFile || ''}
+            />
           </div>
+        </div>
+
+        {/* Line Items Table */}
+        <div className='mb-6'>
+          <h2 className='text-lg font-semibold text-gray-800 mb-4'>
+            Line Items
+          </h2>
+          <table className='w-full border-collapse border border-gray-300'>
+            <thead>
+              <tr className='bg-gray-100'>
+                <th className='border border-gray-300 px-4 py-2 text-left text-sm font-semibold'>
+                  S.No
+                </th>
+                <th className='border border-gray-300 px-4 py-2 text-left text-sm font-semibold'>
+                  Model
+                </th>
+                <th className='border border-gray-300 px-4 py-2 text-left text-sm font-semibold'>
+                  Make
+                </th>
+                <th className='border border-gray-300 px-4 py-2 text-left text-sm font-semibold'>
+                  Description
+                </th>
+                <th className='border border-gray-300 px-4 py-2 text-center text-sm font-semibold'>
+                  Quantity
+                </th>
+                <th className='border border-gray-300 px-4 py-2 text-right text-sm font-semibold'>
+                  Unit Price
+                </th>
+                <th className='border border-gray-300 px-4 py-2 text-right text-sm font-semibold'>
+                  Sub Total
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {purchaseRequest.items.map((item, index) => (
+                <tr key={item.id || index}>
+                  <td className='border border-gray-300 px-4 py-2 text-sm'>
+                    {index + 1}
+                  </td>
+                  <td className='border border-gray-300 px-4 py-2 text-sm'>
+                    {item.modelName || '-'}
+                  </td>
+                  <td className='border border-gray-300 px-4 py-2 text-sm'>
+                    {item.make || '-'}
+                  </td>
+                  <td className='border border-gray-300 px-4 py-2 text-sm'>
+                    {item.description || '-'}
+                  </td>
+                  <td className='border border-gray-300 px-4 py-2 text-center text-sm'>
+                    {item.quantity}
+                  </td>
+                  <td className='border border-gray-300 px-4 py-2 text-right text-sm'>
+                    ₹{item.unitPrice?.toFixed(2) || '0.00'}
+                  </td>
+                  <td className='border border-gray-300 px-4 py-2 text-right text-sm font-medium'>
+                    ₹{calculateLineTotal(item.quantity, item.unitPrice || 0)}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+            <tfoot>
+              <tr className='bg-gray-100 font-bold'>
+                <td
+                  colSpan={6}
+                  className='border border-gray-300 px-4 py-3 text-right text-sm'
+                >
+                  Grand Total:
+                </td>
+                <td className='border border-gray-300 px-4 py-3 text-right text-base'>
+                  ₹{purchaseRequest.grandTotal?.toFixed(2) || '0.00'}
+                </td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+
+        {/* Footer */}
+        <div className='mt-8 pt-6 border-t border-gray-300 text-center text-sm text-gray-600'>
+          <p>
+            This is a computer-generated document. No signature is required.
+          </p>
         </div>
       </div>
     </div>

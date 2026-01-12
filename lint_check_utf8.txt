@@ -1,0 +1,841 @@
+﻿
+> autovitica-p2p-frontend@0.0.0 lint
+> eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0
+
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\components\ExcelImportDialog.tsx
+   35:28  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   36:40  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   52:53  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  122:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  186:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\components\auth\CompanyInfoSidebar.tsx
+  53:7  warning  'achievements' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  76:7  warning  'technologies' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  88:7  warning  'industries' is assigned a value but never used    @typescript-eslint/no-unused-vars
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\components\auth\CompanyInfoSidebarNew.tsx
+   4:3  warning  'Globe' is defined but never used                                                                                                                                                @typescript-eslint/no-unused-vars
+   5:3  warning  'Mail' is defined but never used                                                                                                                                                 @typescript-eslint/no-unused-vars
+   6:3  warning  'Phone' is defined but never used                                                                                                                                                @typescript-eslint/no-unused-vars
+  58:9  warning  The 'sections' array makes the dependencies of useEffect Hook (at line 74) change on every render. To fix this, wrap the initialization of 'sections' in its own useMemo() Hook  react-hooks/exhaustive-deps
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\components\auth\ProtectedRoute.tsx
+  71:5  warning  'hasAnyModule' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\components\chat\ChatWidget.tsx
+    2:19  warning  'ChatMessage' is defined but never used                                                                                       @typescript-eslint/no-unused-vars
+    4:47  warning  'Circle' is defined but never used                                                                                            @typescript-eslint/no-unused-vars
+    5:10  warning  'TokenManager' is defined but never used                                                                                      @typescript-eslint/no-unused-vars
+   40:5   error    React Hook "useEffect" is called conditionally. React Hooks must be called in the exact same order in every component render  react-hooks/rules-of-hooks
+   55:8   warning  React Hook useEffect has a missing dependency: 'markAsRead'. Either include it or remove the dependency array                 react-hooks/exhaustive-deps
+   58:5   error    React Hook "useEffect" is called conditionally. React Hooks must be called in the exact same order in every component render  react-hooks/rules-of-hooks
+  201:43  warning  'isMe' is assigned a value but never used                                                                                     @typescript-eslint/no-unused-vars
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\components\common\ErrorBoundary.tsx
+  392:14  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+  411:14  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+  450:50  warning  Unexpected any. Specify a different type                                                                                        @typescript-eslint/no-explicit-any
+  452:22  warning  Unexpected any. Specify a different type                                                                                        @typescript-eslint/no-explicit-any
+  454:38  warning  Unexpected any. Specify a different type                                                                                        @typescript-eslint/no-explicit-any
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\components\common\FilePreviewModal.tsx
+   2:10  warning  'Dialog' is defined but never used                                                                                           @typescript-eslint/no-unused-vars
+   2:18  warning  'DialogContent' is defined but never used                                                                                    @typescript-eslint/no-unused-vars
+   2:33  warning  'DialogHeader' is defined but never used                                                                                     @typescript-eslint/no-unused-vars
+   2:47  warning  'DialogTitle' is defined but never used                                                                                      @typescript-eslint/no-unused-vars
+   3:42  warning  'ImageIcon' is defined but never used                                                                                        @typescript-eslint/no-unused-vars
+  33:8   warning  React Hook useEffect has missing dependencies: 'fileUrl' and 'loadFile'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\components\common\FileUpload.tsx
+  18:5  warning  'allowedTypes' is assigned a value but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\components\common\NotificationBell.tsx
+  16:9  warning  The 'fetchNotifications' function makes the dependencies of useEffect Hook (at line 39) change on every render. Move it inside the useEffect callback. Alternatively, wrap the definition of 'fetchNotifications' in its own useCallback() Hook  react-hooks/exhaustive-deps
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\components\debug\CacheManager.tsx
+   29:60  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   30:46  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  228:44  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\components\layout\Container.tsx
+  48:21  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\components\layout\DynamicSidebar.tsx
+  109:9  warning  The 'staticNavigation' array makes the dependencies of useMemo Hook (at line 223) change on every render. Move it inside the useMemo callback. Alternatively, wrap the initialization of 'staticNavigation' in its own useMemo() Hook  react-hooks/exhaustive-deps
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\components\layout\Grid.tsx
+  168:26  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+  168:40  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\components\layout\Header.tsx
+  41:9  warning  The 'quickActions' array makes the dependencies of useCallback Hook (at line 113) change on every render. To fix this, wrap the initialization of 'quickActions' in its own useMemo() Hook  react-hooks/exhaustive-deps
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\components\layout\Stack.tsx
+  127:33  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\components\navigation\Breadcrumbs.tsx
+  147:17  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\components\providers\ThemeProvider.tsx
+   3:22  warning  'resolveTheme' is defined but never used                                                                                        @typescript-eslint/no-unused-vars
+  59:17  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\components\ui\Alert.tsx
+   91:25  warning  Unexpected any. Specify a different type                                                                                        @typescript-eslint/no-explicit-any
+  184:47  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\components\ui\Avatar.tsx
+   67:7   warning  'onDrag' is assigned a value but never used                                                                                     @typescript-eslint/no-unused-vars
+   68:7   warning  'onDragEnd' is assigned a value but never used                                                                                  @typescript-eslint/no-unused-vars
+   69:7   warning  'onDragStart' is assigned a value but never used                                                                                @typescript-eslint/no-unused-vars
+   70:7   warning  'onAnimationStart' is assigned a value but never used                                                                           @typescript-eslint/no-unused-vars
+   71:7   warning  'onAnimationEnd' is assigned a value but never used                                                                             @typescript-eslint/no-unused-vars
+   72:7   warning  'onAnimationIteration' is assigned a value but never used                                                                       @typescript-eslint/no-unused-vars
+  174:7   warning  'onDrag' is assigned a value but never used                                                                                     @typescript-eslint/no-unused-vars
+  175:7   warning  'onDragEnd' is assigned a value but never used                                                                                  @typescript-eslint/no-unused-vars
+  176:7   warning  'onDragStart' is assigned a value but never used                                                                                @typescript-eslint/no-unused-vars
+  177:7   warning  'onAnimationStart' is assigned a value but never used                                                                           @typescript-eslint/no-unused-vars
+  178:7   warning  'onAnimationEnd' is assigned a value but never used                                                                             @typescript-eslint/no-unused-vars
+  179:7   warning  'onAnimationIteration' is assigned a value but never used                                                                       @typescript-eslint/no-unused-vars
+  196:55  warning  Unexpected any. Specify a different type                                                                                        @typescript-eslint/no-explicit-any
+  218:31  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\components\ui\Badge.tsx
+   76:7   warning  'onDrag' is assigned a value but never used                                                                                     @typescript-eslint/no-unused-vars
+   77:7   warning  'onDragEnd' is assigned a value but never used                                                                                  @typescript-eslint/no-unused-vars
+   78:7   warning  'onDragStart' is assigned a value but never used                                                                                @typescript-eslint/no-unused-vars
+   79:7   warning  'onAnimationStart' is assigned a value but never used                                                                           @typescript-eslint/no-unused-vars
+   80:7   warning  'onAnimationEnd' is assigned a value but never used                                                                             @typescript-eslint/no-unused-vars
+   81:7   warning  'onAnimationIteration' is assigned a value but never used                                                                       @typescript-eslint/no-unused-vars
+  132:17  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\components\ui\Button.tsx
+   4:10  warning  'motion' is defined but never used                                                                                              @typescript-eslint/no-unused-vars
+  90:18  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\components\ui\Card.tsx
+   48:7   warning  'asChild' is defined but never used. Allowed unused args must match /^_/u                                                       @typescript-eslint/no-unused-vars
+   78:25  warning  Unexpected any. Specify a different type                                                                                        @typescript-eslint/no-explicit-any
+  159:3   warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\components\ui\DataTable.tsx
+   46:30  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   47:18  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  141:33  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\components\ui\Dialog.tsx
+  3:18  warning  'AnimatePresence' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\components\ui\FileUpload.tsx
+  81:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\components\ui\Input.tsx
+  163:17  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\components\ui\Spinner.tsx
+   62:25  warning  Unexpected any. Specify a different type                                                                                        @typescript-eslint/no-explicit-any
+  119:25  warning  Unexpected any. Specify a different type                                                                                        @typescript-eslint/no-explicit-any
+  205:3   warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+  206:3   warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+  207:3   warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\components\ui\Table.tsx
+   40:27  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  150:25  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  231:20  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  252:45  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\components\vendors\VendorRegistrationForm.tsx
+   12:3   warning  'FileText' is defined but never used      @typescript-eslint/no-unused-vars
+   74:60  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  130:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\context\ChatContext.tsx
+   33:30  warning  'user' is assigned a value but never used                                                                                       @typescript-eslint/no-unused-vars
+   74:29  warning  'frame' is defined but never used. Allowed unused args must match /^_/u                                                         @typescript-eslint/no-unused-vars
+  212:14  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\features\access\components\loginprovision\LoginProvisionForm.tsx
+  167:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\features\access\components\loginprovision\LoginProvisionList.tsx
+  41:23  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\features\access\components\userpermission\UserPermissionForm.tsx
+  161:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\features\access\components\usertype\UserTypeForm.tsx
+  62:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\features\access\components\usertype\UserTypeList.tsx
+  38:23  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\features\access\hooks\useUserTypeAPI.ts
+  3:15  warning  'UserModulePermission' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\features\chatbot\ChatbotWidget.tsx
+  2:39  warning  'ChatbotResponse' is defined but never used  @typescript-eslint/no-unused-vars
+  3:28  warning  'Send' is defined but never used             @typescript-eslint/no-unused-vars
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\features\chatbot\hooks\useChatbot.ts
+  12:11  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  20:50  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  28:55  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  29:33  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  41:51  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  57:34  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  57:58  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  58:33  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\features\grn\hooks\useGRN.ts
+  226:22  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  246:22  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  265:22  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  286:22  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  308:22  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  331:22  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\features\grn\pages\CreateGRNPage.tsx
+  81:12  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  85:14  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\features\grn\pages\GRNApprovalPage.tsx
+  85:14  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\features\invoice\components\OcrUploadModal.tsx
+  83:14  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\features\invoice\hooks\useInvoice.ts
+  261:22  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  292:22  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  316:22  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  344:22  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  371:22  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  399:22  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  427:22  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  461:22  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  485:22  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\features\invoice\hooks\useOcr.ts
+  46:22  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  69:22  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\features\invoice\pages\CreateInvoicePage.tsx
+    9:3   warning  'Calculator' is defined but never used                                                                                                  @typescript-eslint/no-unused-vars
+   40:10  warning  'loading' is assigned a value but never used                                                                                            @typescript-eslint/no-unused-vars
+   46:6   warning  React Hook useEffect has missing dependencies: 'fetchGRN' and 'fetchPurchaseOrder'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+  199:12  warning  Unexpected any. Specify a different type                                                                                                @typescript-eslint/no-explicit-any
+  314:47  warning  Unexpected any. Specify a different type                                                                                                @typescript-eslint/no-explicit-any
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\features\invoice\pages\DirectInvoicePage.tsx
+   37:10  warning  'supplierName' is assigned a value but never used   @typescript-eslint/no-unused-vars
+  114:12  warning  Unexpected any. Specify a different type            @typescript-eslint/no-explicit-any
+  118:14  warning  Unexpected any. Specify a different type            @typescript-eslint/no-explicit-any
+  228:21  warning  Unexpected any. Specify a different type            @typescript-eslint/no-explicit-any
+  678:13  warning  'fieldsApplied' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\features\invoice\pages\DownloadInvoicePage.tsx
+  30:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\features\invoice\pages\InvoiceEntryPage.tsx
+   42:42  warning  'isLoadingPOs' is assigned a value but never used                          @typescript-eslint/no-unused-vars
+  118:12  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  124:14  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  151:31  warning  'isDraft' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+  201:21  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\features\invoice\pages\InvoiceListPage.tsx
+  17:15  warning  'Invoice' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\features\master\components\MasterDashboard.tsx
+  9:3  warning  'Package' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\features\master\components\building\BuildingPage.tsx
+  57:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  70:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\features\master\components\category\CategoryList.tsx
+  2:10  warning  'Trash2' is defined but never used  @typescript-eslint/no-unused-vars
+  2:18  warning  'Edit' is defined but never used    @typescript-eslint/no-unused-vars
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\features\master\components\category\CategoryPage.tsx
+  61:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  74:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\features\master\components\city\CityPage.tsx
+  59:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  72:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\features\master\components\cost-center\CostCenterPage.tsx
+  24:35  warning  'refetch' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  68:21  warning  Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+  78:21  warning  Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\features\master\components\country\CountryPage.tsx
+  61:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  74:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\features\master\components\currency\CurrencyPage.tsx
+  54:22  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  71:22  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\features\master\components\departments\DepartmentPage.tsx
+  54:22  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  71:22  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\features\master\components\designation\DesignationPage.tsx
+  24:35  warning  'refetch' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  68:21  warning  Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+  79:21  warning  Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\features\master\components\employee\EmployeeForm.tsx
+  119:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\features\master\components\employee\EmployeeList.tsx
+  67:23  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  89:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\features\master\components\financialyear\FinancialYearForm.tsx
+  2:19  warning  'Controller' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\features\master\components\financialyear\FinancialYearList.tsx
+  2:20  warning  'Search' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\features\master\components\floor\FloorPage.tsx
+  59:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  72:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\features\master\components\group\AssignmentGroupForm.tsx
+  63:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\features\master\components\group\AssignmentGroupList.tsx
+  71:23  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  93:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\features\master\components\item\ItemList.tsx
+  2:10  warning  'Trash2' is defined but never used  @typescript-eslint/no-unused-vars
+  2:18  warning  'Edit' is defined but never used    @typescript-eslint/no-unused-vars
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\features\master\components\item\ItemPage.tsx
+  64:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  77:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\features\master\components\locations\LocationForm.tsx
+  1:17  warning  'useState' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\features\master\components\locations\LocationPage.tsx
+   7:3   warning  'useLocations' is defined but never used  @typescript-eslint/no-unused-vars
+  65:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  78:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\features\master\components\state\StatePage.tsx
+  59:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  72:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\features\master\components\subcategory\SubCategoryList.tsx
+  2:10  warning  'Trash2' is defined but never used  @typescript-eslint/no-unused-vars
+  2:18  warning  'Edit' is defined but never used    @typescript-eslint/no-unused-vars
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\features\master\components\subcategory\SubCategoryPage.tsx
+  63:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  76:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\features\master\components\tax\TaxPage.tsx
+  55:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  68:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\features\master\components\uom\UOMPage.tsx
+  61:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  74:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\features\master\components\vendor\VendorForm.tsx
+  104:9  warning  'filteredSubCategories' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\features\master\components\vendor\VendorList.tsx
+  2:10  warning  'Trash2' is defined but never used  @typescript-eslint/no-unused-vars
+  2:18  warning  'Edit' is defined but never used    @typescript-eslint/no-unused-vars
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\features\master\components\vendor\VendorPage.tsx
+  57:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  70:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\features\master\hooks\useBudgetAPI.ts
+  102:22  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  120:22  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  137:22  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\features\master\hooks\useCompanyAPI.ts
+    6:7   warning  'API_BASE_URL' is assigned a value but never used  @typescript-eslint/no-unused-vars
+   99:22  warning  Unexpected any. Specify a different type           @typescript-eslint/no-explicit-any
+  118:22  warning  Unexpected any. Specify a different type           @typescript-eslint/no-explicit-any
+  135:22  warning  Unexpected any. Specify a different type           @typescript-eslint/no-explicit-any
+  152:22  warning  Unexpected any. Specify a different type           @typescript-eslint/no-explicit-any
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\features\master\hooks\useFinancialYearAPI.ts
+  109:22  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  135:22  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  152:22  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  170:22  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\features\master\hooks\usePaymentTermAPI.ts
+   90:22  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  113:22  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  130:22  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\features\master\hooks\useTermsAndConditionsAPI.ts
+   97:22  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  121:22  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  139:22  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\features\purchase-requisition\components\CreatePRForm.tsx
+    1:17  warning  'useState' is defined but never used      @typescript-eslint/no-unused-vars
+  383:37  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\features\purchase-requisition\components\PREditDialog.tsx
+  31:39  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\features\purchase-requisition\components\PRItemsTable.tsx
+  26:12  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  35:67  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\features\purchase-requisition\hooks\useApproval.ts
+  65:22  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\features\purchase-requisition\hooks\usePR.ts
+  65:22  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  92:22  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\features\purchase-requisition\pages\CreatePRPage.tsx
+  26:37  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\features\purchase-requisition\pages\PRPreviewPage.tsx
+  67:9  warning  The 'items' conditional could make the dependencies of useMemo Hook (at line 81) change on every render. To fix this, wrap the initialization of 'items' in its own useMemo() Hook  react-hooks/exhaustive-deps
+  67:9  warning  The 'items' conditional could make the dependencies of useMemo Hook (at line 91) change on every render. To fix this, wrap the initialization of 'items' in its own useMemo() Hook  react-hooks/exhaustive-deps
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\features\purchase-requisition\pages\PRStatusPage.tsx
+  7:15  warning  'PRStatus' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\features\purchase-requisition\pages\PurchaseRequisitionHub.tsx
+   9:3  warning  'Calendar' is defined but never used      @typescript-eslint/no-unused-vars
+  10:3  warning  'User' is defined but never used          @typescript-eslint/no-unused-vars
+  17:3  warning  'ManagePRPage' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\features\purchase\components\PurchaseRequestForm.tsx
+    9:3   warning  'Download' is defined but never used                     @typescript-eslint/no-unused-vars
+  151:10  warning  'pendingSubmission' is assigned a value but never used   @typescript-eslint/no-unused-vars
+  172:53  warning  Unexpected any. Specify a different type                 @typescript-eslint/no-explicit-any
+  250:32  warning  Unexpected any. Specify a different type                 @typescript-eslint/no-explicit-any
+  384:40  warning  Unexpected any. Specify a different type                 @typescript-eslint/no-explicit-any
+  386:44  warning  Unexpected any. Specify a different type                 @typescript-eslint/no-explicit-any
+  413:9   warning  'handleCancelSubmit' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  441:30  warning  Unexpected any. Specify a different type                 @typescript-eslint/no-explicit-any
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\features\purchase\components\PurchaseRequestPage.tsx
+   2:26  warning  'Edit' is defined but never used          @typescript-eslint/no-unused-vars
+   2:32  warning  'Trash2' is defined but never used        @typescript-eslint/no-unused-vars
+   2:40  warning  'Eye' is defined but never used           @typescript-eslint/no-unused-vars
+  74:37  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\features\purchase\components\PurchaseRequestPreview.tsx
+  216:13  error  Parsing error: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\features\purchase\utils\excelUtils.ts
+  154:25  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\features\purchaseorder\api\purchaseOrderApi.ts
+  94:51  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\features\purchaseorder\components\CancelPOTab.tsx
+   19:48  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   34:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   52:34  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   74:14  warning  'error' is defined but never used         @typescript-eslint/no-unused-vars
+  184:42  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\features\purchaseorder\hooks\usePurchaseOrders.ts
+  122:22  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  150:22  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  173:22  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  192:22  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  214:22  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  237:22  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  260:22  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  283:22  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  308:22  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\features\purchaseorder\pages\ApprovedRFPListPage.tsx
+   30:11  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  197:43  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  200:27  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\features\purchaseorder\pages\CreateDirectPOPage.tsx
+   12:3   warning  'Save' is defined but never used                                                                                      @typescript-eslint/no-unused-vars
+   13:3   warning  'Send' is defined but never used                                                                                      @typescript-eslint/no-unused-vars
+   14:3   warning  'Calendar' is defined but never used                                                                                  @typescript-eslint/no-unused-vars
+   16:3   warning  'Building' is defined but never used                                                                                  @typescript-eslint/no-unused-vars
+   31:10  warning  'activeTab' is assigned a value but never used                                                                        @typescript-eslint/no-unused-vars
+   31:21  warning  'setActiveTab' is assigned a value but never used                                                                     @typescript-eslint/no-unused-vars
+   81:6   warning  React Hook useEffect has a missing dependency: 'formData.poNumber'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  238:21  warning  Unexpected any. Specify a different type                                                                              @typescript-eslint/no-explicit-any
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\features\purchaseorder\pages\CreatePurchaseOrderPage.tsx
+    7:3   warning  'Save' is defined but never used                                                                                      @typescript-eslint/no-unused-vars
+    8:3   warning  'Send' is defined but never used                                                                                      @typescript-eslint/no-unused-vars
+   16:10  warning  'POType' is defined but never used                                                                                    @typescript-eslint/no-unused-vars
+   87:6   warning  React Hook useEffect has a missing dependency: 'loadRFPData'. Either include it or remove the dependency array        react-hooks/exhaustive-deps
+   94:6   warning  React Hook useEffect has a missing dependency: 'formData.poNumber'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  103:58  warning  Unexpected any. Specify a different type                                                                              @typescript-eslint/no-explicit-any
+  112:45  warning  Unexpected any. Specify a different type                                                                              @typescript-eslint/no-explicit-any
+  150:21  warning  Unexpected any. Specify a different type                                                                              @typescript-eslint/no-explicit-any
+  320:22  warning  Unexpected any. Specify a different type                                                                              @typescript-eslint/no-explicit-any
+  351:21  warning  Unexpected any. Specify a different type                                                                              @typescript-eslint/no-explicit-any
+  489:43  warning  Unexpected any. Specify a different type                                                                              @typescript-eslint/no-explicit-any
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\features\purchaseorder\pages\DirectPOListPage.tsx
+   11:3   warning  'AlertCircle' is defined but never used   @typescript-eslint/no-unused-vars
+   12:3   warning  'Calendar' is defined but never used      @typescript-eslint/no-unused-vars
+   13:3   warning  'FileText' is defined but never used      @typescript-eslint/no-unused-vars
+   16:3   warning  'Building' is defined but never used      @typescript-eslint/no-unused-vars
+   32:40  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   36:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  204:42  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\features\purchaseorder\pages\EditPOPage.tsx
+   12:3   warning  'Save' is defined but never used                   @typescript-eslint/no-unused-vars
+   13:3   warning  'Send' is defined but never used                   @typescript-eslint/no-unused-vars
+   14:3   warning  'Calendar' is defined but never used               @typescript-eslint/no-unused-vars
+   16:3   warning  'Building' is defined but never used               @typescript-eslint/no-unused-vars
+   34:10  warning  'activeTab' is assigned a value but never used     @typescript-eslint/no-unused-vars
+   34:21  warning  'setActiveTab' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  184:68  warning  Unexpected any. Specify a different type           @typescript-eslint/no-explicit-any
+  255:21  warning  Unexpected any. Specify a different type           @typescript-eslint/no-explicit-any
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\features\purchaseorder\pages\ModifyPOListPage.tsx
+   28:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  207:42  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\features\purchaseorder\pages\POApprovalDetailPage.tsx
+  447:39  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\features\purchaseorder\pages\POApprovalListPage.tsx
+   29:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  160:42  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\features\purchaseorder\pages\PrintPOListPage.tsx
+   31:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   74:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  207:42  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\features\purchaseorder\pages\PrintPOPreviewPage.tsx
+   64:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  306:41  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\features\purchaseorder\pages\PurchaseOrderListPage.tsx
+  13:3  warning  'CheckCircle' is defined but never used  @typescript-eslint/no-unused-vars
+  14:3  warning  'XCircle' is defined but never used      @typescript-eslint/no-unused-vars
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\features\reports\pages\FloatRFPReportPage.tsx
+  28:14  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\features\reports\pages\GRNReportPage.tsx
+  31:14  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\features\reports\pages\InvoiceReportPage.tsx
+  31:14  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\features\reports\pages\POReportPage.tsx
+  31:14  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\features\reports\pages\PRReportPage.tsx
+  32:14  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\features\reports\pages\SubmittedRFPReportPage.tsx
+  28:14  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\features\reports\pages\ThreeWayMatchReportPage.tsx
+  31:14  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\features\reports\pages\VendorReportPage.tsx
+  30:14  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\features\rfp\components\ExtendRFPDialog.tsx
+  35:22  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\features\rfp\hooks\useApproval.ts
+  39:22  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\features\rfp\hooks\useNegotiateQuotation.ts
+   75:22  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  101:22  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\features\rfp\hooks\useRFPFromPR.ts
+  57:22  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\features\rfp\hooks\useReSubmitQuotation.ts
+  86:22  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\features\rfp\hooks\useSendForApproval.ts
+  34:27  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  41:22  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\features\rfp\hooks\useSubmitQuotation.ts
+  55:22  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\features\rfp\pages\ApprovalDetailPage.tsx
+  17:3  warning  'User' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\features\rfp\pages\CreateRFPFromPRPage.tsx
+   14:3  warning  'Save' is defined but never used                                                                                     @typescript-eslint/no-unused-vars
+   16:3  warning  'ChevronDown' is defined but never used                                                                              @typescript-eslint/no-unused-vars
+  157:6  warning  React Hook useMemo has a missing dependency: 'selectedItems.size'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\features\rfp\pages\RFPActivityHub.tsx
+  11:3   warning  'Users' is defined but never used          @typescript-eslint/no-unused-vars
+  12:3   warning  'DollarSign' is defined but never used     @typescript-eslint/no-unused-vars
+  13:3   warning  'AlertTriangle' is defined but never used  @typescript-eslint/no-unused-vars
+  17:10  warning  'RFPListPage' is defined but never used    @typescript-eslint/no-unused-vars
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\features\rfp\pages\RFPListPage.tsx
+   7:3  warning  'Download' is defined but never used                                                                          @typescript-eslint/no-unused-vars
+  13:3  warning  'XCircle' is defined but never used                                                                           @typescript-eslint/no-unused-vars
+  33:6  warning  React Hook useEffect has a missing dependency: 'fetchRFPs'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\features\rfp\pages\ReSubmitQuotationFormPage.tsx
+  119:12  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  135:33  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  137:33  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\features\rfp\pages\SendForApprovalPage.tsx
+  299:43  warning  'index' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\features\rfp\pages\SubmitQuotationFormPage.tsx
+  105:12  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\features\users\components\CreateUserForm.tsx
+    7:34  warning  'UserRole' is defined but never used                                      @typescript-eslint/no-unused-vars
+  289:64  warning  'config' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\features\vendor\pages\VendorDashboard.tsx
+  3:3  warning  'LayoutDashboard' is defined but never used  @typescript-eslint/no-unused-vars
+  6:3  warning  'FileSpreadsheet' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\features\vendor\pages\VendorRFPList.tsx
+  4:3  warning  'Clock' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\hooks\useAdvancedCache.ts
+  169:14  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+  188:14  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+  208:16  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+  251:14  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\hooks\useAuth.ts
+    7:3   warning  'RegisterData' is defined but never used        @typescript-eslint/no-unused-vars
+    9:3   warning  'UpdatePasswordData' is defined but never used  @typescript-eslint/no-unused-vars
+   21:34  warning  Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+   66:22  warning  Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+   83:22  warning  Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+  105:22  warning  Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+  138:22  warning  Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+  163:22  warning  Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+  175:22  warning  Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+  193:22  warning  Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+  205:22  warning  Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\hooks\useOffline.ts
+   46:6   warning  React Hook useEffect has a missing dependency: 'registerServiceWorker'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  132:29  warning  'response' is assigned a value but never used                                                                             @typescript-eslint/no-unused-vars
+  242:16  warning  'error' is defined but never used                                                                                         @typescript-eslint/no-unused-vars
+  251:31  warning  Unexpected any. Specify a different type                                                                                  @typescript-eslint/no-explicit-any
+  251:47  warning  Unexpected any. Specify a different type                                                                                  @typescript-eslint/no-explicit-any
+  252:32  warning  Unexpected any. Specify a different type                                                                                  @typescript-eslint/no-explicit-any
+  254:32  warning  Unexpected any. Specify a different type                                                                                  @typescript-eslint/no-explicit-any
+  299:13  warning  Unexpected any. Specify a different type                                                                                  @typescript-eslint/no-explicit-any
+  330:9   warning  'queryClient' is assigned a value but never used                                                                          @typescript-eslint/no-unused-vars
+  332:61  warning  Unexpected any. Specify a different type                                                                                  @typescript-eslint/no-explicit-any
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\hooks\usePurchaseOrders.ts
+    4:21  warning  'queryUtils' is defined but never used           @typescript-eslint/no-unused-vars
+  194:11  warning  'setLoading' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  194:23  warning  'setError' is assigned a value but never used    @typescript-eslint/no-unused-vars
+  204:11  warning  'setError' is assigned a value but never used    @typescript-eslint/no-unused-vars
+  256:12  warning  Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+  294:22  warning  Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+  369:22  warning  Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+  448:22  warning  Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+  480:22  warning  Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\lib\api.ts
+   15:22  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   21:34  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  172:27  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  199:38  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  205:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  208:14  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  215:20  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  218:14  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  225:22  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  228:14  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  235:41  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  243:29  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  255:40  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  288:48  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\lib\cache-manager.ts
+    7:36  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  128:36  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  144:65  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  152:14  warning  'error' is defined but never used         @typescript-eslint/no-unused-vars
+  350:50  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  358:48  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  358:56  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  404:58  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\lib\indexeddb.ts
+    4:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+    5:12  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+    6:38  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   10:32  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   15:29  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  142:40  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  166:40  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  194:12  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  230:31  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  414:54  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  415:44  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  424:49  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\lib\query-client.ts
+    6:24  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   23:40  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   72:36  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   84:36  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   95:36  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  107:36  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  127:53  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  136:45  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\lib\utils.ts
+  18:46  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  18:56  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\pages\ComponentShowcase.tsx
+  32:16  warning  'GridItem' is defined but never used  @typescript-eslint/no-unused-vars
+  33:10  warning  'Stack' is defined but never used     @typescript-eslint/no-unused-vars
+  39:3   warning  'Settings' is defined but never used  @typescript-eslint/no-unused-vars
+  44:3   warning  'Plus' is defined but never used      @typescript-eslint/no-unused-vars
+  46:3   warning  'Bell' is defined but never used      @typescript-eslint/no-unused-vars
+  47:3   warning  'Calendar' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\pages\auth\ForgotPassword.tsx
+  36:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\pages\purchase-orders\PurchaseOrderForm.tsx
+   16:3   warning  'User' is defined but never used                                         @typescript-eslint/no-unused-vars
+   17:3   warning  'Calendar' is defined but never used                                     @typescript-eslint/no-unused-vars
+   19:3   warning  'DollarSign' is defined but never used                                   @typescript-eslint/no-unused-vars
+   35:3   warning  'PurchaseOrderItemFormData' is defined but never used                    @typescript-eslint/no-unused-vars
+   38:15  warning  'PurchaseOrder' is defined but never used                                @typescript-eslint/no-unused-vars
+   38:30  warning  'Address' is defined but never used                                      @typescript-eslint/no-unused-vars
+   39:26  warning  'cn' is defined but never used                                           @typescript-eslint/no-unused-vars
+   57:7   warning  'mockUsers' is assigned a value but never used                           @typescript-eslint/no-unused-vars
+   95:56  warning  Unexpected any. Specify a different type                                 @typescript-eslint/no-explicit-any
+  110:5   warning  'setValue' is assigned a value but never used                            @typescript-eslint/no-unused-vars
+  147:48  warning  'index' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+  195:34  warning  Unexpected any. Specify a different type                                 @typescript-eslint/no-explicit-any
+  198:31  warning  Unexpected any. Specify a different type                                 @typescript-eslint/no-explicit-any
+  201:22  warning  Unexpected any. Specify a different type                                 @typescript-eslint/no-explicit-any
+  201:54  warning  Unexpected any. Specify a different type                                 @typescript-eslint/no-explicit-any
+  204:30  warning  Unexpected any. Specify a different type                                 @typescript-eslint/no-explicit-any
+  205:29  warning  Unexpected any. Specify a different type                                 @typescript-eslint/no-explicit-any
+  207:33  warning  Unexpected any. Specify a different type                                 @typescript-eslint/no-explicit-any
+  208:26  warning  Unexpected any. Specify a different type                                 @typescript-eslint/no-explicit-any
+  209:27  warning  Unexpected any. Specify a different type                                 @typescript-eslint/no-explicit-any
+  210:27  warning  Unexpected any. Specify a different type                                 @typescript-eslint/no-explicit-any
+  211:32  warning  Unexpected any. Specify a different type                                 @typescript-eslint/no-explicit-any
+  212:34  warning  Unexpected any. Specify a different type                                 @typescript-eslint/no-explicit-any
+  213:27  warning  Unexpected any. Specify a different type                                 @typescript-eslint/no-explicit-any
+  215:38  warning  Unexpected any. Specify a different type                                 @typescript-eslint/no-explicit-any
+  216:39  warning  Unexpected any. Specify a different type                                 @typescript-eslint/no-explicit-any
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\pages\purchase-orders\PurchaseOrderList.tsx
+   9:3  warning  'Download' is defined but never used     @typescript-eslint/no-unused-vars
+  14:3  warning  'AlertCircle' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\pages\vendors\VendorManagement.tsx
+  6:3  warning  'Filter' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\services\auth.ts
+  192:24  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  287:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  287:52  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\test\setup.ts
+  126:15  warning  'bits' is defined but never used. Allowed unused args must match /^_/u     @typescript-eslint/no-unused-vars
+  126:33  warning  'name' is defined but never used. Allowed unused args must match /^_/u     @typescript-eslint/no-unused-vars
+  126:47  warning  'options' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+  132:21  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  137:6   warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  144:65  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  146:66  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  148:66  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  151:61  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  153:68  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  156:61  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  171:14  warning  'file' is defined but never used. Allowed unused args must match /^_/u     @typescript-eslint/no-unused-vars
+  178:17  warning  'file' is defined but never used. Allowed unused args must match /^_/u     @typescript-eslint/no-unused-vars
+  185:21  warning  'file' is defined but never used. Allowed unused args must match /^_/u     @typescript-eslint/no-unused-vars
+  192:22  warning  'file' is defined but never used. Allowed unused args must match /^_/u     @typescript-eslint/no-unused-vars
+  204:6   warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  288:24  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  289:24  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  290:24  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  291:24  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  292:24  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  294:47  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  302:27  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  322:12  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  339:33  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  349:12  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  396:38  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  396:46  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  397:39  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  397:56  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  397:64  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  399:18  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  403:14  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  416:34  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  416:42  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  417:35  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  417:52  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  417:60  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  419:14  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  423:10  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\test\utils\test-utils.tsx
+   24:24  warning  Unexpected any. Specify a different type                                                                @typescript-eslint/no-explicit-any
+   53:18  warning  Unexpected any. Specify a different type                                                                @typescript-eslint/no-explicit-any
+   54:35  warning  Unexpected any. Specify a different type                                                                @typescript-eslint/no-explicit-any
+   79:7   warning  Fast refresh only works when a file only exports components. Move your component(s) to a separate file  react-refresh/only-export-components
+  152:33  warning  Unexpected any. Specify a different type                                                                @typescript-eslint/no-explicit-any
+  201:42  warning  Unexpected any. Specify a different type                                                                @typescript-eslint/no-explicit-any
+  201:58  warning  Unexpected any. Specify a different type                                                                @typescript-eslint/no-explicit-any
+  213:50  warning  Unexpected any. Specify a different type                                                                @typescript-eslint/no-explicit-any
+  258:52  warning  Unexpected any. Specify a different type                                                                @typescript-eslint/no-explicit-any
+  286:44  warning  Unexpected any. Specify a different type                                                                @typescript-eslint/no-explicit-any
+  315:45  warning  Unexpected any. Specify a different type                                                                @typescript-eslint/no-explicit-any
+  340:58  warning  Unexpected any. Specify a different type                                                                @typescript-eslint/no-explicit-any
+  441:1   warning  This rule can't verify that `export *` only exports components                                          react-refresh/only-export-components
+
+C:\Users\tjm06\Projects\Procurement\autovitica-p2p-frontend\src\types\index.ts
+   12:34  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   19:40  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  143:16  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  152:28  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  164:18  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  177:34  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  182:23  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+Γ£û 528 problems (3 errors, 525 warnings)
+

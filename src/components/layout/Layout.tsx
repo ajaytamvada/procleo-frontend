@@ -4,6 +4,9 @@ import Header from './Header';
 import DynamicSidebar from './DynamicSidebar';
 import ErrorBoundary from '@/components/common/ErrorBoundary';
 
+import { ChatbotWidget } from '@/features/chatbot/ChatbotWidget';
+import { ChatWidget } from '@/components/chat/ChatWidget';
+
 const Layout: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const location = useLocation();
@@ -63,6 +66,8 @@ const Layout: React.FC = () => {
           </ErrorBoundary>
         </main>
       </div>
+      <ChatbotWidget />
+      <ChatWidget />
     </div>
   );
 };

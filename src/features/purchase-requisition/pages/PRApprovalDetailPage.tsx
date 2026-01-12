@@ -13,6 +13,7 @@ import {
 } from '../hooks/useApproval';
 import type { ApprovalItemRequest } from '../types/approval.types';
 import { AuthService } from '@/services/auth';
+import { FilePreviewModal } from '@/components/common/FilePreviewModal';
 
 interface EditableItem extends ApprovalItemRequest {
   itemId: number;
@@ -35,6 +36,7 @@ export const PRApprovalDetailPage: React.FC = () => {
   const [selectedItems, setSelectedItems] = useState<Set<number>>(new Set());
   const [editableItems, setEditableItems] = useState<EditableItem[]>([]);
   const [remarks, setRemarks] = useState('');
+  const [previewFile, setPreviewFile] = useState<string | null>(null);
 
   // Fetch PR details
   const {
@@ -284,196 +286,219 @@ export const PRApprovalDetailPage: React.FC = () => {
                 <p className='text-sm text-gray-900'>{prDetails.remarks}</p>
               </div>
             )}
+            {prDetails.attachments && (
+              <div className='md:col-span-2 lg:col-span-3'>
+                <label className='text-xs text-gray-500 font-medium block mb-2'>
+                  Attachments
+                </label>
+                <div className='flex flex-wrap gap-2'>
+                  {prDetails.attachments
+                    .split(',')
+                    .filter(f => f.trim())
+                    .map((filename, idx) => (
+                      <button
+                        key={idx}
+                        onClick={() => setPreviewFile(filename)}
+                        className='inline-flex items-center px-3 py-1 bg-gray-100 border border-gray-300 rounded text-sm text-blue-600 hover:bg-gray-200 hover:underline cursor-pointer'
+                      >
+                        {filename}
+                      </button>
+                    ))}
+                </div>
+              </div>
+            )}
           </div>
-        </div>
 
-        {/* Items Table */}
-        <div className='bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden'>
-          <div className='px-6 py-4 border-b border-gray-200'>
-            <h3 className='text-lg font-semibold text-gray-900'>
-              Items for Approval
-            </h3>
-          </div>
-          <div className='overflow-x-auto'>
-            <table className='min-w-full divide-y divide-gray-200'>
-              <thead className='bg-[#F7F8FA]'>
-                <tr>
-                  <th className='px-4 py-3 text-center'>
-                    <input
-                      type='checkbox'
-                      checked={selectedItems.size === editableItems.length}
-                      onChange={handleSelectAll}
-                      className='rounded border-gray-300 text-violet-600 focus:ring-violet-500'
-                    />
-                  </th>
-                  <th className='px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wide'>
-                    S.No
-                  </th>
-                  <th className='px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wide'>
-                    Category
-                  </th>
-                  <th className='px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wide'>
-                    Model
-                  </th>
-                  <th className='px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wide'>
-                    Make
-                  </th>
-                  <th className='px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wide'>
-                    Description
-                  </th>
-                  <th className='px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wide'>
-                    UOM
-                  </th>
-                  <th className='px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wide'>
-                    Quantity
-                  </th>
-                  <th className='px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wide'>
-                    Unit Price
-                  </th>
-                  <th className='px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wide'>
-                    Total Price
-                  </th>
-                  <th className='px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wide'>
-                    Remarks
-                  </th>
-                </tr>
-              </thead>
-              <tbody className='bg-white divide-y divide-gray-200'>
-                {editableItems.map((item, index) => (
-                  <tr
-                    key={item.itemId}
-                    className={`hover:bg-gray-50 transition-colors ${
-                      selectedItems.has(item.itemId) ? 'bg-violet-50' : ''
-                    }`}
-                  >
-                    <td className='px-4 py-3 text-center'>
-                      <input
-                        type='checkbox'
-                        checked={selectedItems.has(item.itemId)}
-                        onChange={() => handleToggleItem(item.itemId)}
-                        className='rounded border-gray-300 text-violet-600 focus:ring-violet-500'
-                      />
-                    </td>
-                    <td className='px-4 py-3 text-sm font-medium text-gray-700'>
-                      {index + 1}
-                    </td>
-                    <td className='px-4 py-3 text-sm font-medium text-gray-700'>
-                      {item.categoryName}
-                      {item.subCategoryName && ` / ${item.subCategoryName}`}
-                    </td>
-                    <td className='px-4 py-3 text-sm font-medium text-gray-700'>
-                      {item.modelName}
-                    </td>
-                    <td className='px-4 py-3 text-sm font-medium text-gray-700'>
-                      {item.make}
-                    </td>
-                    <td className='px-4 py-3 text-sm font-medium text-gray-700'>
-                      {item.description}
-                    </td>
-                    <td className='px-4 py-3 text-sm font-medium text-gray-700'>
-                      {item.uomName}
-                    </td>
-                    <td className='px-4 py-3'>
-                      <Input
-                        type='number'
-                        value={item.quantity}
-                        onChange={e =>
-                          updateItemField(
-                            item.itemId,
-                            'quantity',
-                            Number(e.target.value)
-                          )
-                        }
-                        className='w-20'
-                        min='1'
-                      />
-                    </td>
-                    <td className='px-4 py-3'>
-                      <Input
-                        type='number'
-                        value={item.unitPrice}
-                        onChange={e =>
-                          updateItemField(
-                            item.itemId,
-                            'unitPrice',
-                            Number(e.target.value)
-                          )
-                        }
-                        className='w-24'
-                        min='0'
-                        step='0.01'
-                      />
-                    </td>
-                    <td className='px-4 py-3 text-sm font-medium text-gray-700'>
-                      {item.totalPrice.toFixed(2)}
-                    </td>
-                    <td className='px-4 py-3'>
-                      <Input
-                        type='text'
-                        value={item.remarks}
-                        onChange={e =>
-                          updateItemField(
-                            item.itemId,
-                            'remarks',
-                            e.target.value
-                          )
-                        }
-                        className='w-40'
-                        placeholder='Item remarks'
-                      />
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        {/* General Remarks */}
-        <div className='bg-white rounded-xl shadow-sm border border-gray-200 p-6'>
-          <label className='block text-sm font-medium text-gray-700 mb-2'>
-            General Remarks (Optional)
-          </label>
-          <textarea
-            value={remarks}
-            onChange={e => setRemarks(e.target.value)}
-            rows={3}
-            className='w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500'
-            placeholder='Enter general remarks for this approval...'
+          <FilePreviewModal
+            isOpen={!!previewFile}
+            onClose={() => setPreviewFile(null)}
+            filename={previewFile || ''}
           />
         </div>
+      </div>
 
-        {/* Footer Actions */}
-        <div className='bg-white rounded-xl shadow-sm border border-gray-200 p-6'>
-          <div className='flex items-center justify-between'>
-            <div className='text-sm text-gray-600'>
-              {selectedItems.size} of {editableItems.length} item(s) selected
-            </div>
-            <div className='flex space-x-3'>
-              <Button
-                variant='outline'
-                onClick={handleBack}
-                disabled={approveMutation.isPending}
-              >
-                Cancel
-              </Button>
-              <Button
-                onClick={() => handleSubmit('Rejected')}
-                disabled={approveMutation.isPending || selectedItems.size === 0}
-                className='bg-red-600 hover:bg-red-700 text-white'
-              >
-                <XCircle className='h-4 w-4 mr-2' />
-                Reject Selected
-              </Button>
-              <Button
-                onClick={() => handleSubmit('Accepted')}
-                disabled={approveMutation.isPending || selectedItems.size === 0}
-                className='bg-green-600 hover:bg-green-700 text-white'
-              >
-                <Check className='h-4 w-4 mr-2' />
-                Approve Selected
-              </Button>
-            </div>
+      {/* Items Table */}
+      <div className='bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden'>
+        <div className='px-6 py-4 border-b border-gray-200'>
+          <h3 className='text-lg font-semibold text-gray-900'>
+            Items for Approval
+          </h3>
+        </div>
+        <div className='overflow-x-auto'>
+          <table className='min-w-full divide-y divide-gray-200'>
+            <thead className='bg-[#F7F8FA]'>
+              <tr>
+                <th className='px-4 py-3 text-center'>
+                  <input
+                    type='checkbox'
+                    checked={selectedItems.size === editableItems.length}
+                    onChange={handleSelectAll}
+                    className='rounded border-gray-300 text-violet-600 focus:ring-violet-500'
+                  />
+                </th>
+                <th className='px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wide'>
+                  S.No
+                </th>
+                <th className='px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wide'>
+                  Category
+                </th>
+                <th className='px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wide'>
+                  Model
+                </th>
+                <th className='px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wide'>
+                  Make
+                </th>
+                <th className='px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wide'>
+                  Description
+                </th>
+                <th className='px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wide'>
+                  UOM
+                </th>
+                <th className='px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wide'>
+                  Quantity
+                </th>
+                <th className='px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wide'>
+                  Unit Price
+                </th>
+                <th className='px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wide'>
+                  Total Price
+                </th>
+                <th className='px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wide'>
+                  Remarks
+                </th>
+              </tr>
+            </thead>
+            <tbody className='bg-white divide-y divide-gray-200'>
+              {editableItems.map((item, index) => (
+                <tr
+                  key={item.itemId}
+                  className={`hover:bg-gray-50 transition-colors ${
+                    selectedItems.has(item.itemId) ? 'bg-violet-50' : ''
+                  }`}
+                >
+                  <td className='px-4 py-3 text-center'>
+                    <input
+                      type='checkbox'
+                      checked={selectedItems.has(item.itemId)}
+                      onChange={() => handleToggleItem(item.itemId)}
+                      className='rounded border-gray-300 text-violet-600 focus:ring-violet-500'
+                    />
+                  </td>
+                  <td className='px-4 py-3 text-sm font-medium text-gray-700'>
+                    {index + 1}
+                  </td>
+                  <td className='px-4 py-3 text-sm font-medium text-gray-700'>
+                    {item.categoryName}
+                    {item.subCategoryName && ` / ${item.subCategoryName}`}
+                  </td>
+                  <td className='px-4 py-3 text-sm font-medium text-gray-700'>
+                    {item.modelName}
+                  </td>
+                  <td className='px-4 py-3 text-sm font-medium text-gray-700'>
+                    {item.make}
+                  </td>
+                  <td className='px-4 py-3 text-sm font-medium text-gray-700'>
+                    {item.description}
+                  </td>
+                  <td className='px-4 py-3 text-sm font-medium text-gray-700'>
+                    {item.uomName}
+                  </td>
+                  <td className='px-4 py-3'>
+                    <Input
+                      type='number'
+                      value={item.quantity}
+                      onChange={e =>
+                        updateItemField(
+                          item.itemId,
+                          'quantity',
+                          Number(e.target.value)
+                        )
+                      }
+                      className='w-20'
+                      min='1'
+                    />
+                  </td>
+                  <td className='px-4 py-3'>
+                    <Input
+                      type='number'
+                      value={item.unitPrice}
+                      onChange={e =>
+                        updateItemField(
+                          item.itemId,
+                          'unitPrice',
+                          Number(e.target.value)
+                        )
+                      }
+                      className='w-24'
+                      min='0'
+                      step='0.01'
+                    />
+                  </td>
+                  <td className='px-4 py-3 text-sm font-medium text-gray-700'>
+                    {item.totalPrice.toFixed(2)}
+                  </td>
+                  <td className='px-4 py-3'>
+                    <Input
+                      type='text'
+                      value={item.remarks}
+                      onChange={e =>
+                        updateItemField(item.itemId, 'remarks', e.target.value)
+                      }
+                      className='w-40'
+                      placeholder='Item remarks'
+                    />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* General Remarks */}
+      <div className='bg-white rounded-xl shadow-sm border border-gray-200 p-6'>
+        <label className='block text-sm font-medium text-gray-700 mb-2'>
+          General Remarks (Optional)
+        </label>
+        <textarea
+          value={remarks}
+          onChange={e => setRemarks(e.target.value)}
+          rows={3}
+          className='w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500'
+          placeholder='Enter general remarks for this approval...'
+        />
+      </div>
+
+      {/* Footer Actions */}
+      <div className='bg-white rounded-xl shadow-sm border border-gray-200 p-6'>
+        <div className='flex items-center justify-between'>
+          <div className='text-sm text-gray-600'>
+            {selectedItems.size} of {editableItems.length} item(s) selected
+          </div>
+          <div className='flex space-x-3'>
+            <Button
+              variant='outline'
+              onClick={handleBack}
+              disabled={approveMutation.isPending}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={() => handleSubmit('Rejected')}
+              disabled={approveMutation.isPending || selectedItems.size === 0}
+              className='bg-red-600 hover:bg-red-700 text-white'
+            >
+              <XCircle className='h-4 w-4 mr-2' />
+              Reject Selected
+            </Button>
+            <Button
+              onClick={() => handleSubmit('Accepted')}
+              disabled={approveMutation.isPending || selectedItems.size === 0}
+              className='bg-green-600 hover:bg-green-700 text-white'
+            >
+              <Check className='h-4 w-4 mr-2' />
+              Approve Selected
+            </Button>
           </div>
         </div>
       </div>

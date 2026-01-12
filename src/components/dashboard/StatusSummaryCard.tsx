@@ -1,70 +1,88 @@
 import React from 'react';
-import { FileText, ShoppingCart, TrendingUp } from 'lucide-react';
+import {
+  FileText,
+  ShoppingCart,
+  TrendingUp,
+  Package,
+  FileCheck,
+} from 'lucide-react';
 
-interface StatusSummaryProps {
-    stats: {
-        totalPurchaseRequests: number;
-        pendingPRs: number;
-        totalPurchaseOrders: number;
-        pendingPOs: number;
-        totalRFPs: number;
-        activeRFPs: number;
-    };
+interface DashboardStats {
+  totalPurchaseRequests: number;
+  pendingPRs: number;
+  totalPurchaseOrders: number;
+  pendingPOs: number;
+  totalRFPs: number;
+  activeRFPs: number;
+  totalVendors?: number;
 }
 
-const StatusSummaryCard: React.FC<StatusSummaryProps> = ({ stats }) => {
-    const items = [
-        {
-            label: 'Purchase Requests',
-            total: stats.totalPurchaseRequests,
-            pending: stats.pendingPRs,
-            icon: FileText,
-            color: 'text-yellow-600',
-            bgColor: 'bg-yellow-50',
-        },
-        {
-            label: 'Purchase Orders',
-            total: stats.totalPurchaseOrders,
-            pending: stats.pendingPOs,
-            icon: ShoppingCart,
-            color: 'text-blue-600',
-            bgColor: 'bg-blue-50',
-        },
-        {
-            label: 'Request for Proposals',
-            total: stats.totalRFPs,
-            pending: stats.activeRFPs, // Using active as pending equivalent
-            icon: TrendingUp,
-            color: 'text-purple-600',
-            bgColor: 'bg-purple-50',
-        },
-    ];
+interface StatusSummaryCardProps {
+  stats: DashboardStats;
+}
 
-    return (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 h-full">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Document Status Overview</h3>
-            <div className="space-y-4">
-                {items.map((item, index) => (
-                    <div key={index} className="flex items-center justify-between p-3 rounded-lg bg-gray-50">
-                        <div className="flex items-center gap-3">
-                            <div className={`p-2 rounded-lg ${item.bgColor} ${item.color}`}>
-                                <item.icon className="w-5 h-5" />
-                            </div>
-                            <span className="font-medium text-gray-700">{item.label}</span>
-                        </div>
-                        <div className="text-right">
-                            <p className="text-xs text-gray-500 uppercase tracking-wide">Pending / Total</p>
-                            <p className="text-sm font-bold text-gray-900">
-                                <span className="text-orange-600">{item.pending}</span>
-                                <span className="text-gray-400 mx-1">/</span>
-                                <span>{item.total}</span>
-                            </p>
-                        </div>
-                    </div>
-                ))}
+const StatusSummaryCard: React.FC<StatusSummaryCardProps> = ({ stats }) => {
+  const summaryItems = [
+    {
+      name: 'Purchase Requests',
+      icon: FileText,
+      pending: stats.pendingPRs,
+      total: stats.totalPurchaseRequests,
+      bgColor: 'bg-amber-50',
+      iconColor: 'text-amber-600',
+      pendingColor: 'text-amber-600',
+    },
+    {
+      name: 'Purchase Orders',
+      icon: ShoppingCart,
+      pending: stats.pendingPOs,
+      total: stats.totalPurchaseOrders,
+      bgColor: 'bg-blue-50',
+      iconColor: 'text-blue-600',
+      pendingColor: 'text-blue-600',
+    },
+    {
+      name: 'Request for Proposals',
+      icon: TrendingUp,
+      pending: stats.activeRFPs,
+      total: stats.totalRFPs,
+      bgColor: 'bg-violet-50',
+      iconColor: 'text-violet-600',
+      pendingColor: 'text-violet-600',
+    },
+  ];
+
+  return (
+    <div className='space-y-3'>
+      {summaryItems.map((item, index) => (
+        <div
+          key={item.name}
+          className='flex items-center justify-between p-4 rounded-xl bg-slate-50 hover:bg-slate-100 transition-colors'
+        >
+          <div className='flex items-center gap-3'>
+            <div
+              className={`w-10 h-10 rounded-lg ${item.bgColor} flex items-center justify-center`}
+            >
+              <item.icon size={18} className={item.iconColor} />
             </div>
+            <span className='text-sm font-medium text-slate-700'>
+              {item.name}
+            </span>
+          </div>
+          <div className='text-right'>
+            <p className='text-xs text-slate-400 uppercase tracking-wide mb-0.5'>
+              Pending / Total
+            </p>
+            <p className='text-sm font-semibold'>
+              <span className={item.pendingColor}>{item.pending}</span>
+              <span className='text-slate-400 mx-1'>/</span>
+              <span className='text-slate-800'>{item.total}</span>
+            </p>
+          </div>
         </div>
-    );
+      ))}
+    </div>
+  );
 };
 
 export default StatusSummaryCard;
