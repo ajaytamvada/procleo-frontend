@@ -77,7 +77,7 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
       description: 'Start a new purchase request',
       icon: FileText,
       route: '/purchase-requisition/create',
-      shortcutKey: 'r',
+      shortcutKey: 'q',
     },
     {
       label: 'Purchase Order',
