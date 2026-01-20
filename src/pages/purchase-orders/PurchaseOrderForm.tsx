@@ -383,7 +383,7 @@ export function PurchaseOrderForm({ mode = 'create' }: PurchaseOrderFormProps) {
             {/* Basic Information Tab */}
             {activeTab === 'basic' && (
               <div className='space-y-6'>
-                <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
+                <div className='grid grid-cols-1 md:grid-cols-3 gap-6'>
                   {/* Vendor Selection */}
                   <div className='space-y-2'>
                     <label className='text-sm font-medium text-gray-700'>
@@ -457,7 +457,7 @@ export function PurchaseOrderForm({ mode = 'create' }: PurchaseOrderFormProps) {
                       <h3 className='text-lg font-medium'>Vendor Details</h3>
                     </CardHeader>
                     <CardContent className='space-y-2'>
-                      <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+                      <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
                         <div>
                           <p className='text-sm text-gray-600'>Name</p>
                           <p className='font-medium'>{selectedVendor.name}</p>
@@ -768,7 +768,7 @@ export function PurchaseOrderForm({ mode = 'create' }: PurchaseOrderFormProps) {
             {/* Terms & Conditions Tab */}
             {activeTab === 'terms' && (
               <div className='space-y-6'>
-                <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
+                <div className='grid grid-cols-1 md:grid-cols-3 gap-6'>
                   {/* Payment Terms */}
                   <div className='space-y-2'>
                     <label className='text-sm font-medium text-gray-700'>

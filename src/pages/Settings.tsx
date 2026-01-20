@@ -115,7 +115,7 @@ const Settings: React.FC = () => {
         </div>
 
         {/* Additional Settings Section */}
-        <div className='mt-10'>
+        {/* <div className='mt-10'>
           <div className='mb-6'>
             <h2 className='text-lg font-semibold text-slate-800 mb-1'>
               Reports & Analytics
@@ -216,7 +216,7 @@ const Settings: React.FC = () => {
               </div>
             </div>
           </div>
-        </div>
+        </div> */}
       </div>
     </div>
   );

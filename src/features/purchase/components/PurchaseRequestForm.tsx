@@ -584,7 +584,7 @@ const PurchaseRequestForm: React.FC<PurchaseRequestFormProps> = ({
           {/* Header Information Card */}
           <div className='bg-white rounded-lg border border-gray-200 overflow-hidden'>
             <div className='p-6'>
-              <div className='grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-5'>
+              <div className='grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-5'>
                 {/* Request Date */}
                 <div>
                   <label className='block text-sm font-medium text-gray-700 mb-2'>
@@ -771,7 +771,7 @@ const PurchaseRequestForm: React.FC<PurchaseRequestFormProps> = ({
                 </div>
 
                 {/* Justification */}
-                <div className='md:col-span-2'>
+                <div className='md:col-span-3'>
                   <label className='block text-sm font-medium text-gray-700 mb-2'>
                     Justification
                   </label>
@@ -787,7 +787,7 @@ const PurchaseRequestForm: React.FC<PurchaseRequestFormProps> = ({
                 </div>
 
                 {/* Attachments */}
-                <div className='md:col-span-2'>
+                <div className='md:col-span-3'>
                   <label className='block text-sm font-medium text-gray-700 mb-2'>
                     Attachments
                   </label>
