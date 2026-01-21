@@ -419,28 +419,29 @@ export function CompanyInfoSidebar({
         </div> */}
 
         {/* Section Indicators - Horizontal lines like Cashfree */}
-        <div className='flex space-x-2 mb-5'>
-          {sections.map((section, index) => (
-            <button
-              key={section.id}
-              className={`flex-1 h-1 rounded-full transition-all duration-300 ${
-                index === currentSection
-                  ? 'bg-white'
-                  : 'bg-white/30 hover:bg-white/50'
-              }`}
-              onClick={() => {
-                setCurrentSection(index);
-                setIsPaused(true);
-                setTimeout(() => setIsPaused(false), 8000);
-              }}
-              aria-label={section.label}
-            />
-          ))}
-        </div>
 
         {/* Scrollable Content */}
-        <div className='flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar'>
+        <div className='flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar mt-5'>
           {renderSection()}
+
+          <div className='flex space-x-2 mb-5 mt-5'>
+            {sections.map((section, index) => (
+              <button
+                key={section.id}
+                className={`flex-1 h-1 rounded-full transition-all duration-300 ${
+                  index === currentSection
+                    ? 'bg-white'
+                    : 'bg-white/30 hover:bg-white/50'
+                }`}
+                onClick={() => {
+                  setCurrentSection(index);
+                  setIsPaused(true);
+                  setTimeout(() => setIsPaused(false), 8000);
+                }}
+                aria-label={section.label}
+              />
+            ))}
+          </div>
         </div>
 
         {/* Contact Info - Always Visible */}

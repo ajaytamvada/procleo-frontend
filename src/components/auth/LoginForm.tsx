@@ -202,7 +202,7 @@ export function LoginForm({ onSuccess, className = '' }: LoginFormProps) {
       </form>
 
       {/* Vendor Registration Link */}
-      {/* <div className='mt-5 pt-5 border-t border-gray-100'>
+      <div className='mt-5 pt-5 border-t border-gray-100'>
         <p className='text-center text-[13px] text-gray-500 font-medium'>
           Are you a vendor?{' '}
           <Link
@@ -212,7 +212,7 @@ export function LoginForm({ onSuccess, className = '' }: LoginFormProps) {
             Register as Vendor
           </Link>
         </p>
-      </div> */}
+      </div>
     </div>
   );
 }

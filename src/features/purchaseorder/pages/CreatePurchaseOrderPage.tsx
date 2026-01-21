@@ -455,7 +455,7 @@ const CreatePurchaseOrderPage: React.FC = () => {
         {/* Basic Information */}
         <div className='bg-white rounded-lg border border-gray-200 overflow-hidden'>
           <div className='p-6'>
-            <div className='grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-5'>
+            <div className='grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-5'>
               <div>
                 <label className='block text-sm font-medium text-gray-700 mb-2'>
                   <span className='text-red-500'>*</span> Raised By

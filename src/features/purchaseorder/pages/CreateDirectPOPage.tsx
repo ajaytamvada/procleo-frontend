@@ -307,7 +307,7 @@ export const CreateDirectPOPage: React.FC = () => {
         {/* Basic Information */}
         <div className='bg-white rounded-lg border border-gray-200 overflow-hidden'>
           <div className='p-6'>
-            <div className='grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-5'>
+            <div className='grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-5'>
               {/* PO Number */}
               <div>
                 <label className='block text-sm font-medium text-gray-700 mb-2'>
@@ -432,7 +432,7 @@ export const CreateDirectPOPage: React.FC = () => {
               </div>
 
               {/* Ship To Address */}
-              <div>
+              <div className='md:col-span-3'>
                 <label className='block text-sm font-medium text-gray-700 mb-2'>
                   Ship To Address
                 </label>
@@ -447,7 +447,7 @@ export const CreateDirectPOPage: React.FC = () => {
               </div>
 
               {/* Bill To Address */}
-              <div>
+              <div className='md:col-span-3'>
                 <label className='block text-sm font-medium text-gray-700 mb-2'>
                   Bill To Address
                 </label>
@@ -462,7 +462,7 @@ export const CreateDirectPOPage: React.FC = () => {
               </div>
 
               {/* Terms & Conditions */}
-              <div>
+              <div className='md:col-span-3'>
                 <label className='block text-sm font-medium text-gray-700 mb-2'>
                   Terms & Conditions
                 </label>
@@ -477,7 +477,7 @@ export const CreateDirectPOPage: React.FC = () => {
               </div>
 
               {/* Remarks */}
-              <div>
+              <div className='md:col-span-3'>
                 <label className='block text-sm font-medium text-gray-700 mb-2'>
                   Remarks
                 </label>
@@ -502,7 +502,7 @@ export const CreateDirectPOPage: React.FC = () => {
         <div className='bg-white rounded-lg border border-gray-200 overflow-hidden'>
           <div className='p-6'>
             <h2 className='text-base font-semibold text-gray-900 mb-4'>
-              Add Item
+              Add Row
             </h2>
 
             <div className='grid grid-cols-1 md:grid-cols-4 gap-4 mb-4'>
@@ -596,12 +596,11 @@ export const CreateDirectPOPage: React.FC = () => {
                 />
               </div>
 
-              <div className='md:col-span-2 flex items-end'>
+              <div className='md:col-span-1 flex items-end'>
                 <button
                   onClick={addItem}
                   className='w-full px-4 py-3 text-sm font-semibold text-white bg-violet-600 rounded-md hover:bg-violet-700 transition-colors flex items-center justify-center'
                 >
-                  <Plus className='w-4 h-4 mr-2' />
                   Add Item
                 </button>
               </div>

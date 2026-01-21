@@ -6,10 +6,10 @@ import {
   ArrowLeft,
   Plus,
   Trash2,
-  Download,
   Upload,
   ChevronDown,
   Search,
+  X,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { AlertDialog } from '@/components/ui/Dialog';
@@ -26,7 +26,6 @@ import {
 } from '../utils/excelUtils';
 import { apiClient } from '@/lib/api';
 import ExcelImportDialog from '@/components/ExcelImportDialog';
-import { FileUpload } from '@/components/common/FileUpload';
 
 type PurchaseRequestItemFormData = {
   id: number;
@@ -149,6 +148,10 @@ const PurchaseRequestForm: React.FC<PurchaseRequestFormProps> = ({
 
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [pendingSubmission, setPendingSubmission] = useState<boolean>(false);
+
+  // File upload state
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { data: departments = [] } = useDepartmentsList();
   const { data: cities = [], isLoading: citiesLoading } = useCities();
@@ -453,6 +456,63 @@ const PurchaseRequestForm: React.FC<PurchaseRequestFormProps> = ({
     }
   };
 
+  // Handle file upload
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files?.length) return;
+
+    const selectedFile = e.target.files[0];
+    setIsUploading(true);
+    const formData = new FormData();
+    formData.append('file', selectedFile);
+
+    try {
+      const response = await apiClient.post('/files/upload', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      if (response.data.data === 1 && response.data.upload_inv) {
+        const newFilename = response.data.upload_inv;
+        const currentFiles = watch('attachments') || '';
+        const files = currentFiles
+          ? currentFiles.split(',').filter(f => f.trim())
+          : [];
+        const newFiles = [...files, newFilename];
+        setValue('attachments', newFiles.join(','));
+        toast.success('File uploaded successfully');
+      } else {
+        toast.error(
+          'Upload failed: ' + (response.data.message || 'Unknown error')
+        );
+      }
+    } catch (error) {
+      console.error('Upload error:', error);
+      toast.error('Failed to upload file');
+    } finally {
+      setIsUploading(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
+
+  const removeFile = (filenameToRemove: string) => {
+    const currentFiles = watch('attachments') || '';
+    const files = currentFiles.split(',').filter(f => f.trim());
+    const newFiles = files.filter(f => f !== filenameToRemove);
+    setValue('attachments', newFiles.join(','));
+  };
+
+  const getFileIcon = (filename: string) => {
+    const ext = filename.split('.').pop()?.toLowerCase();
+    if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext || '')) return '🖼️';
+    if (ext === 'pdf') return '📄';
+    if (['doc', 'docx'].includes(ext || '')) return '📝';
+    if (['xls', 'xlsx'].includes(ext || '')) return '📊';
+    return '📎';
+  };
+
   const searchAndMapExcelItemsInBatch = async (excelItems: ExcelLineItem[]) => {
     const BATCH_SIZE = 10;
     const mappedItems: PurchaseRequestItem[] = [];
@@ -557,6 +617,33 @@ const PurchaseRequestForm: React.FC<PurchaseRequestFormProps> = ({
             </h1>
           </div>
           <div className='flex items-center gap-3'>
+            {/* Attachment Upload Button */}
+            <div>
+              <input
+                type='file'
+                ref={fileInputRef}
+                onChange={handleFileSelect}
+                className='hidden'
+              />
+              <button
+                type='button'
+                onClick={() => fileInputRef.current?.click()}
+                disabled={isUploading}
+                className='inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 hover:border-gray-400 transition-all disabled:opacity-50 disabled:cursor-not-allowed'
+              >
+                {isUploading ? (
+                  <>
+                    <div className='animate-spin rounded-full h-4 w-4 border-b-2 border-gray-600' />
+                    Uploading...
+                  </>
+                ) : (
+                  <>
+                    <Upload size={16} />
+                    Attach Files
+                  </>
+                )}
+              </button>
+            </div>
             <button
               type='button'
               onClick={() => handleFormSubmit(false)}
@@ -575,6 +662,60 @@ const PurchaseRequestForm: React.FC<PurchaseRequestFormProps> = ({
             </button>
           </div>
         </div>
+
+        {/* Attached Files List */}
+        {(() => {
+          const attachments = watch('attachments');
+          const files = attachments
+            ? attachments.split(',').filter(f => f.trim())
+            : [];
+          return (
+            files.length > 0 && (
+              <div className='mb-3'>
+                <div className='flex gap-1.5 overflow-x-auto pb-1'>
+                  {files.map((filename, idx) => (
+                    <div
+                      key={idx}
+                      className='flex items-center gap-1.5 px-2 py-1.5 bg-white border border-gray-200 rounded-md hover:border-gray-300 hover:shadow-sm transition-all flex-shrink-0 min-w-[150px] max-w-[250px]'
+                    >
+                      <div className='flex items-center gap-1.5 overflow-hidden flex-1 min-w-0'>
+                        <span className='text-base flex-shrink-0'>
+                          {getFileIcon(filename)}
+                        </span>
+                        <div className='flex flex-col min-w-0 flex-1'>
+                          <span
+                            className='text-[11px] font-medium text-gray-700 truncate leading-tight'
+                            title={filename}
+                          >
+                            {filename}
+                          </span>
+                          <a
+                            href={`${apiClient.defaults.baseURL}/files/${filename}`}
+                            target='_blank'
+                            rel='noopener noreferrer'
+                            className='text-[10px] text-indigo-600 hover:text-indigo-700 hover:underline w-fit leading-tight'
+                            onClick={e => e.stopPropagation()}
+                          >
+                            View
+                          </a>
+                        </div>
+                      </div>
+                      <button
+                        type='button'
+                        onClick={() => removeFile(filename)}
+                        className='p-1 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded transition-colors flex-shrink-0'
+                        title='Remove file'
+                      >
+                        <X size={14} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )
+          );
+        })()}
+
         <form
           onSubmit={e => {
             e.preventDefault();
@@ -584,7 +725,7 @@ const PurchaseRequestForm: React.FC<PurchaseRequestFormProps> = ({
           {/* Header Information Card */}
           <div className='bg-white rounded-lg border border-gray-200 overflow-hidden'>
             <div className='p-6'>
-              <div className='grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-5'>
+              <div className='grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-5'>
                 {/* Request Date */}
                 <div>
                   <label className='block text-sm font-medium text-gray-700 mb-2'>
@@ -771,7 +912,7 @@ const PurchaseRequestForm: React.FC<PurchaseRequestFormProps> = ({
                 </div>
 
                 {/* Justification */}
-                <div className='md:col-span-2'>
+                <div className='md:col-span-3'>
                   <label className='block text-sm font-medium text-gray-700 mb-2'>
                     Justification
                   </label>
@@ -783,17 +924,6 @@ const PurchaseRequestForm: React.FC<PurchaseRequestFormProps> = ({
                     }`}
                     disabled={isSubmitting}
                     placeholder='Enter justification for this request...'
-                  />
-                </div>
-
-                {/* Attachments */}
-                <div className='md:col-span-2'>
-                  <label className='block text-sm font-medium text-gray-700 mb-2'>
-                    Attachments
-                  </label>
-                  <FileUpload
-                    value={watch('attachments') || ''}
-                    onChange={val => setValue('attachments', val)}
                   />
                 </div>
               </div>

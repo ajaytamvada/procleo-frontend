@@ -99,49 +99,7 @@ export const FileUpload: React.FC<FileUploadProps> = ({
 
   return (
     <div className='w-full'>
-      <div className='flex flex-col gap-3'>
-        {/* File List */}
-        {files.length > 0 && (
-          <div className='flex flex-col gap-2 mb-2'>
-            {files.map((filename, idx) => (
-              <div
-                key={idx}
-                className='flex items-center justify-between p-3 bg-gray-50 border border-gray-200 rounded-lg group hover:border-gray-300 transition-colors'
-              >
-                <div className='flex items-center gap-3 overflow-hidden'>
-                  <div className='flex-shrink-0'>{getFileIcon(filename)}</div>
-                  <div className='flex flex-col min-w-0'>
-                    <span
-                      className='text-sm font-medium text-gray-700 truncate block'
-                      title={filename}
-                    >
-                      {filename}
-                    </span>
-                    <button
-                      type='button'
-                      className='text-xs text-blue-600 hover:underline cursor-pointer bg-transparent border-none p-0'
-                      onClick={e => {
-                        e.stopPropagation();
-                        setPreviewFile(filename);
-                      }}
-                    >
-                      View
-                    </button>
-                  </div>
-                </div>
-                <button
-                  type='button'
-                  onClick={() => removeFile(filename)}
-                  className='p-1 text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity'
-                  title='Remove file'
-                >
-                  <X size={18} />
-                </button>
-              </div>
-            ))}
-          </div>
-        )}
-
+      <div className='space-y-3'>
         {/* Upload Button */}
         {files.length < maxFiles && (
           <div>
@@ -156,27 +114,71 @@ export const FileUpload: React.FC<FileUploadProps> = ({
               type='button'
               onClick={() => fileInputRef.current?.click()}
               disabled={isUploading}
-              className='flex items-center justify-center gap-2 w-full p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-all text-gray-600 hover:text-blue-600'
+              className='flex items-center justify-center gap-2 w-full px-4 py-3 border-2 border-dashed border-gray-300 rounded-lg hover:border-indigo-400 hover:bg-indigo-50 transition-all text-gray-600 hover:text-indigo-600 disabled:opacity-50 disabled:cursor-not-allowed'
             >
               {isUploading ? (
-                <div className='animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600' />
+                <div className='animate-spin rounded-full h-5 w-5 border-b-2 border-indigo-600' />
               ) : (
-                <Upload size={20} />
+                <Upload size={18} />
               )}
               <span className='text-sm font-medium'>
                 {isUploading
                   ? 'Uploading...'
-                  : 'Click to Upload Additional Files'}
+                  : files.length > 0
+                    ? 'Upload Additional Files'
+                    : 'Click to Upload Files'}
               </span>
             </button>
-
-            <FilePreviewModal
-              isOpen={!!previewFile}
-              onClose={() => setPreviewFile(null)}
-              filename={previewFile || ''}
-            />
           </div>
         )}
+
+        {/* File List */}
+        {files.length > 0 && (
+          <div className='flex gap-2 overflow-x-auto pb-1'>
+            {files.map((filename, idx) => (
+              <div
+                key={idx}
+                className='flex items-center gap-2 p-2.5 bg-white border border-gray-200 rounded-lg group hover:border-gray-300 hover:shadow-sm transition-all flex-shrink-0 min-w-[200px] max-w-[300px]'
+              >
+                <div className='flex items-center gap-2 overflow-hidden flex-1 min-w-0'>
+                  <div className='flex-shrink-0'>{getFileIcon(filename)}</div>
+                  <div className='flex flex-col min-w-0 flex-1'>
+                    <span
+                      className='text-xs font-medium text-gray-700 truncate'
+                      title={filename}
+                    >
+                      {filename}
+                    </span>
+                    <button
+                      type='button'
+                      className='text-xs text-indigo-600 hover:text-indigo-700 hover:underline cursor-pointer bg-transparent border-none p-0 text-left w-fit'
+                      onClick={e => {
+                        e.stopPropagation();
+                        setPreviewFile(filename);
+                      }}
+                    >
+                      View
+                    </button>
+                  </div>
+                </div>
+                <button
+                  type='button'
+                  onClick={() => removeFile(filename)}
+                  className='p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded transition-colors flex-shrink-0'
+                  title='Remove file'
+                >
+                  <X size={16} />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+
+        <FilePreviewModal
+          isOpen={!!previewFile}
+          onClose={() => setPreviewFile(null)}
+          filename={previewFile || ''}
+        />
       </div>
     </div>
   );

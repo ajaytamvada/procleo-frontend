@@ -289,7 +289,7 @@ const VendorForm: React.FC<VendorFormProps> = ({
       <form id='vendor-form' onSubmit={handleSubmit(onSubmit)} className='p-6'>
         {/* Main Section - Always Visible (Basic Information) */}
         <div className='mb-6 space-y-6'>
-          <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
+          <div className='grid grid-cols-1 md:grid-cols-3 gap-6'>
             <div>
               <label className='block text-sm font-medium text-gray-700 mb-2'>
                 <span className='text-red-500'>*</span> Supplier Name
