@@ -14,9 +14,14 @@ import {
   Package,
   ChevronDown,
   ChevronUp,
+  Zap,
+  ShieldCheck,
+  Truck,
 } from 'lucide-react';
 import { useRFPForComparison } from '../hooks/useNegotiateQuotation';
 import { useSendForApproval } from '../hooks/useSendForApproval';
+import { useRfpInsights } from '../hooks/useRfpInsights';
+import { AIInsightCard } from '@/components/rfp/AIInsightCard';
 
 export const SendForApprovalPage: React.FC = () => {
   const { rfpId } = useParams<{ rfpId: string }>();
@@ -24,6 +29,8 @@ export const SendForApprovalPage: React.FC = () => {
   const rfpIdNum = rfpId ? parseInt(rfpId, 10) : 0;
 
   const { data: rfp, isLoading, error } = useRFPForComparison(rfpIdNum);
+  const { data: insights, isLoading: isInsightsLoading } =
+    useRfpInsights(rfpIdNum);
   const sendForApprovalMutation = useSendForApproval();
 
   const [finalizationDate, setFinalizationDate] = useState(
@@ -280,6 +287,68 @@ export const SendForApprovalPage: React.FC = () => {
                     {quotations.length}
                   </p>
                 </div>
+              </div>
+            </div>
+          </div>
+
+          {/* AI Insights Section */}
+          <div className='bg-gradient-to-r from-violet-600 to-indigo-700 rounded-lg shadow-lg overflow-hidden text-white'>
+            <div className='p-6'>
+              <div className='flex items-center gap-2 mb-6'>
+                <div className='p-2 bg-white/20 rounded-lg backdrop-blur-sm'>
+                  <Zap
+                    className='w-6 h-6 text-yellow-300'
+                    fill='currentColor'
+                  />
+                </div>
+                <div>
+                  <h2 className='text-lg font-bold'>
+                    AI Award Recommendations
+                  </h2>
+                  <p className='text-violet-100 text-sm'>
+                    Data-driven insights based on bid analysis
+                  </p>
+                </div>
+              </div>
+
+              <div className='grid grid-cols-1 md:grid-cols-3 gap-6'>
+                {isInsightsLoading ? (
+                  <div className='col-span-3 text-center py-8 text-white/80'>
+                    Loading insights...
+                  </div>
+                ) : insights && insights.length > 0 ? (
+                  insights.map((insight, index) => {
+                    const getIcon = (variant: string) => {
+                      switch (variant) {
+                        case 'cost':
+                          return Zap;
+                        case 'delivery':
+                          return Truck;
+                        case 'compliance':
+                          return ShieldCheck;
+                        default:
+                          return Zap;
+                      }
+                    };
+
+                    return (
+                      <AIInsightCard
+                        key={index}
+                        title={insight.title}
+                        recommendation={insight.recommendation}
+                        explanation={insight.explanation}
+                        icon={getIcon(insight.variant)}
+                        variant={insight.variant}
+                        metrics={insight.metrics}
+                      />
+                    );
+                  })
+                ) : (
+                  <div className='col-span-3 text-center py-4 text-white/80'>
+                    No insights available for this RFP yet. Ensure quotations
+                    have been submitted.
+                  </div>
+                )}
               </div>
             </div>
           </div>

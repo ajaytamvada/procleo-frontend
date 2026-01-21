@@ -75,13 +75,22 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({
     const token = TokenManager.getAccessToken();
     if (!token) return;
 
+    // Construct WebSocket URL from API Base URL
+    const apiUrl =
+      import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api';
+    // Remove '/api' from the end if present and switch protocol
+    const wsBaseUrl = apiUrl.replace(/\/api\/?$/, '').replace(/^http/, 'ws');
+    const wsUrl = `${wsBaseUrl}/ws`;
+
     // Initialize STOMP Client
     const client = new Client({
-      brokerURL: `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.hostname}:8080/ws`,
+      brokerURL: wsUrl,
       connectHeaders: {
         Authorization: `Bearer ${token}`,
       },
       debug: str => {
+        // console.log('STOMP: ' + str);
+        // Disable debug in production specific if needed, or keep for UAT
         console.log('STOMP: ' + str);
       },
       reconnectDelay: 5000,
