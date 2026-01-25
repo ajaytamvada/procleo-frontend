@@ -103,6 +103,45 @@ const Analytics: React.FC = () => {
     });
   };
 
+  // Calculate insights from data
+  const calculateInsights = () => {
+    const totalSpend = monthlySpend.reduce((acc, curr) => acc + curr.spend, 0);
+    const totalBudget = monthlySpend.reduce(
+      (acc, curr) => acc + curr.budget,
+      0
+    );
+    const spendRate =
+      totalBudget > 0 ? ((totalSpend / totalBudget) * 100).toFixed(1) : '0';
+
+    const sortedCategories = [...categorySpend].sort(
+      (a, b) => b.value - a.value
+    );
+    const totalCategorySpend = categorySpend.reduce(
+      (acc, curr) => acc + curr.value,
+      0
+    );
+
+    const highestCategory = sortedCategories[0];
+    const lowestCategory = sortedCategories[sortedCategories.length - 1];
+
+    return {
+      spendRate,
+      spendRateChange: '+5.2', // Mock data - calculate from yesterday's data
+      totalOrders: recentOrders.length,
+      ordersChange: '+12', // Mock data - calculate from yesterday's data
+      highestCategoryPercentage: highestCategory
+        ? ((highestCategory.value / totalCategorySpend) * 100).toFixed(0)
+        : '0',
+      highestCategory: highestCategory?.name || '--',
+      lowestCategoryPercentage: lowestCategory
+        ? ((lowestCategory.value / totalCategorySpend) * 100).toFixed(0)
+        : '0',
+      lowestCategory: lowestCategory?.name || '--',
+    };
+  };
+
+  const insights = calculateInsights();
+
   return (
     <div className='min-h-screen bg-slate-50'>
       {/* Main Content */}
@@ -128,16 +167,10 @@ const Analytics: React.FC = () => {
           </div>
         </div>
 
-        {/* Stats Grid - Cashfree Style Cards */}
-        {/* 
-  Stats Cards Grid - Count & Status on Same Line
-  Replace your existing stats grid section in Dashboard.tsx with this code
-*/}
-
-        {/* Charts Grid */}
-        <div className='grid grid-cols-1 lg:grid-cols-2 gap-6'>
-          {/* Monthly Spend Trend */}
-          <div className='bg-white rounded-2xl border border-slate-100 p-6 hover:shadow-lg hover:shadow-slate-200/50 transition-all duration-300'>
+        {/* Charts Grid with Insights */}
+        <div className='grid grid-cols-1 lg:grid-cols-3 gap-6'>
+          {/* Monthly Spend Trend - Takes 2 columns */}
+          <div className='lg:col-span-2 bg-white rounded-2xl border border-slate-100 p-6 hover:shadow-lg hover:shadow-slate-200/50 transition-all duration-300'>
             <div className='flex items-center justify-between mb-6'>
               <div>
                 <h3 className='text-lg font-semibold text-slate-800'>
@@ -158,7 +191,7 @@ const Analytics: React.FC = () => {
                 </div>
               </div>
             </div>
-            <ResponsiveContainer width='100%' height={300}>
+            <ResponsiveContainer width='100%' height={350}>
               <AreaChart data={monthlySpend}>
                 <defs>
                   <linearGradient
@@ -237,71 +270,141 @@ const Analytics: React.FC = () => {
             </ResponsiveContainer>
           </div>
 
-          {/* Category Spend Distribution */}
+          {/* Insights Panel - Takes 1 column */}
           <div className='bg-white rounded-2xl border border-slate-100 p-6 hover:shadow-lg hover:shadow-slate-200/50 transition-all duration-300'>
-            <div className='flex items-center justify-between mb-6'>
+            <div className='mb-6'>
+              <h3 className='text-lg font-semibold text-slate-800'>Insights</h3>
+              <p className='text-xs text-slate-500 mt-1'>
+                (in comparison to yesterday)
+              </p>
+            </div>
+
+            <div className='space-y-8'>
+              {/* Total Spend Rate */}
               <div>
-                <h3 className='text-lg font-semibold text-slate-800'>
-                  Spend by Category
-                </h3>
-                <p className='text-sm text-slate-500 mt-1'>
-                  Distribution overview
+                <p className='text-sm text-slate-500 mb-2'>Total Spend Rate</p>
+                <div className='flex items-baseline gap-2'>
+                  <span className='text-lg font-semibold text-slate-800'>
+                    {insights.spendRate}%
+                  </span>
+                  <span className='text-sm text-slate-400'>
+                    {insights.spendRateChange}%
+                  </span>
+                </div>
+              </div>
+
+              {/* Total Number of Orders */}
+              <div>
+                <p className='text-sm text-slate-500 mb-2'>
+                  Total Number of Orders
                 </p>
+                <div className='flex items-baseline gap-2'>
+                  <span className='text-lg font-semibold text-slate-800'>
+                    {insights.totalOrders}
+                  </span>
+                  <span className='text-sm text-slate-400'>
+                    {insights.ordersChange}%
+                  </span>
+                </div>
+              </div>
+
+              {/* Highest Category Spend */}
+              <div>
+                <p className='text-sm text-slate-500 mb-2'>
+                  Highest Category Spend
+                </p>
+                <div className='flex items-baseline gap-2'>
+                  <span className='text-lg font-semibold text-slate-800'>
+                    {insights.highestCategoryPercentage}%
+                  </span>
+                  <span className='text-sm text-slate-400'>
+                    {insights.highestCategory}
+                  </span>
+                </div>
+              </div>
+
+              {/* Lowest Category Spend */}
+              <div>
+                <p className='text-sm text-slate-500 mb-2'>
+                  Lowest Category Spend
+                </p>
+                <div className='flex items-baseline gap-2'>
+                  <span className='text-lg font-semibold text-slate-800'>
+                    {insights.lowestCategoryPercentage}%
+                  </span>
+                  <span className='text-sm text-slate-400'>
+                    {insights.lowestCategory}
+                  </span>
+                </div>
               </div>
             </div>
-            <div className='flex items-center'>
-              <ResponsiveContainer width='60%' height={280}>
-                <PieChart>
-                  <Pie
-                    data={categorySpend}
-                    cx='50%'
-                    cy='50%'
-                    innerRadius={60}
-                    outerRadius={100}
-                    paddingAngle={4}
-                    dataKey='value'
-                  >
-                    {categorySpend.map((entry, index) => (
-                      <Cell
-                        key={`cell-${index}`}
-                        fill={entry.color}
-                        stroke='none'
-                      />
-                    ))}
-                  </Pie>
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: 'white',
-                      border: 'none',
-                      borderRadius: '12px',
-                      boxShadow: '0 10px 40px -10px rgba(0, 0, 0, 0.15)',
-                      padding: '12px 16px',
-                    }}
-                    formatter={(value: number) => [
-                      `₹${value.toLocaleString()}`,
-                      'Amount',
-                    ]}
-                  />
-                </PieChart>
-              </ResponsiveContainer>
-              <div className='w-[40%] space-y-3'>
-                {categorySpend.map((item, index) => (
-                  <div key={index} className='flex items-center gap-3'>
-                    <div
-                      className='w-3 h-3 rounded-full flex-shrink-0'
-                      style={{ backgroundColor: item.color }}
-                    ></div>
-                    <div className='flex-1 min-w-0'>
-                      <p className='text-sm text-slate-600 truncate'>
-                        {item.name}
-                      </p>
-                      <p className='text-xs text-slate-400'>
-                        ₹{item.value.toLocaleString()}
-                      </p>
-                    </div>
+          </div>
+        </div>
+
+        {/* Category Spend Distribution - Full Width */}
+        <div className='bg-white rounded-2xl border border-slate-100 p-6 hover:shadow-lg hover:shadow-slate-200/50 transition-all duration-300'>
+          <div className='flex items-center justify-between mb-6'>
+            <div>
+              <h3 className='text-lg font-semibold text-slate-800'>
+                Spend by Category
+              </h3>
+              <p className='text-sm text-slate-500 mt-1'>
+                Distribution overview
+              </p>
+            </div>
+          </div>
+          <div className='flex items-center'>
+            <ResponsiveContainer width='60%' height={280}>
+              <PieChart>
+                <Pie
+                  data={categorySpend}
+                  cx='50%'
+                  cy='50%'
+                  innerRadius={60}
+                  outerRadius={100}
+                  paddingAngle={4}
+                  dataKey='value'
+                >
+                  {categorySpend.map((entry, index) => (
+                    <Cell
+                      key={`cell-${index}`}
+                      fill={entry.color}
+                      stroke='none'
+                    />
+                  ))}
+                </Pie>
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: 'white',
+                    border: 'none',
+                    borderRadius: '12px',
+                    boxShadow: '0 10px 40px -10px rgba(0, 0, 0, 0.15)',
+                    padding: '12px 16px',
+                  }}
+                  formatter={(value: number) => [
+                    `₹${value.toLocaleString()}`,
+                    'Amount',
+                  ]}
+                />
+              </PieChart>
+            </ResponsiveContainer>
+            <div className='w-[40%] space-y-3'>
+              {categorySpend.map((item, index) => (
+                <div key={index} className='flex items-center gap-3'>
+                  <div
+                    className='w-3 h-3 rounded-full flex-shrink-0'
+                    style={{ backgroundColor: item.color }}
+                  ></div>
+                  <div className='flex-1 min-w-0'>
+                    <p className='text-sm text-slate-600 truncate'>
+                      {item.name}
+                    </p>
+                    <p className='text-xs text-slate-400'>
+                      ₹{item.value.toLocaleString()}
+                    </p>
                   </div>
-                ))}
-              </div>
+                </div>
+              ))}
             </div>
           </div>
         </div>
