@@ -1,5 +1,6 @@
+import { ArrowLeft, ChevronLeft } from 'lucide-react';
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 interface SettingsCategory {
   title: string;
@@ -65,12 +66,21 @@ const settingsCategories: SettingsCategory[] = [
 ];
 
 const Settings: React.FC = () => {
+  const navigate = useNavigate();
   return (
     <div className='min-h-screen bg-slate-50'>
       {/* Page Header */}
       <div className=''>
         <div className='lg:px-8 py-2'>
-          <h1 className='text-2xl font-bold text-slate-800'>Settings</h1>
+          <h1 className='text-2xl font-bold text-slate-800'>
+            <button
+              className='p-1.5 mr-1.5 text-gray-500 hover:text-gray-700 rounded-lg transition-colors'
+              onClick={() => navigate(-1)}
+            >
+              <ArrowLeft size={20} />
+            </button>
+            Settings
+          </h1>
         </div>
       </div>
 

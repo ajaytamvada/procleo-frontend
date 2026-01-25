@@ -166,7 +166,7 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
   const handleUserMenuAction = (action: string) => {
     switch (action) {
       case 'profile':
-        navigate('/settings');
+        navigate('/profile');
         break;
       case 'settings':
         navigate('/settings');
@@ -179,6 +179,9 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
 
   const handleSettingsClick = () => {
     navigate('/settings');
+  };
+  const handleClickLogo = () => {
+    navigate('/');
   };
 
   // Get current user info
@@ -254,7 +257,10 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
           <Menu className='w-5 h-5' />
         </button>
 
-        <div className='flex items-center gap-1'>
+        <div
+          className='flex items-center cursor-pointer gap-1'
+          onClick={() => handleClickLogo()}
+        >
           <div className='w-8 h-8 rounded-lg flex items-center justify-center shadow-lg'>
             <img
               src='/riditstack-logo-icon-white.png'

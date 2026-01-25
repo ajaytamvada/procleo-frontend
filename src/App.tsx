@@ -128,6 +128,7 @@ import '@/styles/globals.css';
 import Settings from './pages/Settings';
 import Analytics from './pages/Analytics';
 import Overview from './pages/Overview';
+import MyProfileLayout from './components/layout/MyProfileLayout';
 
 const Documents: React.FC = () => (
   <div className='space-y-6'>
@@ -158,6 +159,8 @@ const App: React.FC = () => {
                     element={<ForgotPasswordPage />}
                   />
                 </Route>
+                <Route path='/profile' element={<MyProfileLayout />}></Route>
+                <Route path='/settings' element={<SettingsLayout />} />
 
                 {/* Legacy auth routes for backward compatibility */}
                 <Route path='/login' element={<LoginPage />} />
