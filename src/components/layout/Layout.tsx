@@ -9,6 +9,7 @@ import { ChatWidget } from '@/components/chat/ChatWidget';
 
 const Layout: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [chatbotOpen, setChatbotOpen] = useState(false);
   const location = useLocation();
 
   return (
@@ -66,8 +67,15 @@ const Layout: React.FC = () => {
           </ErrorBoundary>
         </main>
       </div>
-      <ChatbotWidget />
-      <ChatWidget />
+
+      {/* Chatbot Widget - Controlled by ChatWidget */}
+      <ChatbotWidget
+        isOpen={chatbotOpen}
+        onClose={() => setChatbotOpen(false)}
+      />
+
+      {/* Chat Widget with Need Help button - Opens both Chat and Chatbot */}
+      <ChatWidget onOpenChatbot={() => setChatbotOpen(true)} />
     </div>
   );
 };
