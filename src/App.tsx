@@ -122,6 +122,8 @@ import LoginProvisionPage from '@/features/access/components/loginprovision/Logi
 // Vendor Portal Pages
 import VendorDashboard from '@/features/vendor/pages/VendorDashboard';
 import VendorRFPList from '@/features/vendor/pages/VendorRFPList';
+import VendorQuotationList from '@/features/vendor/pages/VendorQuotationList';
+import VendorOrderList from '@/features/vendor/pages/VendorOrderList';
 import '@/styles/globals.css';
 
 // Placeholder components for remaining routes
@@ -776,14 +778,7 @@ const App: React.FC = () => {
                   />
                   <Route
                     path='vendor/quotations'
-                    element={
-                      <div className='p-6'>
-                        <h1 className='text-2xl font-bold'>My Quotations</h1>
-                        <p className='text-gray-600'>
-                          Quotation list coming soon...
-                        </p>
-                      </div>
-                    }
+                    element={<VendorQuotationList />}
                   />
                   <Route
                     path='vendor/quotations/submit/:rfpId'
@@ -796,15 +791,7 @@ const App: React.FC = () => {
                       </div>
                     }
                   />
-                  <Route
-                    path='vendor/orders'
-                    element={
-                      <div className='p-6'>
-                        <h1 className='text-2xl font-bold'>Purchase Orders</h1>
-                        <p className='text-gray-600'>PO list coming soon...</p>
-                      </div>
-                    }
-                  />
+                  <Route path='vendor/orders' element={<VendorOrderList />} />
                   <Route
                     path='vendor/invoices'
                     element={

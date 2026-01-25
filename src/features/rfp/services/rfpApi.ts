@@ -266,4 +266,18 @@ export const rfpApi = {
     });
     return response.data;
   },
+
+  // Get AI Insights for RFP
+  getRfpInsights: async (rfpId: number): Promise<RfpInsight[]> => {
+    const response = await apiClient.get(`/rfp/${rfpId}/insights`);
+    return response.data;
+  },
 };
+
+export interface RfpInsight {
+  title: string;
+  recommendation: string;
+  explanation: string;
+  variant: 'cost' | 'delivery' | 'compliance';
+  metrics?: { label: string; value: string }[];
+}

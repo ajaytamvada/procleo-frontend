@@ -55,8 +55,12 @@ export function useLogin() {
         `Welcome back, ${data.userInfo.employeeName || data.userInfo.username}!`
       );
 
-      // Navigate to dashboard
-      navigate('/dashboard');
+      // Navigate to dashboard based on role
+      if (data.userInfo.roles?.includes('ROLE_VENDOR')) {
+        navigate('/vendor/dashboard');
+      } else {
+        navigate('/dashboard');
+      }
 
       // Prefetch dashboard data
       queryUtils.prefetch(queryKeys.dashboard.metrics(), () =>
