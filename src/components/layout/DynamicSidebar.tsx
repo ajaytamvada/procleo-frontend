@@ -62,7 +62,10 @@ const DynamicSidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
 
     // Group modules by parent
     const parentModules = modules.filter(
-      m => !m.parentModuleCode && m.moduleType === 'MENU'
+      m =>
+        !m.parentModuleCode &&
+        m.moduleType === 'MENU' &&
+        m.moduleName !== 'Delivery Status'
     );
     const childModules = modules.filter(
       m => m.parentModuleCode && m.moduleType === 'SUBMENU'
@@ -108,6 +111,7 @@ const DynamicSidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
    */
   const staticNavigation: NavigationItem[] = [
     { name: 'Dashboard', href: '/', icon: Home, moduleCode: 'DASHBOARD' },
+
     {
       name: 'Purchase Requisition',
       href: '/purchase-requisition',

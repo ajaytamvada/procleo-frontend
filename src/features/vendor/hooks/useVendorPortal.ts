@@ -51,22 +51,22 @@ export interface VendorProfile {
 // API functions
 const vendorApi = {
   getDashboard: async (): Promise<VendorDashboardData> => {
-    const response = await apiClient.get('/api/vendor-portal/dashboard');
+    const response = await apiClient.get('/vendor-portal/dashboard');
     return response.data;
   },
 
   getMyRFPs: async (): Promise<VendorRFP[]> => {
-    const response = await apiClient.get('/api/vendor-portal/rfps');
+    const response = await apiClient.get('/vendor-portal/rfps');
     return response.data;
   },
 
   getRFPById: async (rfpId: number): Promise<VendorRFP> => {
-    const response = await apiClient.get(`/api/vendor-portal/rfps/${rfpId}`);
+    const response = await apiClient.get(`/vendor-portal/rfps/${rfpId}`);
     return response.data;
   },
 
   getMyProfile: async (): Promise<VendorProfile> => {
-    const response = await apiClient.get('/api/vendor-portal/profile');
+    const response = await apiClient.get('/vendor-portal/profile');
     return response.data;
   },
 };

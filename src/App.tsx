@@ -124,6 +124,8 @@ import VendorDashboard from '@/features/vendor/pages/VendorDashboard';
 import VendorRFPList from '@/features/vendor/pages/VendorRFPList';
 import VendorQuotationList from '@/features/vendor/pages/VendorQuotationList';
 import VendorOrderList from '@/features/vendor/pages/VendorOrderList';
+import VendorCompanyProfile from '@/features/vendor/pages/VendorCompanyProfile';
+import VendorRFPDetails from '@/features/vendor/pages/VendorRFPDetails';
 import '@/styles/globals.css';
 
 // Placeholder components for remaining routes
@@ -764,14 +766,7 @@ const App: React.FC = () => {
                   <Route path='vendor/rfps' element={<VendorRFPList />} />
                   <Route
                     path='vendor/rfps/:id'
-                    element={
-                      <div className='p-6'>
-                        <h1 className='text-2xl font-bold'>RFP Details</h1>
-                        <p className='text-gray-600'>
-                          RFP detail view coming soon...
-                        </p>
-                      </div>
-                    }
+                    element={<VendorRFPDetails />}
                   />
                   <Route
                     path='vendor/quotations'
@@ -791,36 +786,11 @@ const App: React.FC = () => {
                   <Route path='vendor/orders' element={<VendorOrderList />} />
                   <Route
                     path='vendor/invoices'
-                    element={
-                      <div className='p-6'>
-                        <h1 className='text-2xl font-bold'>My Invoices</h1>
-                        <p className='text-gray-600'>
-                          Invoice list coming soon...
-                        </p>
-                      </div>
-                    }
-                  />
-                  <Route
-                    path='vendor/deliveries'
-                    element={
-                      <div className='p-6'>
-                        <h1 className='text-2xl font-bold'>Delivery Status</h1>
-                        <p className='text-gray-600'>
-                          GRN status coming soon...
-                        </p>
-                      </div>
-                    }
+                    element={<InvoiceEntryPage />}
                   />
                   <Route
                     path='vendor/profile'
-                    element={
-                      <div className='p-6'>
-                        <h1 className='text-2xl font-bold'>Company Profile</h1>
-                        <p className='text-gray-600'>
-                          Profile view coming soon...
-                        </p>
-                      </div>
-                    }
+                    element={<VendorCompanyProfile />}
                   />
                 </Route>
 

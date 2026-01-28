@@ -3,10 +3,16 @@ import { apiClient } from '@/lib/api';
 
 export interface Location {
   id?: number;
-  countryId: number;
+  countryId?: number;
   countryName?: string;
+  country?: string; // To match form
   name: string;
-  code: string;
+  code?: string; // Optional in form
+  address?: string;
+  city?: string;
+  state?: string;
+  pinCode?: string;
+  remarks?: string;
 }
 
 export interface LocationFilters {
