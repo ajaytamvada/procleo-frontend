@@ -147,7 +147,7 @@ const App: React.FC = () => {
   return (
     <QueryProvider>
       <ThemeProvider defaultTheme='light'>
-        <BrowserRouter basename={import.meta.env.PROD ? '/AutoviticaP2P' : ''}>
+        <BrowserRouter basename={import.meta.env.VITE_BASE_PATH || '/'}>
           <ChatProvider>
             <ErrorBoundary level='page'>
               <Routes>
