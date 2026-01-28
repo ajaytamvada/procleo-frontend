@@ -2,9 +2,9 @@ import React from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import Header from './Header';
 import ErrorBoundary from '@/components/common/ErrorBoundary';
-import Settings from '@/pages/Settings';
+import MyProfile from '@/pages/MyProfile';
 
-const SettingsLayout: React.FC = () => {
+const MyProfileLayout: React.FC = () => {
   const location = useLocation();
 
   return (
@@ -47,18 +47,11 @@ const SettingsLayout: React.FC = () => {
             maxWidth: '100%',
           }}
         >
-          <Settings />
-          <ErrorBoundary
-            level='component'
-            resetOnPropsChange={true}
-            resetKeys={[location.pathname]}
-          >
-            <Outlet />
-          </ErrorBoundary>
+          <MyProfile />
         </main>
       </div>
     </div>
   );
 };
 
-export default SettingsLayout;
+export default MyProfileLayout;

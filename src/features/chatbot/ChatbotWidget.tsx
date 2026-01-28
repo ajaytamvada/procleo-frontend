@@ -14,8 +14,15 @@ interface Message {
   timestamp: Date;
 }
 
-export const ChatbotWidget: React.FC = () => {
-  const [isOpen, setIsOpen] = useState(false);
+interface ChatbotWidgetProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+export const ChatbotWidget: React.FC<ChatbotWidgetProps> = ({
+  isOpen,
+  onClose,
+}) => {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: 'welcome',
@@ -38,7 +45,6 @@ export const ChatbotWidget: React.FC = () => {
   }, [messages, isOpen]);
 
   const handleQuestionSelect = async (question: ChatbotQuestion) => {
-    // Add user message
     const userMsg: Message = {
       id: Date.now().toString(),
       type: 'user',
@@ -48,16 +54,13 @@ export const ChatbotWidget: React.FC = () => {
     setMessages(prev => [...prev, userMsg]);
 
     try {
-      // Fetch answer
       const response = await askQuestion(question.id);
       console.log('Chatbot Answer Response:', response);
 
-      // Robust check for data validity
       if (!response || !response.type) {
         throw new Error('Invalid response from server');
       }
 
-      // Format bot response based on type
       let botContent: React.ReactNode;
 
       if (response.type === 'empty') {
@@ -75,7 +78,6 @@ export const ChatbotWidget: React.FC = () => {
           );
         }
       } else {
-        // Table view for multiple results
         if (!response.data || response.data.length === 0) {
           botContent = 'I found no records matching your query.';
         } else {
@@ -138,129 +140,119 @@ export const ChatbotWidget: React.FC = () => {
     }
   };
 
-  return (
-    <div className='fixed bottom-6 right-6 z-50 flex flex-col items-end'>
-      {isOpen && (
-        <div className='mb-4 w-[400px] h-[600px] bg-white rounded-xl shadow-2xl border border-gray-200 flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-5 duration-200'>
-          {/* Header */}
-          <div className='bg-primary p-4 flex justify-between items-center text-primary-foreground shadow-sm'>
-            <div className='flex items-center gap-2'>
-              <Bot className='h-5 w-5' />
-              <span className='font-semibold'>ProcLeo Assistant</span>
-            </div>
-            <button
-              onClick={() => setIsOpen(false)}
-              className='text-primary-foreground/80 hover:text-white transition-colors'
-            >
-              <X className='h-5 w-5' />
-            </button>
-          </div>
+  if (!isOpen) {
+    return null;
+  }
 
-          {/* Messages Area */}
-          <div className='flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50/50'>
-            {messages.map(msg => (
+  return (
+    <div
+      className='fixed bottom-6 right-6 flex flex-col items-end'
+      style={{ zIndex: 100 }}
+    >
+      <div className='w-[400px] h-[600px] bg-white rounded-xl shadow-2xl border border-gray-200 flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-5 duration-200'>
+        {/* Header */}
+        <div className='bg-primary p-4 flex justify-between items-center text-primary-foreground shadow-sm'>
+          <div className='flex items-center gap-2'>
+            <Bot className='h-5 w-5' />
+            <span className='font-semibold'>ProcLeo Assistant</span>
+          </div>
+          <button
+            onClick={onClose}
+            className='text-primary-foreground/80 hover:text-white transition-colors'
+          >
+            <X className='h-5 w-5' />
+          </button>
+        </div>
+
+        {/* Messages Area */}
+        <div className='flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50/50'>
+          {messages.map(msg => (
+            <div
+              key={msg.id}
+              className={cn(
+                'flex w-full max-w-[90%] gap-2',
+                msg.type === 'user' ? 'ml-auto flex-row-reverse' : 'mr-auto'
+              )}
+            >
               <div
-                key={msg.id}
                 className={cn(
-                  'flex w-full max-w-[90%] gap-2',
-                  msg.type === 'user' ? 'ml-auto flex-row-reverse' : 'mr-auto'
+                  'flex-shrink-0 h-8 w-8 rounded-full flex items-center justify-center',
+                  msg.type === 'user'
+                    ? 'bg-primary text-primary-foreground'
+                    : 'bg-emerald-600 text-white'
                 )}
               >
-                <div
-                  className={cn(
-                    'flex-shrink-0 h-8 w-8 rounded-full flex items-center justify-center',
-                    msg.type === 'user'
-                      ? 'bg-primary text-primary-foreground'
-                      : 'bg-emerald-600 text-white'
-                  )}
-                >
-                  {msg.type === 'user' ? (
-                    <User className='h-5 w-5' />
-                  ) : (
-                    <Bot className='h-5 w-5' />
-                  )}
-                </div>
-
-                <div
-                  className={cn(
-                    'p-3 rounded-2xl text-sm shadow-sm',
-                    msg.type === 'user'
-                      ? 'bg-primary text-primary-foreground rounded-tr-sm'
-                      : 'bg-white text-gray-800 border border-gray-100 rounded-tl-sm'
-                  )}
-                >
-                  {msg.content}
-                  <div
-                    className={cn(
-                      'text-[10px] mt-1 opacity-70',
-                      msg.type === 'user'
-                        ? 'text-primary-foreground'
-                        : 'text-gray-400'
-                    )}
-                  >
-                    {msg.timestamp.toLocaleTimeString([], {
-                      hour: '2-digit',
-                      minute: '2-digit',
-                    })}
-                  </div>
-                </div>
-              </div>
-            ))}
-
-            {isAsking && (
-              <div className='flex w-full mr-auto gap-2'>
-                <div className='flex-shrink-0 h-8 w-8 rounded-full bg-emerald-600 text-white flex items-center justify-center'>
+                {msg.type === 'user' ? (
+                  <User className='h-5 w-5' />
+                ) : (
                   <Bot className='h-5 w-5' />
-                </div>
-                <div className='bg-white p-3 rounded-2xl rounded-tl-sm text-sm border border-gray-100 shadow-sm flex items-center gap-2'>
-                  <span className='animate-pulse'>Thinking...</span>
-                </div>
+                )}
               </div>
-            )}
-            <div ref={messagesEndRef} />
-          </div>
 
-          {/* Input/Selection Area */}
-          <div className='p-4 bg-white border-t border-gray-100'>
-            <p className='text-xs font-semibold text-gray-500 mb-2 uppercase tracking-wider'>
-              Suggested Questions
-            </p>
-            {isLoadingQuestions ? (
-              <div className='text-sm text-center py-2 text-gray-500'>
-                Loading questions...
+              <div
+                className={cn(
+                  'p-3 rounded-2xl text-sm shadow-sm',
+                  msg.type === 'user'
+                    ? 'bg-primary text-primary-foreground rounded-tr-sm'
+                    : 'bg-white text-gray-800 border border-gray-100 rounded-tl-sm'
+                )}
+              >
+                {msg.content}
+                <div
+                  className={cn(
+                    'text-[10px] mt-1 opacity-70',
+                    msg.type === 'user'
+                      ? 'text-primary-foreground'
+                      : 'text-gray-400'
+                  )}
+                >
+                  {msg.timestamp.toLocaleTimeString([], {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  })}
+                </div>
               </div>
-            ) : (
-              <div className='flex flex-wrap gap-2 max-h-[120px] overflow-y-auto custom-scrollbar'>
-                {questions?.map(q => (
-                  <button
-                    key={q.id}
-                    onClick={() => handleQuestionSelect(q)}
-                    disabled={isAsking}
-                    className='text-xs border border-gray-200 bg-gray-50 hover:bg-primary/5 hover:border-primary/20 hover:text-primary text-gray-700 px-3 py-1.5 rounded-full transition-all text-left truncate max-w-full disabled:opacity-50 disabled:cursor-not-allowed'
-                  >
-                    {q.text}
-                  </button>
-                ))}
+            </div>
+          ))}
+
+          {isAsking && (
+            <div className='flex w-full mr-auto gap-2'>
+              <div className='flex-shrink-0 h-8 w-8 rounded-full bg-emerald-600 text-white flex items-center justify-center'>
+                <Bot className='h-5 w-5' />
               </div>
-            )}
-          </div>
+              <div className='bg-white p-3 rounded-2xl rounded-tl-sm text-sm border border-gray-100 shadow-sm flex items-center gap-2'>
+                <span className='animate-pulse'>Thinking...</span>
+              </div>
+            </div>
+          )}
+          <div ref={messagesEndRef} />
         </div>
-      )}
 
-      {/* FAB */}
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className={cn(
-          'h-14 w-14 rounded-full shadow-lg flex items-center justify-center transition-all duration-300 hover:scale-105 active:scale-95',
-          isOpen ? 'bg-red-500 rotate-90' : 'bg-primary'
-        )}
-      >
-        {isOpen ? (
-          <X className='h-6 w-6 text-white' />
-        ) : (
-          <MessageCircle className='h-7 w-7 text-white' />
-        )}
-      </button>
+        {/* Input/Selection Area */}
+        <div className='p-4 bg-white border-t border-gray-100'>
+          <p className='text-xs font-semibold text-gray-500 mb-2 uppercase tracking-wider'>
+            Suggested Questions
+          </p>
+          {isLoadingQuestions ? (
+            <div className='text-sm text-center py-2 text-gray-500'>
+              Loading questions...
+            </div>
+          ) : (
+            <div className='flex flex-wrap gap-2 max-h-[120px] overflow-y-auto custom-scrollbar'>
+              {questions?.map(q => (
+                <button
+                  key={q.id}
+                  onClick={() => handleQuestionSelect(q)}
+                  disabled={isAsking}
+                  className='text-xs border border-gray-200 bg-gray-50 hover:bg-primary/5 hover:border-primary/20 hover:text-primary text-gray-700 px-3 py-1.5 rounded-full transition-all text-left truncate max-w-full disabled:opacity-50 disabled:cursor-not-allowed'
+                >
+                  {q.text}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 };
