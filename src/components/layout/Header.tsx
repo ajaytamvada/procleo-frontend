@@ -269,7 +269,7 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
             />
           </div>
           <div className='hidden sm:block'>
-            <h1 className='text-lg font-semibold text-white'>Procleo</h1>
+            <h1 className='text-lg font-semibold text-white'>Procleos</h1>
           </div>
         </div>
       </div>
