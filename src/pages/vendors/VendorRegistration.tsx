@@ -11,7 +11,7 @@ export function VendorRegistrationPage() {
         <header className='flex items-center justify-between px-6 sm:px-10 lg:px-12 py-5'>
           <a href='/' className='flex items-center'>
             <img
-              src='/riditstack-logo-c.png'
+              src={import.meta.env.BASE_URL + 'riditstack-logo-c.png'}
               alt='RiditStack Logo'
               className='h-9 w-auto'
             />

@@ -19,7 +19,7 @@ const useVendorQuotations = () => {
   return useQuery({
     queryKey: ['vendor', 'quotations'],
     queryFn: async () => {
-      const response = await apiClient.get('/api/vendor-portal/quotations');
+      const response = await apiClient.get('/vendor-portal/quotations');
       return response.data;
     },
   });

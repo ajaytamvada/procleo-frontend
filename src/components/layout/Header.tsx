@@ -263,7 +263,7 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
         >
           <div className='w-8 h-8 rounded-lg flex items-center justify-center shadow-lg'>
             <img
-              src='/riditstack-logo-icon-white.png'
+              src={import.meta.env.BASE_URL + 'riditstack-logo-icon-white.png'}
               alt='RiditStack Logo'
               className='h-9 w-auto'
             />
@@ -277,84 +277,96 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
       {/* Right side */}
       <div className='flex items-center gap-2'>
         {/* Quick Actions Dropdown - Cashfree Style */}
-        <img src='/ai-icon.png' alt='AI' className='h-9 w-auto' />
-        <div className='relative' ref={dropdownRef}>
-          <button
-            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-transparent border text-white text-sm font-semibold transition-all duration-200 group ${
-              isDropdownOpen
-                ? 'bg-indigo-500/20 border-indigo-400'
-                : 'border-indigo-400/60 hover:bg-indigo-500/20 hover:border-indigo-400'
-            }`}
-            title='Quick Actions'
-          >
-            <span>+ Create</span>
-            <ChevronDown
-              className={`w-3 h-3 transition-transform duration-200 ${isDropdownOpen ? 'rotate-180' : ''}`}
-            />
-          </button>
+        <img
+          src={import.meta.env.BASE_URL + 'ai-icon.png'}
+          alt='AI'
+          className='h-9 w-auto'
+        />
 
-          {/* Cashfree Style Dropdown Menu */}
-          {isDropdownOpen && (
-            <div className='absolute right-0 mt-2 w-[400px] bg-white rounded-xl shadow-2xl border border-gray-200 overflow-hidden z-50 animate-in slide-in-from-top-2 fade-in duration-200'>
-              {/* Dropdown Items */}
-              <div className='py-1'>
-                {quickActions.map((action, index) => {
-                  const isHovered = hoveredIndex === index;
-                  const shortcutDisplay = getShortcutDisplay(
-                    action.shortcutKey
-                  );
+        {/* Only show Quick Actions for non-vendor users */}
+        {!(
+          currentUser.roles?.includes('ROLE_VENDOR') ||
+          currentUser.roles?.includes('VENDOR') ||
+          (currentUser as any).vendorId
+        ) && (
+          <div className='relative' ref={dropdownRef}>
+            <button
+              onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-transparent border text-white text-sm font-semibold transition-all duration-200 group ${
+                isDropdownOpen
+                  ? 'bg-indigo-500/20 border-indigo-400'
+                  : 'border-indigo-400/60 hover:bg-indigo-500/20 hover:border-indigo-400'
+              }`}
+              title='Quick Actions'
+            >
+              <span>+ Create</span>
+              <ChevronDown
+                className={`w-3 h-3 transition-transform duration-200 ${isDropdownOpen ? 'rotate-180' : ''}`}
+              />
+            </button>
 
-                  return (
-                    <button
-                      key={action.route}
-                      onClick={() => handleShortcutClick(action.route)}
-                      onMouseEnter={() => setHoveredIndex(index)}
-                      onMouseLeave={() => setHoveredIndex(null)}
-                      className={`w-full flex items-start justify-between px-5 py-4 text-left transition-colors duration-150 border-l-4 ${
-                        isHovered
-                          ? 'bg-gray-50 border-l-violet-600'
-                          : 'border-l-transparent'
-                      }`}
-                    >
-                      <div className='flex-1 pr-4'>
-                        <div className='text-base font-semibold text-gray-900'>
-                          {action.label}
+            {/* Cashfree Style Dropdown Menu */}
+            {isDropdownOpen && (
+              <div className='absolute right-0 mt-2 w-[400px] bg-white rounded-xl shadow-2xl border border-gray-200 overflow-hidden z-50 animate-in slide-in-from-top-2 fade-in duration-200'>
+                {/* Dropdown Items */}
+                <div className='py-1'>
+                  {quickActions.map((action, index) => {
+                    const isHovered = hoveredIndex === index;
+                    const shortcutDisplay = getShortcutDisplay(
+                      action.shortcutKey
+                    );
+
+                    return (
+                      <button
+                        key={action.route}
+                        onClick={() => handleShortcutClick(action.route)}
+                        onMouseEnter={() => setHoveredIndex(index)}
+                        onMouseLeave={() => setHoveredIndex(null)}
+                        className={`w-full flex items-start justify-between px-5 py-4 text-left transition-colors duration-150 border-l-4 ${
+                          isHovered
+                            ? 'bg-gray-50 border-l-violet-600'
+                            : 'border-l-transparent'
+                        }`}
+                      >
+                        <div className='flex-1 pr-4'>
+                          <div className='text-base font-semibold text-gray-900'>
+                            {action.label}
+                          </div>
+                          <p className='text-sm text-gray-500 mt-1'>
+                            {action.description}
+                          </p>
                         </div>
-                        <p className='text-sm text-gray-500 mt-1'>
-                          {action.description}
-                        </p>
-                      </div>
 
-                      {/* Keyboard Shortcut Display */}
-                      <div className='flex items-center gap-1 flex-shrink-0 pt-0.5'>
-                        {shortcutDisplay.map((key, keyIndex) => (
-                          <React.Fragment key={keyIndex}>
-                            <ShortcutKey keyLabel={key} />
-                            {keyIndex < shortcutDisplay.length - 1 && (
-                              <span className='text-gray-400 text-xs'>+</span>
-                            )}
-                          </React.Fragment>
-                        ))}
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
+                        {/* Keyboard Shortcut Display */}
+                        <div className='flex items-center gap-1 flex-shrink-0 pt-0.5'>
+                          {shortcutDisplay.map((key, keyIndex) => (
+                            <React.Fragment key={keyIndex}>
+                              <ShortcutKey keyLabel={key} />
+                              {keyIndex < shortcutDisplay.length - 1 && (
+                                <span className='text-gray-400 text-xs'>+</span>
+                              )}
+                            </React.Fragment>
+                          ))}
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
 
-              {/* Footer with hint */}
-              <div className='px-5 py-3 bg-gray-50 border-t border-gray-100'>
-                <div className='flex items-center gap-2 text-xs text-gray-500'>
-                  <ModifierIcon />
-                  <span>
-                    Use {isMac ? 'keyboard shortcuts' : 'Ctrl + Shift + Key'}{' '}
-                    for quick access
-                  </span>
+                {/* Footer with hint */}
+                <div className='px-5 py-3 bg-gray-50 border-t border-gray-100'>
+                  <div className='flex items-center gap-2 text-xs text-gray-500'>
+                    <ModifierIcon />
+                    <span>
+                      Use {isMac ? 'keyboard shortcuts' : 'Ctrl + Shift + Key'}{' '}
+                      for quick access
+                    </span>
+                  </div>
                 </div>
               </div>
-            </div>
-          )}
-        </div>
+            )}
+          </div>
+        )}
 
         {/* Notifications */}
         <NotificationBell />
@@ -379,7 +391,9 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
                 {currentUser.employeeName || currentUser.username}
               </div>
               <div className='text-[10px] text-white/60'>
-                {currentUser.roles?.[0] || 'User'}
+                {(currentUser as any).vendorId
+                  ? 'Vendor'
+                  : currentUser.roles?.[0] || 'User'}
               </div>
             </div>
             <div className='w-8 h-8 rounded-full bg-white/10 flex items-center justify-center'>

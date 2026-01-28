@@ -44,7 +44,7 @@ const VendorProfilePage: React.FC = () => {
   } = useQuery({
     queryKey: ['vendor', 'profile'],
     queryFn: async () => {
-      const response = await apiClient.get('/api/vendor-portal/profile');
+      const response = await apiClient.get('/vendor-portal/profile');
       return response.data;
     },
   });
@@ -71,10 +71,7 @@ const VendorProfilePage: React.FC = () => {
         contactDesignation: data.contactDesignation,
       };
 
-      const response = await apiClient.put(
-        '/api/vendor-portal/profile',
-        payload
-      );
+      const response = await apiClient.put('/vendor-portal/profile', payload);
       return response.data;
     },
     onSuccess: () => {

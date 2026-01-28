@@ -221,7 +221,7 @@ export function VendorRegistrationForm() {
           <div className='text-center mb-8'>
             <div className='mx-auto mb-6'>
               <img
-                src='/riditstack-logo.png'
+                src={import.meta.env.BASE_URL + 'riditstack-logo.png'}
                 alt='RiditStack Logo'
                 className='h-16 w-auto mx-auto'
               />

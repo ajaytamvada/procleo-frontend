@@ -56,16 +56,24 @@ export function useLogin() {
       );
 
       // Navigate to dashboard based on role
-      if (data.userInfo.roles?.includes('ROLE_VENDOR')) {
+      // Check for vendor role/type in multiple ways to be robust
+      const isVendor =
+        data.userInfo.userTypeName === 'Vendor' ||
+        !!data.userInfo.vendorId ||
+        data.userInfo.roles?.includes('ROLE_VENDOR');
+
+      if (isVendor) {
         navigate('/vendor/dashboard');
       } else {
         navigate('/dashboard');
       }
 
       // Prefetch dashboard data
-      queryUtils.prefetch(queryKeys.dashboard.metrics(), () =>
-        fetch('/api/dashboard/metrics').then(res => res.json())
-      );
+      if (!isVendor) {
+        queryUtils.prefetch(queryKeys.dashboard.metrics(), () =>
+          fetch('/api/dashboard/metrics').then(res => res.json())
+        );
+      }
     },
     onError: (error: any) => {
       toast.error(error.message || 'Login failed. Please try again.');
@@ -237,6 +245,8 @@ export function useAuth() {
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
     vendorId: undefined as number | undefined,
+    phone: '+1 234 567 8900',
+    designation: 'System Admin',
   };
 
   const isAuthenticated = DEV_MODE ? true : AuthService.isAuthenticated();
@@ -253,6 +263,15 @@ export function useAuth() {
 
   const hasRole = (role: string): boolean => {
     if (DEV_MODE) return true; // Match any role in dev mode
+
+    // Explicit check for vendor role based on user type or vendorId
+    if (
+      role === 'ROLE_VENDOR' &&
+      (user?.userTypeName === 'Vendor' || !!user?.vendorId)
+    ) {
+      return true;
+    }
+
     return user?.roles?.includes(role) || false;
   };
 

@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Shield, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
+import { AuthService } from '@/services/auth';
 
 export function UnauthorizedPage() {
   return (
@@ -24,12 +25,27 @@ export function UnauthorizedPage() {
         </div>
 
         <div className='space-y-4'>
-          <Link to='/dashboard'>
-            <Button className='w-full' size='lg'>
-              <ArrowLeft className='h-4 w-4 mr-2' />
-              Return to Dashboard
-            </Button>
-          </Link>
+          <Button
+            className='w-full'
+            size='lg'
+            onClick={() => {
+              // Check if user is a vendor
+              const user = AuthService.getStoredUser();
+              const isVendor =
+                user?.roles?.includes('ROLE_VENDOR') ||
+                user?.roles?.includes('VENDOR') ||
+                (user as any)?.vendorId;
+
+              if (isVendor) {
+                window.location.href = '/vendor/dashboard'; // Force reload to ensure clean state
+              } else {
+                window.location.href = '/dashboard';
+              }
+            }}
+          >
+            <ArrowLeft className='h-4 w-4 mr-2' />
+            Return to Dashboard
+          </Button>
 
           <Link to='/settings'>
             <Button variant='outline' className='w-full' size='lg'>

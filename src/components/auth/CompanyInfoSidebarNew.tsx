@@ -407,7 +407,7 @@ export function CompanyInfoSidebar({
         {/* <div className='mb-5'>
           <div className='flex items-center mb-3'>
             <img
-              src='/riditstack-logo.png'
+              src={import.meta.env.BASE_URL + 'riditstack-logo.png'}
               alt='RiditStack Logo'
               className='h-10 w-auto mr-3'
             />
