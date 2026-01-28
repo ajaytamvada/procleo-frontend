@@ -23,6 +23,9 @@ export interface User {
   // Legacy support for backward compatibility
   username?: string;
   roles?: string[];
+  phone?: string;
+  designation?: string;
+  department?: string;
 }
 
 // Helper function to check if user is a vendor

@@ -245,6 +245,8 @@ export function useAuth() {
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
     vendorId: undefined as number | undefined,
+    phone: '+1 234 567 8900',
+    designation: 'System Admin',
   };
 
   const isAuthenticated = DEV_MODE ? true : AuthService.isAuthenticated();

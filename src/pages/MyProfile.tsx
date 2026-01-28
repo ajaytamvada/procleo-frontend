@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import {
-  User,
+  User as UserIcon,
   Bell,
   Lock,
   Save,
@@ -241,7 +241,7 @@ const MyProfile: React.FC = () => {
         <div className='w-64 flex-shrink-0'>
           <div className='bg-white border border-gray-200 rounded-lg p-3 sticky top-6'>
             {[
-              { key: 'profile', label: 'Profile', icon: User },
+              { key: 'profile', label: 'Profile', icon: UserIcon },
               { key: 'notifications', label: 'Notifications', icon: Bell },
               { key: 'security', label: 'Security', icon: Lock },
             ].map(item => {
