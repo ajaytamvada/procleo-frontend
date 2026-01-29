@@ -3,15 +3,36 @@ import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Loader2, Check, CheckCircle } from 'lucide-react';
+import {
+  CheckCircle,
+  Building2,
+  FileText,
+  Hash,
+  Briefcase,
+  User,
+  Mail,
+  Phone,
+  Globe,
+  MapPin,
+  Home,
+  Map,
+  Flag,
+  MapPinned,
+  Landmark,
+  CreditCard,
+  Shield,
+  FileCheck,
+} from 'lucide-react';
 import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
-import { Select } from '@/components/ui/Select';
-import { Textarea } from '@/components/ui/Textarea';
 import { Alert } from '@/components/ui/Alert';
 import toast from 'react-hot-toast';
 import { apiClient } from '@/lib/api';
-import { Card } from '@/components/ui/Card';
+import { PrimaryButton } from '../common/Buttons/PrimaryButton';
+import FormInput from '../common/Form/FormInput';
+import FormSelect from '../common/Form/FormSelect';
+import FormSection from '../common/Form/FormSection';
+import Stepper from '../common/Stepper';
+import FormTextarea from '../common/Form/FormTextArea';
 
 // Validation schema for vendor registration
 const vendorRegistrationSchema = z.object({
@@ -53,11 +74,15 @@ const vendorRegistrationSchema = z.object({
 
 type VendorRegistrationData = z.infer<typeof vendorRegistrationSchema>;
 
+const STEPS = [
+  { number: 1, label: 'Company Info' },
+  { number: 2, label: 'Contact & Address' },
+  { number: 3, label: 'Review Your Information' },
+];
+
 export function VendorRegistrationForm() {
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(1);
-  const totalSteps = 4;
-
   const [registrationComplete, setRegistrationComplete] = useState(false);
   const [registrationData, setRegistrationData] = useState<any>(null);
 
@@ -124,7 +149,6 @@ export function VendorRegistrationForm() {
   };
 
   const nextStep = async () => {
-    // Validate current step fields
     let fieldsToValidate: (keyof VendorRegistrationData)[] = [];
 
     switch (currentStep) {
@@ -155,7 +179,7 @@ export function VendorRegistrationForm() {
 
     const isValid = await trigger(fieldsToValidate);
     if (isValid) {
-      setCurrentStep(prev => Math.min(prev + 1, totalSteps));
+      setCurrentStep(prev => Math.min(prev + 1, 3));
     }
   };
 
@@ -163,526 +187,433 @@ export function VendorRegistrationForm() {
     setCurrentStep(prev => Math.max(prev - 1, 1));
   };
 
-  // Show success screen after registration
+  // Success Screen
   if (registrationComplete) {
     return (
-      <div className='min-h-screen w-full flex items-center justify-center bg-white p-6'>
+      <div className='min-h-screen w-full flex items-center justify-center bg-gradient-to-br from-indigo-50 via-white to-purple-50 p-6'>
         <div className='max-w-xl w-full text-center'>
-          <div className='mx-auto mb-6 h-20 w-20 rounded-full bg-green-100 flex items-center justify-center'>
-            <CheckCircle className='h-10 w-10 text-green-600' />
+          {/* Success Icon with Animation */}
+          <div className='mx-auto mb-8 h-24 w-24 rounded-full bg-gradient-to-r from-green-400 to-emerald-500 flex items-center justify-center shadow-2xl animate-bounce-slow'>
+            <CheckCircle className='h-14 w-14 text-white' strokeWidth={2.5} />
           </div>
-          <h2 className='text-3xl font-semibold text-gray-800 mb-4'>
-            Registration Successful!
+
+          {/* Success Message */}
+          <h2 className='text-4xl font-bold text-gray-900 mb-3'>
+            Registration Successful! 🎉
           </h2>
-          <p className='text-gray-600 mb-6'>
+          <p className='text-lg text-gray-600 mb-8'>
             Your vendor account has been created. Login credentials have been
             sent to your email address.
           </p>
-          <div className='bg-purple-50 rounded-lg p-6 mb-6 max-w-sm mx-auto text-left'>
-            <h3 className='font-semibold text-purple-900 mb-3'>
-              Your Account Details:
+
+          {/* Account Details Card */}
+          <div className='bg-gradient-to-br from-indigo-50 to-purple-50 border-2 border-indigo-100 rounded-2xl p-8 mb-8 max-w-md mx-auto text-left shadow-lg'>
+            <h3 className='font-bold text-indigo-900 mb-5 text-lg flex items-center gap-2'>
+              <Shield className='h-5 w-5' />
+              Your Account Details
             </h3>
-            <div className='space-y-2 text-sm'>
-              <div>
-                <span className='text-purple-600'>Vendor Code:</span>
-                <span className='ml-2 font-mono font-bold'>
+            <div className='space-y-4'>
+              <div className='bg-white rounded-lg p-4 shadow-sm'>
+                <span className='text-sm text-indigo-600 font-semibold block mb-1'>
+                  Vendor Code
+                </span>
+                <span className='text-lg font-bold text-gray-900 font-mono'>
                   {registrationData?.vendorCode}
                 </span>
               </div>
-              <div>
-                <span className='text-purple-600'>Login Email:</span>
-                <span className='ml-2 font-mono font-bold'>
+              <div className='bg-white rounded-lg p-4 shadow-sm'>
+                <span className='text-sm text-indigo-600 font-semibold block mb-1'>
+                  Login Email
+                </span>
+                <span className='text-lg font-bold text-gray-900 font-mono break-all'>
                   {registrationData?.loginEmail}
                 </span>
               </div>
-              <div className='pt-2 border-t border-purple-200 mt-2'>
-                <span className='text-purple-700 text-xs'>
+              <div className='bg-gradient-to-r from-indigo-100 to-purple-100 rounded-lg p-3 flex items-center gap-2'>
+                <Mail className='h-4 w-4 text-indigo-700' />
+                <span className='text-sm text-indigo-900 font-medium'>
                   Password sent to your email
                 </span>
               </div>
             </div>
           </div>
-          <Button
+
+          {/* CTA Button */}
+          <PrimaryButton
             onClick={() => navigate('/auth/login')}
-            className='h-11 bg-[rgb(103,62,230)] hover:bg-[rgb(83,42,210)] text-white font-semibold rounded-md shadow-sm hover:shadow transition-all px-8'
+            variant='gradient'
+            className='px-12'
           >
             Go to Login
-          </Button>
+          </PrimaryButton>
         </div>
       </div>
     );
   }
 
   return (
-    <div className='max-w-4xl mx-auto p-6'>
-      <Card>
-        <div className='p-8'>
-          {/* Header */}
-          <div className='text-center mb-8'>
-            <div className='mx-auto mb-6'>
-              <img
-                src={import.meta.env.BASE_URL + 'riditstack-logo.png'}
-                alt='RiditStack Logo'
-                className='h-16 w-auto mx-auto'
+    <div className='w-full'>
+      {/* Stepper */}
+      <Stepper steps={STEPS} currentStep={currentStep} />
+
+      <form onSubmit={handleSubmit(onSubmit)} className='space-y-6'>
+        {/* Step 1: Company Information */}
+        {currentStep === 1 && (
+          <FormSection
+            title='Company Information'
+            subtitle='Tell us about your organization'
+          >
+            <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
+              <FormInput
+                label='Company Name'
+                placeholder='Acme Corporation'
+                icon={<Building2 className='h-5 w-5' />}
+                error={errors.companyName?.message}
+                {...register('companyName')}
               />
+
+              <FormInput
+                label='Registration Number'
+                placeholder='REG-123456'
+                icon={<FileText className='h-5 w-5' />}
+                error={errors.registrationNumber?.message}
+                {...register('registrationNumber')}
+              />
+
+              <FormInput
+                label='Tax ID / VAT Number'
+                placeholder='TAX-789012'
+                icon={<Hash className='h-5 w-5' />}
+                error={errors.taxId?.message}
+                {...register('taxId')}
+              />
+
+              <FormSelect
+                label='Vendor Type'
+                error={errors.vendorType?.message}
+                {...register('vendorType')}
+              >
+                <option value='supplier'>Supplier</option>
+                <option value='service_provider'>Service Provider</option>
+                <option value='contractor'>Contractor</option>
+                <option value='consultant'>Consultant</option>
+              </FormSelect>
             </div>
-            <h2
-              className='text-3xl font-bold mb-2'
-              style={{ color: '#1a0b2e' }}
-            >
-              Vendor Registration
-            </h2>
-            <p className='text-gray-600'>
-              Join Autovitica P2P as a trusted vendor
-            </p>
-          </div>
+          </FormSection>
+        )}
 
-          {/* Progress Steps */}
-          <div className='mb-8'>
-            <div className='flex items-center justify-between'>
-              {[1, 2, 3, 4].map(step => (
-                <React.Fragment key={step}>
-                  <div className='flex items-center'>
-                    <div
-                      className={`h-10 w-10 rounded-full flex items-center justify-center font-semibold
-                        ${
-                          currentStep >= step
-                            ? 'text-white'
-                            : 'bg-gray-200 text-gray-600'
-                        }`}
-                      style={
-                        currentStep >= step
-                          ? { backgroundColor: '#6366f1' }
-                          : {}
-                      }
-                    >
-                      {currentStep > step ? (
-                        <Check className='h-5 w-5' />
-                      ) : (
-                        step
-                      )}
-                    </div>
-                    <span
-                      className={`ml-3 font-medium hidden sm:block
-                      ${currentStep >= step ? '' : 'text-gray-500'}
-                    `}
-                      style={currentStep >= step ? { color: '#6366f1' } : {}}
-                    >
-                      {step === 1 && 'Company Info'}
-                      {step === 2 && 'Contact & Address'}
-                      {step === 3 && 'Banking Details'}
-                      {step === 4 && 'Review & Submit'}
-                    </span>
-                  </div>
-                  {step < 4 && (
-                    <div
-                      className='flex-1 h-0.5 mx-4'
-                      style={{
-                        backgroundColor:
-                          currentStep > step ? '#6366f1' : '#E5E7EB',
-                      }}
-                    />
-                  )}
-                </React.Fragment>
-              ))}
-            </div>
-          </div>
+        {/* Step 2: Contact & Address */}
+        {currentStep === 2 && (
+          <FormSection
+            title='Contact & Address Information'
+            subtitle='How can we reach you?'
+          >
+            <div className='space-y-6'>
+              {/* Contact Details */}
+              <div>
+                <h4 className='text-sm font-bold text-gray-700 mb-4 flex items-center gap-2'>
+                  <User className='h-4 w-4 text-indigo-600' />
+                  Contact Details
+                </h4>
+                <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
+                  <FormInput
+                    label='Contact Person'
+                    placeholder='John Doe'
+                    icon={<User className='h-5 w-5' />}
+                    error={errors.contactPerson?.message}
+                    {...register('contactPerson')}
+                  />
 
-          <form onSubmit={handleSubmit(onSubmit)} className='space-y-4'>
-            {/* Step 1: Company Information */}
-            {currentStep === 1 && (
-              <div className='space-y-4'>
-                <h3 className='text-lg font-semibold text-gray-800 mb-4'>
-                  Company Information
-                </h3>
+                  <FormInput
+                    label='Email Address'
+                    type='email'
+                    placeholder='john@company.com'
+                    icon={<Mail className='h-5 w-5' />}
+                    error={errors.email?.message}
+                    {...register('email')}
+                  />
 
-                <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-                  <div>
-                    <label className='block text-[13px] font-medium text-gray-600 mb-1.5'>
-                      Company Name
-                    </label>
-                    <Input
-                      {...register('companyName')}
-                      placeholder='Enter company name'
-                      className='w-full h-11 px-3.5 text-sm border border-gray-300 rounded-md focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all placeholder:text-gray-400'
-                      error={errors.companyName?.message}
-                    />
-                  </div>
+                  <FormInput
+                    label='Phone Number'
+                    placeholder='+1 (555) 123-4567'
+                    icon={<Phone className='h-5 w-5' />}
+                    error={errors.phone?.message}
+                    {...register('phone')}
+                  />
 
-                  <div>
-                    <label className='block text-[13px] font-medium text-gray-600 mb-1.5'>
-                      Registration Number
-                    </label>
-                    <Input
-                      {...register('registrationNumber')}
-                      placeholder='Enter registration number'
-                      className='w-full h-11 px-3.5 text-sm border border-gray-300 rounded-md focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all placeholder:text-gray-400'
-                      error={errors.registrationNumber?.message}
-                    />
-                  </div>
-
-                  <div>
-                    <label className='block text-[13px] font-medium text-gray-600 mb-1.5'>
-                      Tax ID / VAT Number
-                    </label>
-                    <Input
-                      {...register('taxId')}
-                      placeholder='Enter tax ID'
-                      className='w-full h-11 px-3.5 text-sm border border-gray-300 rounded-md focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all placeholder:text-gray-400'
-                      error={errors.taxId?.message}
-                    />
-                  </div>
-
-                  <div>
-                    <label className='block text-[13px] font-medium text-gray-600 mb-1.5'>
-                      Vendor Type
-                    </label>
-                    <Select
-                      {...register('vendorType')}
-                      className='w-full h-11 px-3.5 text-sm border border-gray-300 rounded-md focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all'
-                      error={errors.vendorType?.message}
-                    >
-                      <option value='supplier'>Supplier</option>
-                      <option value='service_provider'>Service Provider</option>
-                      <option value='contractor'>Contractor</option>
-                      <option value='consultant'>Consultant</option>
-                    </Select>
-                  </div>
+                  <FormInput
+                    label='Website (Optional)'
+                    placeholder='https://www.company.com'
+                    icon={<Globe className='h-5 w-5' />}
+                    error={errors.website?.message}
+                    {...register('website')}
+                  />
                 </div>
               </div>
-            )}
 
-            {/* Step 2: Contact & Address */}
-            {currentStep === 2 && (
-              <div className='space-y-4'>
-                <h3 className='text-lg font-semibold text-gray-800 mb-4'>
-                  Contact & Address Information
-                </h3>
-
-                <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-                  <div>
-                    <label className='block text-[13px] font-medium text-gray-600 mb-1.5'>
-                      Contact Person
-                    </label>
-                    <Input
-                      {...register('contactPerson')}
-                      placeholder='Enter contact person name'
-                      className='w-full h-11 px-3.5 text-sm border border-gray-300 rounded-md focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all placeholder:text-gray-400'
-                      error={errors.contactPerson?.message}
-                    />
-                  </div>
-
-                  <div>
-                    <label className='block text-[13px] font-medium text-gray-600 mb-1.5'>
-                      Email Address
-                    </label>
-                    <Input
-                      {...register('email')}
-                      type='email'
-                      placeholder='vendor@company.com'
-                      className='w-full h-11 px-3.5 text-sm border border-gray-300 rounded-md focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all placeholder:text-gray-400'
-                      error={errors.email?.message}
-                    />
-                  </div>
-
-                  <div>
-                    <label className='block text-[13px] font-medium text-gray-600 mb-1.5'>
-                      Phone Number
-                    </label>
-                    <Input
-                      {...register('phone')}
-                      placeholder='+1 (555) 123-4567'
-                      className='w-full h-11 px-3.5 text-sm border border-gray-300 rounded-md focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all placeholder:text-gray-400'
-                      error={errors.phone?.message}
-                    />
-                  </div>
-
-                  <div>
-                    <label className='block text-[13px] font-medium text-gray-600 mb-1.5'>
-                      Website (Optional)
-                    </label>
-                    <Input
-                      {...register('website')}
-                      placeholder='https://www.company.com'
-                      className='w-full h-11 px-3.5 text-sm border border-gray-300 rounded-md focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all placeholder:text-gray-400'
-                      error={errors.website?.message}
-                    />
-                  </div>
-
+              {/* Address Details */}
+              <div>
+                <h4 className='text-sm font-bold text-gray-700 mb-4 flex items-center gap-2'>
+                  <MapPin className='h-4 w-4 text-indigo-600' />
+                  Business Address
+                </h4>
+                <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
                   <div className='md:col-span-2'>
-                    <label className='block text-[13px] font-medium text-gray-600 mb-1.5'>
-                      Address
-                    </label>
-                    <Textarea
-                      {...register('address')}
-                      placeholder='Enter street address'
-                      className='w-full px-3.5 py-2.5 text-sm border border-gray-300 rounded-md focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all placeholder:text-gray-400'
+                    <FormTextarea
+                      label='Street Address'
+                      placeholder='123 Business Street, Suite 100'
                       rows={3}
                       error={errors.address?.message}
+                      {...register('address')}
                     />
                   </div>
 
-                  <div>
-                    <label className='block text-[13px] font-medium text-gray-600 mb-1.5'>
-                      City
-                    </label>
-                    <Input
-                      {...register('city')}
-                      placeholder='Enter city'
-                      className='w-full h-11 px-3.5 text-sm border border-gray-300 rounded-md focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all placeholder:text-gray-400'
-                      error={errors.city?.message}
-                    />
-                  </div>
+                  <FormInput
+                    label='City'
+                    placeholder='New York'
+                    icon={<Home className='h-5 w-5' />}
+                    error={errors.city?.message}
+                    {...register('city')}
+                  />
 
-                  <div>
-                    <label className='block text-[13px] font-medium text-gray-600 mb-1.5'>
-                      State/Province
-                    </label>
-                    <Input
-                      {...register('state')}
-                      placeholder='Enter state'
-                      className='w-full h-11 px-3.5 text-sm border border-gray-300 rounded-md focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all placeholder:text-gray-400'
-                      error={errors.state?.message}
-                    />
-                  </div>
+                  <FormInput
+                    label='State/Province'
+                    placeholder='NY'
+                    icon={<Map className='h-5 w-5' />}
+                    error={errors.state?.message}
+                    {...register('state')}
+                  />
 
-                  <div>
-                    <label className='block text-[13px] font-medium text-gray-600 mb-1.5'>
-                      Country
-                    </label>
-                    <Input
-                      {...register('country')}
-                      placeholder='Enter country'
-                      className='w-full h-11 px-3.5 text-sm border border-gray-300 rounded-md focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all placeholder:text-gray-400'
-                      error={errors.country?.message}
-                    />
-                  </div>
+                  <FormInput
+                    label='Country'
+                    placeholder='United States'
+                    icon={<Flag className='h-5 w-5' />}
+                    error={errors.country?.message}
+                    {...register('country')}
+                  />
 
-                  <div>
-                    <label className='block text-[13px] font-medium text-gray-600 mb-1.5'>
-                      Postal Code
-                    </label>
-                    <Input
-                      {...register('postalCode')}
-                      placeholder='Enter postal code'
-                      className='w-full h-11 px-3.5 text-sm border border-gray-300 rounded-md focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all placeholder:text-gray-400'
-                      error={errors.postalCode?.message}
-                    />
-                  </div>
+                  <FormInput
+                    label='Postal Code'
+                    placeholder='10001'
+                    icon={<MapPinned className='h-5 w-5' />}
+                    error={errors.postalCode?.message}
+                    {...register('postalCode')}
+                  />
                 </div>
               </div>
-            )}
+            </div>
+          </FormSection>
+        )}
 
-            {/* Step 3: Banking Details */}
-            {currentStep === 3 && (
-              <div className='space-y-4'>
-                <h3 className='text-lg font-semibold text-gray-800 mb-4'>
-                  Banking Information
-                </h3>
+        {/* Step 3: Banking & Review */}
+        {currentStep === 3 && (
+          <div className='space-y-8'>
+            {/* <FormSection 
+              title='Banking Information'
+              subtitle='Secure payment details'
+            >
+              <Alert variant='info' className='text-sm py-3 mb-6 bg-indigo-50 border-indigo-200 text-indigo-800 flex items-start gap-2'>
+                <Shield className='h-5 w-5 flex-shrink-0 mt-0.5' />
+                <span>Your banking information is encrypted and will be kept strictly confidential for payment processing only.</span>
+              </Alert>
 
-                <Alert variant='info' className='text-sm py-2'>
-                  This information is required for payment processing and will
-                  be kept confidential.
-                </Alert>
-
-                <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-                  <div className='md:col-span-2'>
-                    <label className='block text-[13px] font-medium text-gray-600 mb-1.5'>
-                      Bank Name
-                    </label>
-                    <Input
-                      {...register('bankName')}
-                      placeholder='Enter bank name'
-                      className='w-full h-11 px-3.5 text-sm border border-gray-300 rounded-md focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all placeholder:text-gray-400'
-                      error={errors.bankName?.message}
-                    />
-                  </div>
-
-                  <div>
-                    <label className='block text-[13px] font-medium text-gray-600 mb-1.5'>
-                      Account Number
-                    </label>
-                    <Input
-                      {...register('accountNumber')}
-                      placeholder='Enter account number'
-                      type='password'
-                      className='w-full h-11 px-3.5 text-sm border border-gray-300 rounded-md focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all placeholder:text-gray-400'
-                      error={errors.accountNumber?.message}
-                    />
-                  </div>
-
-                  <div>
-                    <label className='block text-[13px] font-medium text-gray-600 mb-1.5'>
-                      Routing Number / SWIFT Code
-                    </label>
-                    <Input
-                      {...register('routingNumber')}
-                      placeholder='Enter routing number'
-                      className='w-full h-11 px-3.5 text-sm border border-gray-300 rounded-md focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all placeholder:text-gray-400'
-                      error={errors.routingNumber?.message}
-                    />
-                  </div>
+              <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
+                <div className='md:col-span-2'>
+                  <FormInput
+                    label='Bank Name'
+                    placeholder='Chase Bank'
+                    icon={<Landmark className='h-5 w-5' />}
+                    error={errors.bankName?.message}
+                    {...register('bankName')}
+                  />
                 </div>
 
-                <div className='space-y-4'>
-                  <div>
-                    <label className='block text-[13px] font-medium text-gray-600 mb-1.5'>
-                      Business Description (Optional)
-                    </label>
-                    <Textarea
-                      {...register('description')}
-                      placeholder='Briefly describe your business and services'
-                      className='w-full px-3.5 py-2.5 text-sm border border-gray-300 rounded-md focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all placeholder:text-gray-400'
-                      rows={4}
-                    />
-                  </div>
+                <FormInput
+                  label='Account Number'
+                  type='password'
+                  placeholder='Enter account number'
+                  icon={<CreditCard className='h-5 w-5' />}
+                  error={errors.accountNumber?.message}
+                  {...register('accountNumber')}
+                />
 
-                  <div>
-                    <label className='block text-[13px] font-medium text-gray-600 mb-1.5'>
-                      Certifications (Optional)
-                    </label>
-                    <Textarea
-                      {...register('certifications')}
-                      placeholder='List any relevant certifications (ISO, Quality, etc.)'
-                      className='w-full px-3.5 py-2.5 text-sm border border-gray-300 rounded-md focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all placeholder:text-gray-400'
-                      rows={3}
-                    />
-                  </div>
-                </div>
+                <FormInput
+                  label='Routing Number / SWIFT Code'
+                  placeholder='Enter routing number'
+                  icon={<Hash className='h-5 w-5' />}
+                  error={errors.routingNumber?.message}
+                  {...register('routingNumber')}
+                />
               </div>
-            )}
 
-            {/* Step 4: Review & Submit */}
-            {currentStep === 4 && (
+              <div className='space-y-6 mt-6 pt-6 border-t border-gray-200'>
+                <h4 className='text-sm font-bold text-gray-700 flex items-center gap-2'>
+                  <FileCheck className='h-4 w-4 text-indigo-600' />
+                  Additional Information (Optional)
+                </h4>
+                
+                <FormTextarea
+                  label='Business Description'
+                  placeholder='Tell us about your business, products, and services...'
+                  rows={4}
+                  {...register('description')}
+                />
+
+                <FormTextarea
+                  label='Certifications'
+                  placeholder='ISO 9001:2015, Quality Management, etc.'
+                  rows={3}
+                  {...register('certifications')}
+                />
+              </div>
+            </FormSection> */}
+
+            {/* Review Section */}
+            <FormSection
+              title='Review Your Information'
+              subtitle='Please verify all details before submitting'
+            >
               <div className='space-y-4'>
-                <h3 className='text-lg font-semibold text-gray-800 mb-4'>
-                  Review Your Information
-                </h3>
-
-                <div className='space-y-3'>
-                  <div className='border border-gray-200 rounded-lg p-4 bg-gray-50'>
-                    <h4 className='font-semibold text-gray-900 mb-2'>
+                {/* Company Info Card */}
+                <div className='bg-white border-2 border-gray-100 rounded-xl p-5 hover:border-indigo-100 transition-colors'>
+                  <div className='flex items-center gap-2 mb-4'>
+                    <Building2 className='h-5 w-5 text-indigo-600' />
+                    <h4 className='font-bold text-gray-900'>
                       Company Information
                     </h4>
-                    <dl className='grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm'>
-                      <div>
-                        <dt className='text-gray-600'>Company Name:</dt>
-                        <dd className='font-medium'>{watch('companyName')}</dd>
-                      </div>
-                      <div>
-                        <dt className='text-gray-600'>Registration Number:</dt>
-                        <dd className='font-medium'>
-                          {watch('registrationNumber')}
-                        </dd>
-                      </div>
-                      <div>
-                        <dt className='text-gray-600'>Tax ID:</dt>
-                        <dd className='font-medium'>{watch('taxId')}</dd>
-                      </div>
-                      <div>
-                        <dt className='text-gray-600'>Vendor Type:</dt>
-                        <dd className='font-medium capitalize'>
-                          {watch('vendorType')?.replace('_', ' ')}
-                        </dd>
-                      </div>
-                    </dl>
                   </div>
-
-                  <div className='border border-gray-200 rounded-lg p-4 bg-gray-50'>
-                    <h4 className='font-semibold text-gray-900 mb-2'>
-                      Contact Information
-                    </h4>
-                    <dl className='grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm'>
-                      <div>
-                        <dt className='text-gray-600'>Contact Person:</dt>
-                        <dd className='font-medium'>
-                          {watch('contactPerson')}
-                        </dd>
-                      </div>
-                      <div>
-                        <dt className='text-gray-600'>Email:</dt>
-                        <dd className='font-medium'>{watch('email')}</dd>
-                      </div>
-                      <div>
-                        <dt className='text-gray-600'>Phone:</dt>
-                        <dd className='font-medium'>{watch('phone')}</dd>
-                      </div>
-                      <div>
-                        <dt className='text-gray-600'>Address:</dt>
-                        <dd className='font-medium'>
-                          {watch('address')}, {watch('city')}, {watch('state')}{' '}
-                          {watch('postalCode')}, {watch('country')}
-                        </dd>
-                      </div>
-                    </dl>
-                  </div>
-
-                  <div className='border border-gray-200 rounded-lg p-4 bg-gray-50'>
-                    <h4 className='font-semibold text-gray-900 mb-2'>
-                      Banking Information
-                    </h4>
-                    <dl className='grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm'>
-                      <div>
-                        <dt className='text-gray-600'>Bank Name:</dt>
-                        <dd className='font-medium'>{watch('bankName')}</dd>
-                      </div>
-                      <div>
-                        <dt className='text-gray-600'>Account Number:</dt>
-                        <dd className='font-medium'>
-                          ****{watch('accountNumber')?.slice(-4)}
-                        </dd>
-                      </div>
-                    </dl>
-                  </div>
+                  <dl className='grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm'>
+                    <div>
+                      <dt className='text-gray-500 mb-1'>Company Name</dt>
+                      <dd className='font-semibold text-gray-900'>
+                        {watch('companyName')}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className='text-gray-500 mb-1'>
+                        Registration Number
+                      </dt>
+                      <dd className='font-semibold text-gray-900'>
+                        {watch('registrationNumber')}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className='text-gray-500 mb-1'>Tax ID</dt>
+                      <dd className='font-semibold text-gray-900'>
+                        {watch('taxId')}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className='text-gray-500 mb-1'>Vendor Type</dt>
+                      <dd className='font-semibold text-gray-900 capitalize'>
+                        {watch('vendorType')?.replace('_', ' ')}
+                      </dd>
+                    </div>
+                  </dl>
                 </div>
 
-                <Alert className='text-sm py-2'>
-                  By submitting this form, you agree to our terms and conditions
-                  and authorize Procleo to verify the provided information.
-                </Alert>
+                {/* Contact Info Card */}
+                <div className='bg-white border-2 border-gray-100 rounded-xl p-5 hover:border-indigo-100 transition-colors'>
+                  <div className='flex items-center gap-2 mb-4'>
+                    <User className='h-5 w-5 text-indigo-600' />
+                    <h4 className='font-bold text-gray-900'>
+                      Contact Information
+                    </h4>
+                  </div>
+                  <dl className='grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm'>
+                    <div>
+                      <dt className='text-gray-500 mb-1'>Contact Person</dt>
+                      <dd className='font-semibold text-gray-900'>
+                        {watch('contactPerson')}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className='text-gray-500 mb-1'>Email</dt>
+                      <dd className='font-semibold text-gray-900'>
+                        {watch('email')}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className='text-gray-500 mb-1'>Phone</dt>
+                      <dd className='font-semibold text-gray-900'>
+                        {watch('phone')}
+                      </dd>
+                    </div>
+                    <div className='sm:col-span-2'>
+                      <dt className='text-gray-500 mb-1'>Address</dt>
+                      <dd className='font-semibold text-gray-900'>
+                        {watch('address')}, {watch('city')}, {watch('state')}{' '}
+                        {watch('postalCode')}, {watch('country')}
+                      </dd>
+                    </div>
+                  </dl>
+                </div>
+
+                {/* Banking Info Card */}
+                <div className='bg-white border-2 border-gray-100 rounded-xl p-5 hover:border-indigo-100 transition-colors'>
+                  <div className='flex items-center gap-2 mb-4'>
+                    <Landmark className='h-5 w-5 text-indigo-600' />
+                    <h4 className='font-bold text-gray-900'>
+                      Banking Information
+                    </h4>
+                  </div>
+                  <dl className='grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm'>
+                    <div>
+                      <dt className='text-gray-500 mb-1'>Bank Name</dt>
+                      <dd className='font-semibold text-gray-900'>
+                        {watch('bankName')}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className='text-gray-500 mb-1'>Account Number</dt>
+                      <dd className='font-semibold text-gray-900 font-mono'>
+                        ••••{watch('accountNumber')?.slice(-4)}
+                      </dd>
+                    </div>
+                  </dl>
+                </div>
               </div>
-            )}
 
-            {/* Navigation Buttons */}
-            <div className='flex justify-between pt-6'>
-              <Button
-                type='button'
-                variant='outline'
-                onClick={prevStep}
-                disabled={currentStep === 1}
-                className='h-11 px-6 text-sm font-semibold'
-              >
-                Previous
-              </Button>
+              <Alert className='text-sm py-3 mt-6 bg-amber-50 border-amber-200 text-amber-900 flex items-start gap-2'>
+                <FileCheck className='h-5 w-5 flex-shrink-0 mt-0.5' />
+                <span>
+                  By submitting this form, you agree to our{' '}
+                  <strong>terms and conditions</strong> and authorize Procleo to
+                  verify the provided information.
+                </span>
+              </Alert>
+            </FormSection>
+          </div>
+        )}
 
-              {currentStep < totalSteps ? (
-                <Button
-                  type='button'
-                  onClick={nextStep}
-                  className='h-11 px-6 bg-[rgb(103,62,230)] hover:bg-[rgb(83,42,210)] text-white text-sm font-semibold rounded-md shadow-sm hover:shadow transition-all'
-                >
-                  Next
-                </Button>
-              ) : (
-                <Button
-                  type='submit'
-                  disabled={isSubmitting}
-                  className='h-11 px-6 bg-[rgb(103,62,230)] hover:bg-[rgb(83,42,210)] text-white text-sm font-semibold rounded-md shadow-sm hover:shadow transition-all'
-                >
-                  {isSubmitting ? (
-                    <>
-                      <Loader2 className='w-4 h-4 mr-2 animate-spin' />
-                      Submitting...
-                    </>
-                  ) : (
-                    'Submit Registration'
-                  )}
-                </Button>
-              )}
-            </div>
-          </form>
+        {/* Navigation Buttons */}
+        <div className='flex justify-between items-center pt-8 border-t border-gray-100'>
+          <Button
+            type='button'
+            variant='outline'
+            onClick={prevStep}
+            disabled={currentStep === 1}
+            className='h-12 px-8 text-sm font-semibold border-2 border-gray-200 hover:border-gray-300 hover:bg-gray-50 rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed'
+          >
+            Previous
+          </Button>
+
+          {currentStep < 3 ? (
+            <PrimaryButton type='button' onClick={nextStep}>
+              Continue
+            </PrimaryButton>
+          ) : (
+            <PrimaryButton
+              type='submit'
+              isLoading={isSubmitting}
+              loadingText='Submitting...'
+              variant='gradient'
+            >
+              Submit Registration
+            </PrimaryButton>
+          )}
         </div>
-      </Card>
+      </form>
     </div>
   );
 }
