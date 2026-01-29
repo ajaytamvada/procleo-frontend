@@ -126,6 +126,12 @@ import VendorQuotationList from '@/features/vendor/pages/VendorQuotationList';
 import VendorOrderList from '@/features/vendor/pages/VendorOrderList';
 import VendorCompanyProfile from '@/features/vendor/pages/VendorCompanyProfile';
 import VendorRFPDetails from '@/features/vendor/pages/VendorRFPDetails';
+import VendorSubmitQuotationPage from '@/features/vendor/pages/VendorSubmitQuotationPage';
+import VendorResubmitQuotationPage from '@/features/vendor/pages/VendorResubmitQuotationPage';
+import VendorOrderDetails from '@/features/vendor/pages/VendorOrderDetails';
+import VendorInvoiceCreatePage from '@/features/vendor/pages/VendorInvoiceCreatePage';
+import VendorInvoiceList from '@/features/vendor/pages/VendorInvoiceList';
+import VendorInvoiceDetails from '@/features/vendor/pages/VendorInvoiceDetails';
 import '@/styles/globals.css';
 
 // Placeholder components for remaining routes
@@ -766,9 +772,12 @@ const App: React.FC = () => {
                     path='vendor/dashboard'
                     element={<VendorDashboard />}
                   />
-                  <Route path='vendor/rfps' element={<VendorRFPList />} />
                   <Route
-                    path='vendor/rfps/:id'
+                    path='vendor/rfp-invitations'
+                    element={<VendorRFPList />}
+                  />
+                  <Route
+                    path='vendor/rfp-invitations/:id'
                     element={<VendorRFPDetails />}
                   />
                   <Route
@@ -777,19 +786,28 @@ const App: React.FC = () => {
                   />
                   <Route
                     path='vendor/quotations/submit/:rfpId'
-                    element={
-                      <div className='p-6'>
-                        <h1 className='text-2xl font-bold'>Submit Quotation</h1>
-                        <p className='text-gray-600'>
-                          Quotation form coming soon...
-                        </p>
-                      </div>
-                    }
+                    element={<VendorSubmitQuotationPage />}
+                  />
+                  <Route
+                    path='vendor/quotations/resubmit/:quotationId'
+                    element={<VendorResubmitQuotationPage />}
                   />
                   <Route path='vendor/orders' element={<VendorOrderList />} />
                   <Route
+                    path='vendor/orders/:orderId'
+                    element={<VendorOrderDetails />}
+                  />
+                  <Route
+                    path='vendor/invoices/create'
+                    element={<VendorInvoiceCreatePage />}
+                  />
+                  <Route
+                    path='vendor/invoices/:invoiceId'
+                    element={<VendorInvoiceDetails />}
+                  />
+                  <Route
                     path='vendor/invoices'
-                    element={<InvoiceEntryPage />}
+                    element={<VendorInvoiceList />}
                   />
                   <Route
                     path='vendor/profile'

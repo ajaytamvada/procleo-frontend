@@ -184,7 +184,7 @@ const VendorRFPList: React.FC = () => {
                     {/* Actions */}
                     <div className='flex gap-2'>
                       <Link
-                        to={`/vendor/rfps/${rfp.id}`}
+                        to={`/vendor/rfp-invitations/${rfp.id}`}
                         className='flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors'
                       >
                         <ExternalLink className='w-4 h-4' />

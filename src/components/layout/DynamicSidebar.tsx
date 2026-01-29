@@ -10,9 +10,11 @@ import {
   ChevronDown,
   ClipboardList,
   Cog,
+  Building2,
 } from 'lucide-react';
 import { usePermissions } from '@/hooks/usePermissions';
 import { getModuleCode } from '@/config/moduleMapping';
+import { AuthService, isVendorUser } from '@/services/auth';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -226,8 +228,32 @@ const DynamicSidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
     });
   }, [isLoaded, hasModule, staticNavigation]);
 
-  const displayNavigation =
-    navigation.length > 0 ? navigation : filteredStaticNavigation;
+  /**
+   * Vendor-specific navigation - completely separate from admin navigation
+   */
+  const vendorNavigation: NavigationItem[] = [
+    { name: 'Dashboard', href: '/vendor/dashboard', icon: Home },
+    {
+      name: 'RFP Invitations',
+      href: '/vendor/rfp-invitations',
+      icon: FileText,
+    },
+    { name: 'My Quotations', href: '/vendor/quotations', icon: ClipboardList },
+    { name: 'Purchase Orders', href: '/vendor/orders', icon: ShoppingCart },
+    { name: 'Invoices', href: '/vendor/invoices', icon: FileText },
+    { name: 'Company Profile', href: '/vendor/profile', icon: Building2 },
+  ];
+
+  // Check if current user is a vendor
+  const currentUser = AuthService.getStoredUser();
+  const isVendor = isVendorUser(currentUser);
+
+  // Use vendor navigation for vendors, otherwise use dynamic/static navigation
+  const displayNavigation = isVendor
+    ? vendorNavigation
+    : navigation.length > 0
+      ? navigation
+      : filteredStaticNavigation;
 
   return (
     <>
