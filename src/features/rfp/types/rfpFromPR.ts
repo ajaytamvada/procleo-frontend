@@ -12,7 +12,9 @@ export interface ApprovedPRForRFP {
   createdBy: string;
   createdByName: string;
   createdDate: string;
+  purchaseType?: string;
   itemCount: number;
+  grandTotal?: number;
 }
 
 export interface ApprovedPRItemForRFP {

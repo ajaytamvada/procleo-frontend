@@ -15,6 +15,10 @@ export interface PurchaseRequestItem {
   description?: string;
   rmApprovalStatus?: string;
   approvalRemarks?: string;
+  // Catalog fields
+  vendorId?: number;
+  catalogItemId?: number;
+  contractId?: number;
 }
 
 export interface PurchaseRequest {

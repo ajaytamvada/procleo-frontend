@@ -269,8 +269,65 @@ export const rfpApi = {
 
   // Get AI Insights for RFP
   getRfpInsights: async (rfpId: number): Promise<RfpInsight[]> => {
-    const response = await apiClient.get(`/rfp/${rfpId}/insights`);
-    return response.data;
+    // OLD: const response = await apiClient.get(`/rfp/${rfpId}/insights`);
+    // NEW: Generate insights dynamically using the LLM via /api/ocr/generate
+
+    // 1. Fetch RFP details and quotations to build context
+    const rfp = await rfpApi.getRFPById(rfpId);
+    const quotations = await rfpApi.getRFPQuotations(rfpId);
+
+    if (!quotations || quotations.length === 0) {
+      return [];
+    }
+
+    // 2. Construct Prompt
+    const prompt = `
+      Analyze these vendor quotations for RFP #${rfp.rfpNumber} ${rfp.remarks ? `(Description/Remarks: ${rfp.remarks})` : ''}.
+      
+      Quotations:
+      ${quotations.map(q => `- Vendor: ${q.supplierName}, Total: ${q.totalAmount}, Net: ${q.netAmount}, Date: ${q.quotationDate}`).join('\n')}
+      
+      Task:
+      Generate 3 distinct insights to help select the best vendor.
+      1. Cost Analysis (Identify the lowest bidder and savings).
+      2. Delivery/Speed (Based on dates if available, else general efficiency).
+      3. Compliance/Overall Value.
+      
+      Output strictly valid JSON in this format:
+      [
+        {
+          "title": "Insight Title",
+          "recommendation": "Recommendation text",
+          "explanation": "Detailed explanation",
+          "variant": "cost" | "delivery" | "compliance",
+          "metrics": [{"label": "Metric Name", "value": "Metric Value"}]
+        }
+      ]
+    `;
+
+    // 3. Call LLM
+    try {
+      console.log('[AI Insights] Calling /ocr/generate with prompt length:', prompt.length);
+      // Increased timeout to 120s (2 minutes) to allow LLM generation
+      const response = await apiClient.post('/ocr/generate', { prompt }, { timeout: 120000 });
+      console.log('[AI Insights] received response:', response.data);
+
+      if (response.data && response.data.success && response.data.text) {
+        let jsonStr = response.data.text.trim();
+        // Clean markdown
+        if (jsonStr.startsWith('```json')) jsonStr = jsonStr.substring(7);
+        if (jsonStr.endsWith('```')) jsonStr = jsonStr.substring(0, jsonStr.length - 3);
+
+        const parsed = JSON.parse(jsonStr);
+        console.log('[AI Insights] Parsed JSON:', parsed);
+        return parsed;
+      }
+    } catch (e) {
+      console.error("Failed to generate insights", e);
+    }
+
+    // Fallback if AI fails or returns invalid JSON
+    return [];
   },
 };
 

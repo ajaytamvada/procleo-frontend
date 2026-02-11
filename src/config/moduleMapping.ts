@@ -32,6 +32,13 @@ export const routeToModuleMap: Record<string, string> = {
   '/rfp/:id/preview/:quotationId': 'RFP_PREVIEW',
   '/rfp/:id/submit-quotation/:quotationId': 'RFP_SUBMIT_QUOTATION',
   '/rfp/:id/resubmit-quotation/:quotationId': 'RFP_RESUBMIT_QUOTATION',
+
+  // Catalog
+  '/catalog': 'CATALOG',
+  '/catalog/browse': 'CATALOG_BROWSE',
+  '/catalog/manage': 'CATALOG_MANAGE',
+  '/catalog/cart': 'CATALOG_CART',
+
   '/purchase-orders': 'PO',
 
 

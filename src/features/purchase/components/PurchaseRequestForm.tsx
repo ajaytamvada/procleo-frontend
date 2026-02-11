@@ -26,6 +26,7 @@ import {
 } from '../utils/excelUtils';
 import { apiClient } from '@/lib/api';
 import ExcelImportDialog from '@/components/ExcelImportDialog';
+import { CatalogBrowser } from './CatalogBrowser';
 
 type PurchaseRequestItemFormData = {
   id: number;
@@ -114,6 +115,9 @@ const purchaseRequestSchema = z.object({
           .nullable()
           .optional()
           .transform(v => v ?? ''),
+        vendorId: z.number().nullable().optional(),
+        catalogItemId: z.number().nullable().optional(),
+        contractId: z.number().nullable().optional(),
       })
     )
     .min(1, 'At least one item is required'),
@@ -142,6 +146,9 @@ const PurchaseRequestForm: React.FC<PurchaseRequestFormProps> = ({
   );
   const [showDropdown, setShowDropdown] = useState<Record<number, boolean>>({});
   const dropdownRefs = useRef<Record<number, HTMLDivElement | null>>({});
+
+  // Catalog Browser State
+  const [isCatalogOpen, setIsCatalogOpen] = useState(false);
 
   // Excel Import State
   const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
@@ -201,6 +208,8 @@ const PurchaseRequestForm: React.FC<PurchaseRequestFormProps> = ({
       ],
     },
   });
+
+  const purchaseType = watch('purchaseType');
 
   const { fields, append, remove, replace } = useFieldArray({
     control,
@@ -399,7 +408,7 @@ const PurchaseRequestForm: React.FC<PurchaseRequestFormProps> = ({
           const firstError = Object.values(errors)[0];
           toast.error(
             firstError?.message?.toString() ||
-              'Please check the form for errors'
+            'Please check the form for errors'
           );
         }
       }
@@ -532,7 +541,7 @@ const PurchaseRequestForm: React.FC<PurchaseRequestFormProps> = ({
             matchedItem = searchResults.find(
               (item: PurchaseRequestItemFormData) =>
                 item.displayName?.toLowerCase() ===
-                  excelItem.model.toLowerCase() ||
+                excelItem.model.toLowerCase() ||
                 item.modelName?.toLowerCase() === excelItem.model.toLowerCase()
             );
 
@@ -736,11 +745,10 @@ const PurchaseRequestForm: React.FC<PurchaseRequestFormProps> = ({
                       type='date'
                       {...register('requestDate')}
                       min={new Date().toISOString().split('T')[0]}
-                      className={`w-full px-4 py-3 text-sm border rounded-lg bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors ${
-                        errors.requestDate
-                          ? 'border-red-400'
-                          : 'border-gray-200'
-                      }`}
+                      className={`w-full px-4 py-3 text-sm border rounded-lg bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors ${errors.requestDate
+                        ? 'border-red-400'
+                        : 'border-gray-200'
+                        }`}
                       disabled={isSubmitting}
                     />
                   </div>
@@ -758,9 +766,8 @@ const PurchaseRequestForm: React.FC<PurchaseRequestFormProps> = ({
                   </label>
                   <input
                     {...register('requestedBy')}
-                    className={`w-full px-4 py-3 text-sm border rounded-lg bg-gray-50 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors ${
-                      errors.requestedBy ? 'border-red-400' : 'border-gray-200'
-                    }`}
+                    className={`w-full px-4 py-3 text-sm border rounded-lg bg-gray-50 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors ${errors.requestedBy ? 'border-red-400' : 'border-gray-200'
+                      }`}
                     disabled={isSubmitting}
                     placeholder='Enter requestor name'
                   />
@@ -791,11 +798,10 @@ const PurchaseRequestForm: React.FC<PurchaseRequestFormProps> = ({
                                 : undefined
                             )
                           }
-                          className={`w-full px-4 py-3 text-sm border rounded-lg bg-white appearance-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors ${
-                            errors.locationId
-                              ? 'border-red-400'
-                              : 'border-gray-200'
-                          }`}
+                          className={`w-full px-4 py-3 text-sm border rounded-lg bg-white appearance-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors ${errors.locationId
+                            ? 'border-red-400'
+                            : 'border-gray-200'
+                            }`}
                           disabled={isSubmitting || citiesLoading}
                         >
                           <option value=''>
@@ -838,11 +844,10 @@ const PurchaseRequestForm: React.FC<PurchaseRequestFormProps> = ({
                                 : undefined
                             )
                           }
-                          className={`w-full px-4 py-3 text-sm border rounded-lg bg-white appearance-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors ${
-                            errors.departmentId
-                              ? 'border-red-400'
-                              : 'border-gray-200'
-                          }`}
+                          className={`w-full px-4 py-3 text-sm border rounded-lg bg-white appearance-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors ${errors.departmentId
+                            ? 'border-red-400'
+                            : 'border-gray-200'
+                            }`}
                           disabled={isSubmitting}
                         >
                           <option value=''>Select</option>
@@ -871,16 +876,16 @@ const PurchaseRequestForm: React.FC<PurchaseRequestFormProps> = ({
                   <div className='relative'>
                     <select
                       {...register('purchaseType')}
-                      className={`w-full px-4 py-3 text-sm border rounded-lg bg-white appearance-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors ${
-                        errors.purchaseType
-                          ? 'border-red-400'
-                          : 'border-gray-200'
-                      }`}
+                      className={`w-full px-4 py-3 text-sm border rounded-lg bg-white appearance-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors ${errors.purchaseType
+                        ? 'border-red-400'
+                        : 'border-gray-200'
+                        }`}
                       disabled={isSubmitting}
                     >
                       <option value=''>Select Purchase Type</option>
-                      <option value='Product'>Product</option>
-                      <option value='Service'>Service</option>
+                      <option value='PURCHASE_ORDER'>Purchase Order (Standard)</option>
+                      <option value='PURCHASE_AGREEMENT'>Purchase Agreement (Contract)</option>
+                      <option value='CATALOG'>Catalog (Auto-PO)</option>
                     </select>
                     <ChevronDown className='absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none' />
                   </div>
@@ -898,9 +903,8 @@ const PurchaseRequestForm: React.FC<PurchaseRequestFormProps> = ({
                   </label>
                   <input
                     {...register('projectName')}
-                    className={`w-full px-4 py-3 text-sm border rounded-lg bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors ${
-                      errors.projectName ? 'border-red-400' : 'border-gray-200'
-                    }`}
+                    className={`w-full px-4 py-3 text-sm border rounded-lg bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors ${errors.projectName ? 'border-red-400' : 'border-gray-200'
+                      }`}
                     disabled={isSubmitting}
                     placeholder='Enter project name'
                   />
@@ -919,9 +923,8 @@ const PurchaseRequestForm: React.FC<PurchaseRequestFormProps> = ({
                   <textarea
                     {...register('remarks')}
                     rows={3}
-                    className={`w-full px-4 py-3 text-sm border rounded-lg bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors resize-none ${
-                      errors.remarks ? 'border-red-400' : 'border-gray-200'
-                    }`}
+                    className={`w-full px-4 py-3 text-sm border rounded-lg bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors resize-none ${errors.remarks ? 'border-red-400' : 'border-gray-200'
+                      }`}
                     disabled={isSubmitting}
                     placeholder='Enter justification for this request...'
                   />
@@ -936,44 +939,62 @@ const PurchaseRequestForm: React.FC<PurchaseRequestFormProps> = ({
               Item Details
             </h2>
             <div className='flex items-center gap-3'>
+              {purchaseType === 'CATALOG' && (
+                <button
+                  type='button'
+                  onClick={() => setIsCatalogOpen(true)}
+                  className='inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-indigo-600 rounded-md hover:bg-indigo-700 transition-colors shadow-sm'
+                >
+                  <Search size={15} />
+                  Browse Catalog
+                </button>
+              )}
+
               {/* Download Template Button */}
 
               {/* Upload Excel Button */}
-              <button
-                type='button'
-                onClick={() => setIsImportDialogOpen(true)}
-                disabled={isSubmitting}
-                className='inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-violet-600 rounded-md hover:bg-violet-700 transition-colors disabled:opacity-50'
-              >
-                <Upload size={15} />
-                Upload Excel
-              </button>
+              {purchaseType !== 'CATALOG' && (
+                <button
+                  type='button'
+                  onClick={() => setIsImportDialogOpen(true)}
+                  disabled={isSubmitting}
+                  className='inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-violet-600 rounded-md hover:bg-violet-700 transition-colors disabled:opacity-50'
+                >
+                  <Upload size={15} />
+                  Upload Excel
+                </button>
+              )}
 
               {/* Add Line Item Button */}
-              <button
-                type='button'
-                onClick={() =>
-                  append({
-                    itemId: 0,
-                    categoryId: 0,
-                    categoryName: '',
-                    subCategoryId: 0,
-                    subCategoryName: '',
-                    modelName: '',
-                    make: '',
-                    uomId: 0,
-                    uomName: '',
-                    quantity: 1,
-                    unitPrice: 0,
-                    description: '',
-                  })
-                }
-                disabled={isSubmitting}
-                className='inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-violet-600 rounded-md hover:bg-violet-700 transition-colors disabled:opacity-50'
-              >
-                <Plus size={15} />
-                Add Row
-              </button>
+              {purchaseType !== 'CATALOG' && (
+                <button
+                  type='button'
+                  onClick={() =>
+                    append({
+                      id: 0,
+                      itemId: 0,
+                      modelName: '',
+                      make: '',
+                      categoryId: 0,
+                      categoryName: '',
+                      subCategoryId: 0,
+                      subCategoryName: '',
+                      uomId: 0,
+                      uomName: '',
+                      quantity: 1,
+                      unitPrice: 0,
+                      description: '',
+                      vendorId: 0,
+                      catalogItemId: undefined,
+                      contractId: undefined
+                    } as any)
+                  }
+                  className='flex items-center gap-2 text-indigo-600 hover:text-indigo-700 font-medium text-sm mt-4'
+                >
+                  <Plus size={15} />
+                  Add Row
+                </button>
+              )}
             </div>
           </div>
 
@@ -1041,38 +1062,43 @@ const PurchaseRequestForm: React.FC<PurchaseRequestFormProps> = ({
                             <div className='relative'>
                               <Search className='absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400' />
                               <input
-                                type='text'
-                                value={searchQueries[index] || ''}
-                                onChange={e =>
-                                  handleSearchInput(index, e.target.value)
-                                }
+                                {...register(`items.${index}.modelName`)}
+                                onChange={e => handleSearchInput(index, e.target.value)}
+                                onFocus={() => {
+                                  if (purchaseType !== 'CATALOG') {
+                                    setActiveSearchIndex(index);
+                                  }
+                                }}
+                                className={`w-full pl-9 pr-4 py-2 text-sm border rounded-lg bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors ${errors.items?.[index]?.modelName
+                                  ? 'border-red-400'
+                                  : 'border-gray-200'
+                                  } ${purchaseType === 'CATALOG' ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                                 placeholder='Type to search...'
-                                className='w-full pl-9 pr-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white'
-                                disabled={isSubmitting}
+                                autoComplete='off'
+                                readOnly={purchaseType === 'CATALOG'}
                               />
+                              {/* Suggestions Dropdown */}
+                              {activeSearchIndex === index &&
+                                searchResults.length > 0 && (
+                                  <div className='absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto'>
+                                    {searchResults.map(item => (
+                                      <button
+                                        key={item.id}
+                                        type='button'
+                                        onClick={() => handleItemSelect(index, item)}
+                                        className='w-full px-4 py-2 text-left text-sm hover:bg-gray-50 flex flex-col gap-1'
+                                      >
+                                        <span className='font-medium text-gray-900'>
+                                          {item.modelName}
+                                        </span>
+                                        <span className='text-xs text-gray-500'>
+                                          {item.make} • {item.categoryName}
+                                        </span>
+                                      </button>
+                                    ))}
+                                  </div>
+                                )}
                             </div>
-                            {showDropdown[index] &&
-                              searchResults.length > 0 && (
-                                <div className='absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto'>
-                                  {searchResults.map(item => (
-                                    <div
-                                      key={item.id}
-                                      onClick={() =>
-                                        handleItemSelect(index, item)
-                                      }
-                                      className='px-3 py-2.5 hover:bg-indigo-50 cursor-pointer text-sm border-b border-gray-100 last:border-0'
-                                    >
-                                      <div className='font-medium text-gray-900'>
-                                        {item.displayName}
-                                      </div>
-                                      <div className='text-xs text-gray-500 mt-0.5'>
-                                        {item.categoryName} •{' '}
-                                        {item.subCategoryName}
-                                      </div>
-                                    </div>
-                                  ))}
-                                </div>
-                              )}
                           </div>
                         </td>
                         <td className='px-4 py-3'>
@@ -1228,14 +1254,26 @@ const PurchaseRequestForm: React.FC<PurchaseRequestFormProps> = ({
         loading={isSubmitting}
       />
 
-      {/* Excel Import Dialog */}
       <ExcelImportDialog
         isOpen={isImportDialogOpen}
         onClose={() => setIsImportDialogOpen(false)}
         entityName='Line Items'
         onFileData={processExcelFile}
         onTemplateDownload={handleDownloadTemplate}
-        onImportSuccess={() => {}}
+        onImportSuccess={() => { }}
+      />
+
+      <CatalogBrowser
+        isOpen={isCatalogOpen}
+        onClose={() => setIsCatalogOpen(false)}
+        onAddItems={(items) => {
+          // Clear existing items if it was empty default row
+          const currentItems = watch('items');
+          if (currentItems.length === 1 && currentItems[0].itemId === 0 && !currentItems[0].modelName) {
+            remove(0);
+          }
+          items.forEach(item => append(item as any));
+        }}
       />
     </div>
   );

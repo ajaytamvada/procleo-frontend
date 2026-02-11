@@ -134,7 +134,7 @@ const VendorDashboard: React.FC = () => {
         <h2 className='text-lg font-semibold text-gray-900 mb-4'>
           Quick Actions
         </h2>
-        <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
+        <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4'>
           <Link
             to='/vendor/rfp-invitations'
             className='flex items-center gap-3 p-4 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors'
@@ -157,6 +157,13 @@ const VendorDashboard: React.FC = () => {
           >
             <Building2 className='w-5 h-5 text-purple-600' />
             <span className='font-medium text-purple-700'>Company Profile</span>
+          </Link>
+          <Link
+            to='/vendor/contracts'
+            className='flex items-center gap-3 p-4 bg-indigo-50 rounded-lg hover:bg-indigo-100 transition-colors'
+          >
+            <FileText className='w-5 h-5 text-indigo-600' />
+            <span className='font-medium text-indigo-700'>My Contracts</span>
           </Link>
         </div>
       </div>

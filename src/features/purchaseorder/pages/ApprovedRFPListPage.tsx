@@ -15,8 +15,10 @@ import {
   ShoppingCart,
   CheckCircle,
   Package,
+  FileSignature,
 } from 'lucide-react';
 import { useApprovedRFPsForPOCreation } from '../hooks/usePurchaseOrders';
+import { createContractFromRFP } from '@/features/contract/services/contractService';
 import { format, parseISO } from 'date-fns';
 
 export const ApprovedRFPListPage: React.FC = () => {
@@ -36,6 +38,18 @@ export const ApprovedRFPListPage: React.FC = () => {
 
   const handleCreatePO = (rfpId: number) => {
     navigate(`/purchase-orders/create?rfpId=${rfpId}`);
+  };
+
+  const handleCreateContract = async (rfpId: number) => {
+    try {
+      const contract = await createContractFromRFP(rfpId);
+      // Navigate to contract details or contract list
+      // Assuming contract has an id
+      navigate(`/contracts/${contract.id}`);
+    } catch (error) {
+      console.error("Failed to create contract from RFP", error);
+      alert("Failed to create contract from RFP. Please try again.");
+    }
   };
 
   const formatDate = (dateString: string) => {
@@ -260,13 +274,23 @@ export const ApprovedRFPListPage: React.FC = () => {
                           })}
                         </td>
                         <td className='px-6 py-4 whitespace-nowrap text-center'>
-                          <button
-                            onClick={() => handleCreatePO(rfp.id)}
-                            className='inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors shadow-sm'
-                          >
-                            <ShoppingCart className='w-4 h-4 mr-2' />
-                            Create PO
-                          </button>
+                          {rfp.purchaseType === 'PURCHASE_AGREEMENT' ? (
+                            <button
+                              onClick={() => handleCreateContract(rfp.id)}
+                              className='inline-flex items-center px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium rounded-lg transition-colors shadow-sm'
+                            >
+                              <FileSignature className='w-4 h-4 mr-2' />
+                              Create Contract
+                            </button>
+                          ) : (
+                            <button
+                              onClick={() => handleCreatePO(rfp.id)}
+                              className='inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors shadow-sm'
+                            >
+                              <ShoppingCart className='w-4 h-4 mr-2' />
+                              Create PO
+                            </button>
+                          )}
                         </td>
                       </tr>
                     );

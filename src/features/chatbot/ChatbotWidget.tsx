@@ -65,33 +65,27 @@ export const ChatbotWidget: React.FC<ChatbotWidgetProps> = ({
 
       if (response.type === 'empty') {
         botContent = 'I found no records matching your query.';
-      } else if (response.type === 'single_value') {
-        if (!response.data || response.data.length === 0) {
-          botContent = 'No data available.';
-        } else {
+      } else {
+        // Default Content (Data View)
+        let dataView: React.ReactNode = null;
+
+        if (response.type === 'single_value' && response.data && response.data.length > 0) {
           const key = Object.keys(response.data[0])[0];
           const value = response.data[0][key];
-          botContent = (
-            <div className='text-lg font-medium'>
-              {key}: <span className='text-primary'>{value}</span>
+          dataView = (
+            <div className='text-sm mt-2 p-2 bg-gray-50 rounded border inline-block'>
+              <span className='font-semibold'>{key}:</span> <span className='text-violet-700 font-bold'>{value}</span>
             </div>
           );
-        }
-      } else {
-        if (!response.data || response.data.length === 0) {
-          botContent = 'I found no records matching your query.';
-        } else {
+        } else if (response.data && response.data.length > 0) {
           const headers = Object.keys(response.data[0]);
-          botContent = (
-            <div className='overflow-x-auto mt-2 bg-white rounded border border-gray-200 shadow-sm max-h-60'>
+          dataView = (
+            <div className='overflow-x-auto mt-3 bg-white rounded border border-gray-200 shadow-sm max-h-60'>
               <table className='min-w-full text-xs'>
                 <thead className='bg-gray-50 text-gray-700 sticky top-0'>
                   <tr>
                     {headers.map(h => (
-                      <th
-                        key={h}
-                        className='px-2 py-1 border-b text-left font-semibold uppercase tracking-wider'
-                      >
+                      <th key={h} className='px-2 py-1 border-b text-left font-semibold uppercase tracking-wider'>
                         {h}
                       </th>
                     ))}
@@ -101,10 +95,7 @@ export const ChatbotWidget: React.FC<ChatbotWidgetProps> = ({
                   {response.data.map((row, idx) => (
                     <tr key={idx} className='hover:bg-gray-50'>
                       {headers.map(h => (
-                        <td
-                          key={h}
-                          className='px-2 py-1 text-gray-600 whitespace-nowrap'
-                        >
+                        <td key={h} className='px-2 py-1 text-gray-600 whitespace-nowrap'>
                           {String(row[h] ?? '')}
                         </td>
                       ))}
@@ -112,12 +103,30 @@ export const ChatbotWidget: React.FC<ChatbotWidgetProps> = ({
                   ))}
                 </tbody>
               </table>
-              <div className='px-2 py-1 text-xs text-gray-400 bg-gray-50 border-t'>
-                Showing {response.data.length} result(s)
-              </div>
             </div>
           );
         }
+
+        // Final Content Assembly
+        botContent = (
+          <div className='space-y-2'>
+            {/* AI Summary */}
+            {response.aiSummary && (
+              <div className='text-sm text-gray-800 leading-relaxed font-medium bg-violet-50 p-3 rounded-lg border border-violet-100'>
+                <Bot className="w-4 h-4 inline-block mr-1 text-violet-600 mb-0.5" />
+                {response.aiSummary}
+              </div>
+            )}
+
+            {/* Fallback text if no AI summary but we have data */}
+            {!response.aiSummary && (
+              <p className='text-sm'>Here is the data I found:</p>
+            )}
+
+            {/* Raw Data View (Table or Value) */}
+            {dataView}
+          </div>
+        );
       }
 
       const botMsg: Message = {

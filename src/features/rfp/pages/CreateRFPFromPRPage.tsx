@@ -63,16 +63,23 @@ export const CreateRFPFromPRPage = () => {
   const { data: approvedPRs = [], isLoading: loadingPRs } =
     useApprovedPRsForRFPCreation(searchWord);
 
+  // Filter out PRs that are for Contracts (Purchase Agreements)
+  // REMOVED: Now allowing PURCHASE_AGREEMENT PRs to go through RFP for vendor selection
+  const filteredPRs = useMemo(() => {
+    return approvedPRs; // All approved PRs can now be used for RFP creation
+  }, [approvedPRs]);
+
+
   const { data: prItems = [], isLoading: loadingItems } =
     useApprovedPRItemsForRFPCreation(selectedPRIds, phase === 'create-rfp');
 
   const createRFPMutation = useCreateRFPFromPRs();
 
   // Pagination calculations
-  const totalPages = Math.ceil(approvedPRs.length / itemsPerPage);
+  const totalPages = Math.ceil(filteredPRs.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
-  const paginatedPRs = approvedPRs.slice(startIndex, endIndex);
+  const paginatedPRs = filteredPRs.slice(startIndex, endIndex);
 
   // Generate page numbers with ellipsis
   const getPageNumbers = () => {
@@ -120,10 +127,10 @@ export const CreateRFPFromPRPage = () => {
 
   // Handle "Select All" toggle
   const handleSelectAll = () => {
-    if (selectedPRIds.length === approvedPRs.length) {
+    if (selectedPRIds.length === filteredPRs.length) {
       setSelectedPRIds([]);
     } else {
-      setSelectedPRIds(approvedPRs.map(pr => pr.prId));
+      setSelectedPRIds(filteredPRs.map(pr => pr.prId));
     }
   };
 
@@ -389,8 +396,8 @@ export const CreateRFPFromPRPage = () => {
                         <input
                           type='checkbox'
                           checked={
-                            approvedPRs.length > 0 &&
-                            selectedPRIds.length === approvedPRs.length
+                            filteredPRs.length > 0 &&
+                            selectedPRIds.length === filteredPRs.length
                           }
                           onChange={handleSelectAll}
                           className='w-4 h-4 text-violet-600 rounded border-gray-300 focus:ring-2 focus:ring-violet-500'
@@ -502,9 +509,9 @@ export const CreateRFPFromPRPage = () => {
                     Showing{' '}
                     <span className='font-medium'>{startIndex + 1}</span> to{' '}
                     <span className='font-medium'>
-                      {Math.min(endIndex, approvedPRs.length)}
+                      {Math.min(endIndex, filteredPRs.length)}
                     </span>{' '}
-                    of <span className='font-medium'>{approvedPRs.length}</span>{' '}
+                    of <span className='font-medium'>{filteredPRs.length}</span>{' '}
                     results
                   </p>
 
@@ -528,11 +535,10 @@ export const CreateRFPFromPRPage = () => {
                         ) : (
                           <button
                             onClick={() => setCurrentPage(page as number)}
-                            className={`min-w-[36px] h-9 px-3 rounded-lg text-sm font-medium transition-colors ${
-                              currentPage === page
-                                ? 'bg-violet-600 text-white border border-violet-600'
-                                : 'text-gray-600 border border-gray-200 hover:bg-gray-50 hover:border-gray-300'
-                            }`}
+                            className={`min-w-[36px] h-9 px-3 rounded-lg text-sm font-medium transition-colors ${currentPage === page
+                              ? 'bg-violet-600 text-white border border-violet-600'
+                              : 'text-gray-600 border border-gray-200 hover:bg-gray-50 hover:border-gray-300'
+                              }`}
                           >
                             {page}
                           </button>
@@ -730,9 +736,8 @@ export const CreateRFPFromPRPage = () => {
                         return (
                           <tr
                             key={item.itemId}
-                            className={`transition-colors ${
-                              isSelected ? 'bg-violet-50' : 'hover:bg-gray-50'
-                            }`}
+                            className={`transition-colors ${isSelected ? 'bg-violet-50' : 'hover:bg-gray-50'
+                              }`}
                           >
                             <td className='px-4 py-3.5'>
                               <input

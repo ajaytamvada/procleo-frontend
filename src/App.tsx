@@ -132,6 +132,16 @@ import VendorOrderDetails from '@/features/vendor/pages/VendorOrderDetails';
 import VendorInvoiceCreatePage from '@/features/vendor/pages/VendorInvoiceCreatePage';
 import VendorInvoiceList from '@/features/vendor/pages/VendorInvoiceList';
 import VendorInvoiceDetails from '@/features/vendor/pages/VendorInvoiceDetails';
+import VendorContractList from '@/features/vendor/pages/VendorContractList';
+import VendorContractDetails from '@/features/vendor/pages/VendorContractDetails';
+import { ContractList } from '@/features/contract/pages/ContractList';
+import { ContractCreate } from '@/features/contract/pages/ContractCreate';
+import { ContractDetails } from '@/features/contract/pages/ContractDetails';
+
+// Catalog Module Pages
+import CatalogBrowsePage from '@/features/catalog/pages/CatalogBrowsePage';
+import CatalogManagePage from '@/features/catalog/pages/CatalogManagePage';
+import CatalogCartPage from '@/features/catalog/pages/CatalogCartPage';
 import '@/styles/globals.css';
 
 // Placeholder components for remaining routes
@@ -392,6 +402,15 @@ const App: React.FC = () => {
                       </div>
                     }
                   />
+
+                  {/* Catalog Module Routes */}
+                  <Route
+                    path='catalog'
+                    element={<Navigate to='/catalog/browse' replace />}
+                  />
+                  <Route path='catalog/browse' element={<CatalogBrowsePage />} />
+                  <Route path='catalog/manage' element={<CatalogManagePage />} />
+                  <Route path='catalog/cart' element={<CatalogCartPage />} />
 
                   {/* Purchase Order Routes */}
                   <Route
@@ -742,6 +761,12 @@ const App: React.FC = () => {
                   <Route path='components' element={<ComponentShowcase />} />
                   <Route path='cache-debug' element={<CacheManagerDebug />} />
 
+                  {/* Contract Routes */}
+                  <Route path='contracts' element={<Navigate to='/contracts/list' replace />} />
+                  <Route path='contracts/list' element={<ContractList />} />
+                  <Route path='contracts/create' element={<ContractCreate />} />
+                  <Route path='contracts/:id' element={<ContractDetails />} />
+
                   {/* Test MasterDashboard in isolation */}
                   <Route path='master-test' element={<MasterDashboard />} />
 
@@ -796,6 +821,18 @@ const App: React.FC = () => {
                   <Route
                     path='vendor/orders/:orderId'
                     element={<VendorOrderDetails />}
+                  />
+                  <Route
+                    path='vendor/invoices/create'
+                    element={<VendorInvoiceCreatePage />}
+                  />
+                  <Route
+                    path='vendor/contracts'
+                    element={<VendorContractList />}
+                  />
+                  <Route
+                    path='vendor/contracts/:id'
+                    element={<VendorContractDetails />}
                   />
                   <Route
                     path='vendor/invoices/create'

@@ -22,6 +22,7 @@ interface PurchaseRequisitionItem {
 }
 
 interface CreatePRFormData {
+  purchaseType: string;
   requestor: string;
   location: string;
   approvalGroup: string;
@@ -33,6 +34,7 @@ interface CreatePRFormData {
 }
 
 const createPRSchema = z.object({
+  purchaseType: z.string().min(1, 'Purchase Type is required'),
   requestor: z.string().min(1, 'Requestor is required'),
   location: z.string().min(1, 'Location is required'),
   approvalGroup: z.string().min(1, 'Approval Group is required'),
@@ -76,6 +78,7 @@ export const CreatePRForm: React.FC<CreatePRFormProps> = ({
   } = useForm<CreatePRFormData>({
     resolver: zodResolver(createPRSchema),
     defaultValues: {
+      purchaseType: (initialData as any)?.purchaseType || 'PURCHASE_ORDER',
       requestor: initialData?.requestor || '',
       location: initialData?.location || '',
       approvalGroup: initialData?.approvalGroup || '',
@@ -209,6 +212,25 @@ export const CreatePRForm: React.FC<CreatePRFormProps> = ({
           }}
         >
           <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
+            <div>
+              <label className='block text-sm font-medium text-gray-700 mb-2'>
+                <span className='text-red-500'>*</span> Purchase Type
+              </label>
+              <select
+                {...register('purchaseType')}
+                className='w-full px-3 py-2 rounded-lg bg-white text-gray-900 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500'
+                style={{ border: '1px solid #e5e7eb' }}
+              >
+                <option value='PURCHASE_ORDER'>Purchase Order (Standard)</option>
+                <option value='PURCHASE_AGREEMENT'>Purchase Agreement (Contract)</option>
+              </select>
+              {errors.purchaseType && (
+                <p className='mt-1 text-sm text-red-600'>
+                  {errors.purchaseType?.message}
+                </p>
+              )}
+            </div>
+
             <div>
               <label className='block text-sm font-medium text-gray-700 mb-2'>
                 <span className='text-red-500'>*</span> Requestor

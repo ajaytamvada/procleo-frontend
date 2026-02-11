@@ -9,6 +9,7 @@ import {
   Calendar,
   Loader2,
   AlertCircle,
+  FileText,
 } from 'lucide-react';
 import { format } from 'date-fns';
 import toast from 'react-hot-toast';
@@ -22,12 +23,14 @@ import {
   useApprovedRFPsForPOCreation,
 } from '../hooks/usePurchaseOrders';
 import { useVendors } from '../../master/hooks/useVendorAPI';
+import { useContract } from '../../contract/hooks/useContract';
 import { apiClient } from '@/lib/api';
 
 const CreatePurchaseOrderPage: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const rfpIdParam = searchParams.get('rfpId');
+  const contractIdParam = searchParams.get('contractId');
 
   const [loading, setLoading] = useState(false);
   const [loadingRFP, setLoadingRFP] = useState(false);
@@ -40,6 +43,7 @@ const CreatePurchaseOrderPage: React.FC = () => {
     deliveryDate: '',
     supplierId: 0,
     supplierName: '',
+    contractNumber: '',
     raisedBy: '',
     department: '',
     approvalGroup: '',
@@ -63,6 +67,7 @@ const CreatePurchaseOrderPage: React.FC = () => {
   const submitForApproval = useSubmitPOForApproval();
   const { data: vendors = [] } = useVendors();
   const { data: approvedRFPs = [] } = useApprovedRFPsForPOCreation();
+  const { data: contractData, isLoading: isLoadingContract } = useContract(Number(contractIdParam));
 
   const [newItem, setNewItem] = useState<Partial<PurchaseOrderItem>>({
     itemName: '',
@@ -92,6 +97,22 @@ const CreatePurchaseOrderPage: React.FC = () => {
       setFormData(prev => ({ ...prev, poNumber: generatedPONumber }));
     }
   }, [generatedPONumber]);
+
+  // Load Contract data when contractId is present
+  useEffect(() => {
+    if (contractIdParam && contractData) {
+      setFormData(prev => ({
+        ...prev,
+        contractNumber: contractData.contractNumber,
+        supplierId: contractData.vendorId,
+        supplierName: contractData.vendorName,
+        paymentTerms: contractData.paymentTerms,
+        termsConditions: 'DELIEVERY AS PER SCHEDULE', // Default or from Contract if available
+        // We could also pre-fill items if contract had them, but for now we leave items empty
+      }));
+      toast.success('Contract data loaded successfully');
+    }
+  }, [contractIdParam, contractData]);
 
   const loadRFPData = async (id: number) => {
     try {
@@ -357,13 +378,13 @@ const CreatePurchaseOrderPage: React.FC = () => {
   };
 
   // Show loading state while loading RFP or generating PO number
-  if (loadingRFP || (isGeneratingPO && !formData.poNumber)) {
+  if (loadingRFP || (isGeneratingPO && !formData.poNumber) || (contractIdParam && isLoadingContract)) {
     return (
       <div className='min-h-screen bg-gray-50 flex items-center justify-center'>
         <div className='text-center'>
           <Loader2 className='w-12 h-12 animate-spin text-blue-600 mx-auto mb-4' />
           <p className='text-gray-600 text-lg'>
-            {loadingRFP ? 'Loading RFP data...' : 'Generating PO number...'}
+            {loadingRFP ? 'Loading RFP data...' : isLoadingContract ? 'Loading Contract data...' : 'Generating PO number...'}
           </p>
         </div>
       </div>
@@ -420,6 +441,31 @@ const CreatePurchaseOrderPage: React.FC = () => {
       </div>
 
       <form className='space-y-6'>
+        {/* Contract Info Banner */}
+        {formData.contractNumber && (
+          <div className='bg-purple-50 border border-purple-200 rounded-lg p-4 mb-6'>
+            <div className='flex items-start'>
+              <FileText className='w-5 h-5 text-purple-600 mt-0.5 mr-3 flex-shrink-0' />
+              <div className='flex-1'>
+                <h4 className='text-sm font-medium text-purple-900 mb-1'>
+                  Creating PO from Contract
+                </h4>
+                <div className='text-sm text-purple-700 space-y-1'>
+                  <p>
+                    <strong>Contract Number:</strong> {formData.contractNumber}
+                  </p>
+                  <p>
+                    <strong>Supplier:</strong> {formData.supplierName}
+                  </p>
+                  <p className='text-xs mt-2'>
+                    Key details have been pre-filled from the contract. Please add items and review before submitting.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* RFP Info Banner */}
         {formData.rfpNumber && (
           <div className='bg-blue-50 border border-blue-200 rounded-lg p-4'>
@@ -677,21 +723,19 @@ const CreatePurchaseOrderPage: React.FC = () => {
                 className={`
                   group relative flex items-center gap-2 pb-4 px-1 font-medium text-sm transition-all duration-200
                   border-0 outline-none bg-transparent
-                  ${
-                    activeTab === 'itemDetails'
-                      ? 'text-violet-600'
-                      : 'text-gray-500 hover:text-gray-700'
+                  ${activeTab === 'itemDetails'
+                    ? 'text-violet-600'
+                    : 'text-gray-500 hover:text-gray-700'
                   }
                 `}
               >
                 <span>Item Details</span>
                 {/* Active/Hover/Focus indicator */}
                 <span
-                  className={`absolute bottom-0 left-0 right-0 h-0.5 rounded-t-full transition-all duration-200 ${
-                    activeTab === 'itemDetails'
-                      ? 'bg-violet-600'
-                      : 'bg-transparent group-hover:bg-gray-300 group-focus:bg-violet-400'
-                  }`}
+                  className={`absolute bottom-0 left-0 right-0 h-0.5 rounded-t-full transition-all duration-200 ${activeTab === 'itemDetails'
+                    ? 'bg-violet-600'
+                    : 'bg-transparent group-hover:bg-gray-300 group-focus:bg-violet-400'
+                    }`}
                 />
               </button>
             </nav>

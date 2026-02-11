@@ -29,6 +29,7 @@ export interface PurchaseOrderItem {
 export interface PurchaseOrder {
   id?: number;
   poNumber: string;
+  contractNumber?: string;
   quotationNumber?: string;
   rfpNumber?: string;
   prNumber?: string;

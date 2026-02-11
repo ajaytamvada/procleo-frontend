@@ -182,39 +182,90 @@ export class AuthService {
 
   // Get current user profile
   static async getCurrentUser(): Promise<User> {
-    const response = await api.get<User>('/auth/me');
+    // We don't have a direct /me endpoint in LoginProvision controller usually, but we can use validate or just rely on stored data
+    // However, best practice is to have an endpoint. 
+    // For now, let's try to use the validate endpoint which returns user info
 
-    // Update stored user data
-    localStorage.setItem('user_data', JSON.stringify(response.data));
+    try {
+      const response = await apiClient.get<any>('/auth/validate');
+      if (response.data.valid) {
+        // The validate endpoint returns limited info currently. 
+        // Ideally we should add /me endpoint to LoginProvisionController.
+        // But let's see if we can use existing cached data if validate succeeds, 
+        // OR fetch from a specific endpoint if available.
 
-    return response.data;
+        // Fallback: return stored user if we can't get full details
+        const stored = AuthService.getStoredUser();
+        if (stored) return stored;
+      }
+    } catch (e) {
+      // ignore
+    }
+
+    // If all else fails
+    const stored = AuthService.getStoredUser();
+    if (!stored) throw new Error("User not found");
+    return stored;
+  }
+
+  // Helper to map backend DTO to Frontend User
+  private static mapLoginProvisionToUser(dto: any): User {
+    // Need to re-construct the User object similar to how login does it
+    // This is best effort since the DTO from updateProfile might differ from Login response
+
+    const current = AuthService.getStoredUser() || {} as User;
+
+    return {
+      ...current,
+      email: dto.email || current.email,
+      employeeName: dto.employeeName || current.employeeName,
+      // If we updated name, try to split it back if frontend needs distinct fields
+      firstName: dto.employeeName ? dto.employeeName.split(' ')[0] : current.firstName,
+      lastName: dto.employeeName ? (dto.employeeName.split(' ').slice(1).join(' ') || '') : current.lastName,
+      // other fields...
+    };
   }
 
   // Update user profile
   static async updateProfile(data: UpdateProfileData): Promise<User> {
-    const requestData: any = { ...data };
+    // Format data for backend DTO
+    // DTO expects: firstName, lastName, email, phone, designation
+    // Frontend provides: firstName, lastName, email, phoneNumber, department (readonly usually), avatar
+
+    const dto = {
+      firstName: data.firstName,
+      lastName: data.lastName,
+      email: data.email,
+      phone: (data as any).phoneNumber || (data as any).phone, // Handle both key names
+      designation: (data as any).designation
+    };
 
     // Handle avatar upload separately if provided
     if (data.avatar) {
+      // TODO: Implement avatar upload if backend supports it
+      // For now we skip it as backend DTO doesn't have it
+      /*
       const avatarResponse = await api.uploadFile<{ url: string }>(
         '/auth/upload-avatar',
         data.avatar
       );
-      requestData.avatar = avatarResponse.data.url;
-      delete requestData.avatar; // Remove the File object
+      */
     }
 
-    const response = await api.put<User>('/auth/profile', requestData);
+    const response = await apiClient.put<LoginProvisionDto>('/master/login-provision/profile', dto);
+
+    // Map response to User interface
+    const updatedUser = AuthService.mapLoginProvisionToUser(response.data);
 
     // Update stored user data
-    localStorage.setItem('user_data', JSON.stringify(response.data));
+    localStorage.setItem('user_data', JSON.stringify(updatedUser));
 
-    return response.data;
+    return updatedUser;
   }
 
   // Update password
   static async updatePassword(data: UpdatePasswordData): Promise<void> {
-    await api.put('/auth/password', data);
+    await apiClient.put('/master/login-provision/password', data);
   }
 
   // Request password reset

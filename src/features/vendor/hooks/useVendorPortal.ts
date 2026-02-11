@@ -13,6 +13,18 @@ export interface VendorDashboardData {
   pendingInvoices: number;
   submittedInvoices?: number;
   paidInvoices?: number;
+  pendingContracts?: number;
+}
+
+export interface VendorContract {
+  id: number;
+  contractNumber: string;
+  description: string;
+  startDate: string;
+  endDate: string;
+  status: string;
+  vendorAcceptanceStatus: string;
+  totalValue: number;
 }
 
 export interface VendorRFP {
@@ -126,6 +138,40 @@ export interface VendorProfile {
   contactPhone?: string;
 }
 
+export interface VendorInvoiceItem {
+  poItemId: number;
+  poId: number;
+  itemName: string;
+  itemCode?: string;
+  itemDescription?: string;
+  poQuantity: number;
+  remainingQuantity: number;
+  unitPrice: number;
+  unitOfMeasurement?: string;
+  cgstRate?: number;
+  sgstRate?: number;
+  igstRate?: number;
+  otherTaxRate?: number;
+}
+
+export interface VendorCreateInvoiceRequest {
+  poId: number;
+  invoiceNumber: string;
+  invoiceDate: string;
+  supplierId: number;
+  remarks?: string;
+  items: {
+    poItemId: number;
+    invoiceQuantity: number;
+    unitPrice: number;
+    cgstRate?: number;
+    sgstRate?: number;
+    igstRate?: number;
+    otherTaxRate?: number;
+    remarks?: string;
+  }[];
+}
+
 // API functions
 const vendorApi = {
   getDashboard: async (): Promise<VendorDashboardData> => {
@@ -209,6 +255,17 @@ const vendorApi = {
     const response = await apiClient.post('/vendor-portal/invoices', data);
     return response.data;
   },
+
+  getMyContracts: async (): Promise<VendorContract[]> => {
+    const response = await apiClient.get('/vendor-portal/contracts');
+    return response.data;
+  },
+
+  acknowledgeContract: async (id: number, status: string, remarks?: string): Promise<void> => {
+    await apiClient.post(`/vendor-portal/contracts/${id}/acknowledge`, null, {
+      params: { status, remarks }
+    });
+  },
 };
 
 // Query keys
@@ -223,6 +280,7 @@ export const vendorQueryKeys = {
   order: (id: number) => ['vendor', 'orders', id] as const,
   poItemsForInvoicing: (id: number) =>
     ['vendor', 'orders', id, 'items-for-invoicing'] as const,
+  contracts: ['vendor', 'contracts'] as const,
 };
 
 // Hooks
@@ -368,36 +426,26 @@ export function useCreateVendorInvoice() {
   });
 }
 
-export interface VendorInvoiceItem {
-  poItemId: number;
-  poId: number;
-  itemName: string;
-  itemCode?: string;
-  itemDescription?: string;
-  poQuantity: number;
-  remainingQuantity: number;
-  unitPrice: number;
-  unitOfMeasurement?: string;
-  cgstRate?: number;
-  sgstRate?: number;
-  igstRate?: number;
-  otherTaxRate?: number;
+export function useVendorContracts() {
+  return useQuery({
+    queryKey: vendorQueryKeys.contracts,
+    queryFn: vendorApi.getMyContracts,
+    staleTime: 30 * 1000,
+  });
 }
 
-export interface VendorCreateInvoiceRequest {
-  poId: number;
-  invoiceNumber: string;
-  invoiceDate: string;
-  supplierId: number;
-  remarks?: string;
-  items: {
-    poItemId: number;
-    invoiceQuantity: number;
-    unitPrice: number;
-    cgstRate?: number;
-    sgstRate?: number;
-    igstRate?: number;
-    otherTaxRate?: number;
-    remarks?: string;
-  }[];
+export function useAcknowledgeContract() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, status, remarks }: { id: number; status: string; remarks?: string }) =>
+      vendorApi.acknowledgeContract(id, status, remarks),
+    onSuccess: () => {
+      toast.success('Contract updated successfully');
+      queryClient.invalidateQueries({ queryKey: vendorQueryKeys.contracts });
+      queryClient.invalidateQueries({ queryKey: vendorQueryKeys.dashboard });
+    },
+    onError: (error: any) => {
+      toast.error(error?.response?.data?.message || 'Failed to update contract');
+    }
+  });
 }

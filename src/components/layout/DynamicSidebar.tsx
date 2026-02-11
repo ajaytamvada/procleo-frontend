@@ -80,7 +80,7 @@ const DynamicSidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
           .sort((a, b) => a.sortOrder - b.sortOrder)
           .map(child => ({
             name: child.moduleName,
-            href: child.routePath || '#',
+            href: child.moduleCode === 'CONTRACT_MANAGE' ? '/contracts/list' : (child.routePath || '#'),
             moduleCode: child.moduleCode,
           }));
 
@@ -144,6 +144,15 @@ const DynamicSidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
         { name: 'Send for Approval', href: '/rfp/send-for-approval' },
         { name: 'Approve/Reject RFP', href: '/rfp/approval' },
         { name: 'RFP Summary', href: '/rfp/summary' },
+      ],
+    },
+    {
+      name: 'Contracts',
+      href: '/contracts',
+      icon: FileText,
+      moduleCode: 'CONTRACT',
+      subItems: [
+        { name: 'Manage Contracts', href: '/contracts/list' },
       ],
     },
     {
@@ -213,6 +222,8 @@ const DynamicSidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
     return staticNavigation.filter(item => {
       const moduleCode = item.moduleCode || getModuleCode(item.href);
       if (!moduleCode || !hasModule(moduleCode)) {
+        // TEMPORARY: Force show 'CONTRACT' module until permissions are synced
+        if (moduleCode === 'CONTRACT') return true;
         return false;
       }
 
@@ -240,6 +251,7 @@ const DynamicSidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
     },
     { name: 'My Quotations', href: '/vendor/quotations', icon: ClipboardList },
     { name: 'Purchase Orders', href: '/vendor/orders', icon: ShoppingCart },
+    { name: 'Contracts', href: '/vendor/contracts', icon: FileText },
     { name: 'Invoices', href: '/vendor/invoices', icon: FileText },
     { name: 'Company Profile', href: '/vendor/profile', icon: Building2 },
   ];
@@ -267,9 +279,8 @@ const DynamicSidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
 
       {/* Sidebar */}
       <div
-        className={`w-64 flex-shrink-0 lg:block transition-transform duration-300 bg-white border-r border-gray-200 ${
-          isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
-        }`}
+        className={`w-64 flex-shrink-0 lg:block transition-transform duration-300 bg-white border-r border-gray-200 ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+          }`}
       >
         <div className='flex flex-col h-full'>
           {/* Navigation */}
@@ -288,19 +299,17 @@ const DynamicSidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
                           <span>{item.name}</span>
                         </div>
                         <ChevronDown
-                          className={`w-4 h-4 text-gray-400 transition-transform duration-300 ${
-                            expandedItems.includes(item.name)
-                              ? 'rotate-180 text-gray-600'
-                              : ''
-                          }`}
+                          className={`w-4 h-4 text-gray-400 transition-transform duration-300 ${expandedItems.includes(item.name)
+                            ? 'rotate-180 text-gray-600'
+                            : ''
+                            }`}
                         />
                       </button>
                       <div
-                        className={`overflow-hidden transition-all duration-300 ease-in-out ${
-                          expandedItems.includes(item.name)
-                            ? 'max-h-[3000px] opacity-100'
-                            : 'max-h-0 opacity-0'
-                        }`}
+                        className={`overflow-hidden transition-all duration-300 ease-in-out ${expandedItems.includes(item.name)
+                          ? 'max-h-[3000px] opacity-100'
+                          : 'max-h-0 opacity-0'
+                          }`}
                       >
                         <div className='ml-4 mt-1 border-l-[3px] border-gray-200 pl-2'>
                           {item.subItems.map(subItem =>
@@ -320,10 +329,9 @@ const DynamicSidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
                                 key={subItem.name}
                                 to={subItem.href}
                                 className={({ isActive }) =>
-                                  `sidebar-link block px-3 py-2 text-sm rounded-lg transition-all duration-200 ${
-                                    isActive
-                                      ? 'sidebar-link-active'
-                                      : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100'
+                                  `sidebar-link block px-3 py-2 text-sm rounded-lg transition-all duration-200 ${isActive
+                                    ? 'sidebar-link-active'
+                                    : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100'
                                   }`
                                 }
                                 onClick={() => {
@@ -343,10 +351,9 @@ const DynamicSidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
                     <NavLink
                       to={item.href}
                       className={({ isActive }) =>
-                        `sidebar-link group flex items-center gap-3 px-2 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 ${
-                          isActive
-                            ? 'sidebar-link-active'
-                            : 'text-gray-700 hover:text-gray-900 hover:bg-gray-100'
+                        `sidebar-link group flex items-center gap-3 px-2 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 ${isActive
+                          ? 'sidebar-link-active'
+                          : 'text-gray-700 hover:text-gray-900 hover:bg-gray-100'
                         }`
                       }
                       onClick={() => {
@@ -358,11 +365,10 @@ const DynamicSidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
                       {({ isActive }) => (
                         <>
                           <item.icon
-                            className={`w-5 h-5 transition-colors duration-200 ${
-                              isActive
-                                ? 'text-gray-700'
-                                : 'text-gray-500 group-hover:text-gray-700'
-                            }`}
+                            className={`w-5 h-5 transition-colors duration-200 ${isActive
+                              ? 'text-gray-700'
+                              : 'text-gray-500 group-hover:text-gray-700'
+                              }`}
                           />
                           <span>{item.name}</span>
                           {item.badge && (
