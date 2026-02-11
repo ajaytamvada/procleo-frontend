@@ -1,7 +1,9 @@
 import React, { forwardRef } from 'react';
 import { Input } from '@/components/ui/Input';
 
-interface FormInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
+interface FormInputProps
+  extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'size'> {
+  size?: 'default' | 'sm' | 'lg';
   label: string;
   error?: string;
   required?: boolean;

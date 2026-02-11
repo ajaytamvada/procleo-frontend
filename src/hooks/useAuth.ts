@@ -233,18 +233,21 @@ export function useAuth() {
   const updateProfileMutation = useUpdateProfile();
 
   // Mock user for development
-  const mockUser = {
-    id: '1',
+  const mockUser: User = {
+    id: 1,
+    loginName: 'admin',
     email: 'admin@autovitica.com',
     firstName: 'Admin',
     lastName: 'User',
-    role: 'admin',
+    roles: ['admin'],
     permissions: ['*'], // All permissions
+    modules: [],
     department: 'IT',
-    isActive: true,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-    vendorId: undefined as number | undefined,
+    departmentName: 'Information Technology',
+    // isActive: true, // User interface might not have this
+    // createdAt: new Date().toISOString(),
+    // updatedAt: new Date().toISOString(),
+    vendorId: undefined,
     phone: '+1 234 567 8900',
     designation: 'System Admin',
   };

@@ -26,6 +26,9 @@ export interface User {
   phone?: string;
   designation?: string;
   department?: string;
+  departmentId?: number;
+  locationId?: number;
+  name?: string;
 }
 
 // Helper function to check if user is a vendor
@@ -82,6 +85,10 @@ export interface UpdatePasswordData {
 export interface UpdateProfileData {
   firstName?: string;
   lastName?: string;
+  email?: string;
+  phone?: string; // or phoneNumber
+  phoneNumber?: string;
+  designation?: string;
   department?: string;
   avatar?: File;
 }
@@ -183,15 +190,15 @@ export class AuthService {
   // Get current user profile
   static async getCurrentUser(): Promise<User> {
     // We don't have a direct /me endpoint in LoginProvision controller usually, but we can use validate or just rely on stored data
-    // However, best practice is to have an endpoint. 
+    // However, best practice is to have an endpoint.
     // For now, let's try to use the validate endpoint which returns user info
 
     try {
       const response = await apiClient.get<any>('/auth/validate');
       if (response.data.valid) {
-        // The validate endpoint returns limited info currently. 
+        // The validate endpoint returns limited info currently.
         // Ideally we should add /me endpoint to LoginProvisionController.
-        // But let's see if we can use existing cached data if validate succeeds, 
+        // But let's see if we can use existing cached data if validate succeeds,
         // OR fetch from a specific endpoint if available.
 
         // Fallback: return stored user if we can't get full details
@@ -204,7 +211,7 @@ export class AuthService {
 
     // If all else fails
     const stored = AuthService.getStoredUser();
-    if (!stored) throw new Error("User not found");
+    if (!stored) throw new Error('User not found');
     return stored;
   }
 
@@ -213,15 +220,19 @@ export class AuthService {
     // Need to re-construct the User object similar to how login does it
     // This is best effort since the DTO from updateProfile might differ from Login response
 
-    const current = AuthService.getStoredUser() || {} as User;
+    const current = AuthService.getStoredUser() || ({} as User);
 
     return {
       ...current,
       email: dto.email || current.email,
       employeeName: dto.employeeName || current.employeeName,
       // If we updated name, try to split it back if frontend needs distinct fields
-      firstName: dto.employeeName ? dto.employeeName.split(' ')[0] : current.firstName,
-      lastName: dto.employeeName ? (dto.employeeName.split(' ').slice(1).join(' ') || '') : current.lastName,
+      firstName: dto.employeeName
+        ? dto.employeeName.split(' ')[0]
+        : current.firstName,
+      lastName: dto.employeeName
+        ? dto.employeeName.split(' ').slice(1).join(' ') || ''
+        : current.lastName,
       // other fields...
     };
   }
@@ -237,7 +248,7 @@ export class AuthService {
       lastName: data.lastName,
       email: data.email,
       phone: (data as any).phoneNumber || (data as any).phone, // Handle both key names
-      designation: (data as any).designation
+      designation: (data as any).designation,
     };
 
     // Handle avatar upload separately if provided
@@ -252,7 +263,10 @@ export class AuthService {
       */
     }
 
-    const response = await apiClient.put<LoginProvisionDto>('/master/login-provision/profile', dto);
+    const response = await apiClient.put<any>(
+      '/master/login-provision/profile',
+      dto
+    );
 
     // Map response to User interface
     const updatedUser = AuthService.mapLoginProvisionToUser(response.data);
