@@ -91,7 +91,7 @@ const BudgetPage: React.FC = () => {
 
   if (showForm) {
     return (
-      <div className='container mx-auto p-6'>
+      <div className=''>
         <BudgetForm
           budget={selectedBudget}
           onSubmit={handleSubmit}
@@ -104,7 +104,7 @@ const BudgetPage: React.FC = () => {
   }
 
   return (
-    <div className='container mx-auto p-6'>
+    <div className=''>
       <BudgetList
         budgets={budgets}
         isLoading={isLoading}

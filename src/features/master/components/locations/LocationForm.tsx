@@ -2,10 +2,9 @@ import React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { ArrowLeft, MapPin, Building2 } from 'lucide-react';
+import { ArrowLeft, Save, MapPin, Building2, RotateCcw } from 'lucide-react';
 import type { Location } from '../../hooks/useLocationAPI';
 
-// Validation schema
 const locationSchema = z.object({
   name: z
     .string()
@@ -64,7 +63,6 @@ const LocationForm: React.FC<LocationFormProps> = ({
   isSubmitting = false,
 }) => {
   const isEditMode = !!location?.id;
-
   const {
     register,
     handleSubmit,
@@ -77,33 +75,19 @@ const LocationForm: React.FC<LocationFormProps> = ({
   });
 
   React.useEffect(() => {
-    if (location) {
-      reset(location);
-    }
+    if (location) reset(location);
   }, [location, reset]);
 
-  const handleFormSubmit = (data: LocationFormData) => {
-    onSubmit(data);
-  };
-
-  const handleReset = () => {
-    if (location) {
-      reset(location);
-    } else {
-      reset({});
-    }
-  };
-
   return (
-    <div className='min-h-screen bg-[#f8f9fc] p-6'>
-      {/* Page Header */}
+    <div className='min-h-screen bg-[#f8f9fc] p-2'>
       <div className='flex items-center justify-between mb-6'>
-        <div className='flex items-center gap-3'>
+        <div className='flex items-center gap-4'>
           <button
             onClick={onCancel}
-            className='p-1.5 text-gray-500 hover:text-gray-700 rounded-lg transition-colors'
+            className='p-2 text-gray-500 hover:text-gray-700 hover:bg-white rounded-lg border border-gray-200'
+            disabled={isSubmitting}
           >
-            <ArrowLeft size={20} />
+            <ArrowLeft size={18} />
           </button>
           <div>
             <h1 className='text-xl font-semibold text-gray-900'>
@@ -119,75 +103,72 @@ const LocationForm: React.FC<LocationFormProps> = ({
         <div className='flex items-center gap-3'>
           <button
             type='button'
-            onClick={handleReset}
-            className='px-4 py-2 text-sm font-semibold text-gray-600 bg-white border border-gray-200 rounded-md hover:bg-gray-50 transition-colors'
+            onClick={() => reset(location || {})}
+            className='inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-200 rounded-md hover:bg-gray-50'
             disabled={isSubmitting}
           >
+            <RotateCcw size={15} />
             Reset
           </button>
           <button
-            type='button'
-            onClick={onCancel}
-            className='px-4 py-2 text-sm font-semibold text-gray-600 bg-white border border-gray-200 rounded-md hover:bg-gray-50 transition-colors'
-            disabled={isSubmitting}
-          >
-            Cancel
-          </button>
-          <button
-            onClick={handleSubmit(handleFormSubmit)}
-            className='px-4 py-2 text-sm font-semibold text-white bg-violet-600 rounded-md hover:bg-violet-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed'
+            type='submit'
+            form='location-form'
             disabled={isSubmitting || !isValid}
+            className='inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-violet-600 rounded-md hover:bg-violet-700 disabled:bg-gray-400'
           >
-            {isSubmitting
-              ? 'Saving...'
-              : isEditMode
-                ? 'Update Location'
-                : 'Create Location'}
+            <Save size={15} />
+            {isSubmitting ? 'Saving...' : 'Save'}
           </button>
         </div>
       </div>
 
-      <form onSubmit={handleSubmit(handleFormSubmit)} className='space-y-6'>
+      <form
+        id='location-form'
+        onSubmit={handleSubmit(onSubmit)}
+        className='space-y-6'
+      >
         {/* Basic Information */}
         <div className='bg-white rounded-lg border border-gray-200 overflow-hidden'>
-          <div className='bg-[#fafbfc] px-5 py-4 border-b border-gray-200'>
-            <div className='flex items-center gap-2'>
-              <MapPin size={16} className='text-violet-600' />
-              <h3 className='text-base font-semibold text-gray-900'>
-                Basic Information
-              </h3>
+          <div className='px-6 py-4 border-b border-gray-100 bg-[#fafbfc]'>
+            <div className='flex items-center gap-3'>
+              <div className='p-2 bg-violet-100 rounded-lg'>
+                <MapPin size={18} className='text-violet-600' />
+              </div>
+              <div>
+                <h2 className='text-sm font-semibold text-gray-800'>
+                  Basic Information
+                </h2>
+                <p className='text-xs text-gray-500'>Location name and code</p>
+              </div>
             </div>
           </div>
-          <div className='p-5'>
+          <div className='p-6'>
             <div className='grid grid-cols-1 md:grid-cols-2 gap-5'>
               <div>
-                <label className='block text-sm font-medium text-gray-700 mb-2'>
+                <label className='block text-sm font-medium text-gray-700 mb-1.5'>
                   Location Name <span className='text-red-500'>*</span>
                 </label>
                 <input
-                  type='text'
                   {...register('name')}
-                  className={`w-full px-4 py-2.5 text-sm border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 ${
-                    errors.name ? 'border-red-300' : 'border-gray-200'
-                  }`}
+                  className={`w-full px-4 py-2.5 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500 ${errors.name ? 'border-red-500' : 'border-gray-200'}`}
                   placeholder='Enter location name'
+                  disabled={isSubmitting}
                 />
                 {errors.name && (
-                  <p className='mt-1.5 text-sm text-red-600'>
+                  <p className='mt-1.5 text-sm text-red-500'>
                     {errors.name.message}
                   </p>
                 )}
               </div>
-
               <div>
-                <label className='block text-sm font-medium text-gray-700 mb-2'>
+                <label className='block text-sm font-medium text-gray-700 mb-1.5'>
                   Location Code
                 </label>
                 <input
-                  type='text'
                   {...register('code')}
-                  className='w-full px-4 py-2.5 text-sm border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500'
+                  className='w-full px-4 py-2.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500'
                   placeholder='Enter location code'
+                  disabled={isSubmitting}
                 />
               </div>
             </div>
@@ -196,85 +177,89 @@ const LocationForm: React.FC<LocationFormProps> = ({
 
         {/* Address Information */}
         <div className='bg-white rounded-lg border border-gray-200 overflow-hidden'>
-          <div className='bg-[#fafbfc] px-5 py-4 border-b border-gray-200'>
-            <div className='flex items-center gap-2'>
-              <Building2 size={16} className='text-violet-600' />
-              <h3 className='text-base font-semibold text-gray-900'>
-                Address Information
-              </h3>
+          <div className='px-6 py-4 border-b border-gray-100 bg-[#fafbfc]'>
+            <div className='flex items-center gap-3'>
+              <div className='p-2 bg-violet-100 rounded-lg'>
+                <Building2 size={18} className='text-violet-600' />
+              </div>
+              <div>
+                <h2 className='text-sm font-semibold text-gray-800'>
+                  Address Information
+                </h2>
+                <p className='text-xs text-gray-500'>
+                  Location address details
+                </p>
+              </div>
             </div>
           </div>
-          <div className='p-5'>
+          <div className='p-6'>
             <div className='grid grid-cols-1 md:grid-cols-2 gap-5'>
               <div className='md:col-span-2'>
-                <label className='block text-sm font-medium text-gray-700 mb-2'>
+                <label className='block text-sm font-medium text-gray-700 mb-1.5'>
                   Address
                 </label>
                 <textarea
                   {...register('address')}
                   rows={3}
-                  className='w-full px-4 py-2.5 text-sm border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 resize-none'
+                  className='w-full px-4 py-2.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500 resize-none'
                   placeholder='Enter full address'
+                  disabled={isSubmitting}
                 />
               </div>
-
               <div>
-                <label className='block text-sm font-medium text-gray-700 mb-2'>
+                <label className='block text-sm font-medium text-gray-700 mb-1.5'>
                   City
                 </label>
                 <input
-                  type='text'
                   {...register('city')}
-                  className='w-full px-4 py-2.5 text-sm border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500'
+                  className='w-full px-4 py-2.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500'
                   placeholder='Enter city'
+                  disabled={isSubmitting}
                 />
               </div>
-
               <div>
-                <label className='block text-sm font-medium text-gray-700 mb-2'>
+                <label className='block text-sm font-medium text-gray-700 mb-1.5'>
                   State
                 </label>
                 <input
-                  type='text'
                   {...register('state')}
-                  className='w-full px-4 py-2.5 text-sm border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500'
+                  className='w-full px-4 py-2.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500'
                   placeholder='Enter state'
+                  disabled={isSubmitting}
                 />
               </div>
-
               <div>
-                <label className='block text-sm font-medium text-gray-700 mb-2'>
+                <label className='block text-sm font-medium text-gray-700 mb-1.5'>
                   Country
                 </label>
                 <input
-                  type='text'
                   {...register('country')}
-                  className='w-full px-4 py-2.5 text-sm border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500'
+                  className='w-full px-4 py-2.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500'
                   placeholder='Enter country'
+                  disabled={isSubmitting}
                 />
               </div>
-
               <div>
-                <label className='block text-sm font-medium text-gray-700 mb-2'>
+                <label className='block text-sm font-medium text-gray-700 mb-1.5'>
                   PIN Code
                 </label>
                 <input
-                  type='text'
                   {...register('pinCode')}
-                  className='w-full px-4 py-2.5 text-sm border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500'
+                  className='w-full px-4 py-2.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500'
                   placeholder='Enter PIN code'
+                  disabled={isSubmitting}
                 />
               </div>
-
               <div className='md:col-span-2'>
-                <label className='block text-sm font-medium text-gray-700 mb-2'>
+                <label className='block text-sm font-medium text-gray-700 mb-1.5'>
                   Remarks
                 </label>
                 <textarea
                   {...register('remarks')}
                   rows={3}
-                  className='w-full px-4 py-2.5 text-sm border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 resize-none'
+                  className='w-full px-4 py-2.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500 resize-none'
                   placeholder='Enter any additional remarks'
+                  disabled={isSubmitting}
                 />
               </div>
             </div>

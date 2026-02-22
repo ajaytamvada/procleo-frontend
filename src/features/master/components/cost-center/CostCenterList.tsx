@@ -1,5 +1,16 @@
 import React, { useState } from 'react';
-import { Plus, Edit, Trash2, Download, Upload, Search, X } from 'lucide-react';
+import {
+  Download,
+  Upload,
+  Search,
+  X,
+  Plus,
+  Trash2,
+  Target,
+  ChevronLeft,
+  ChevronRight,
+  AlertCircle,
+} from 'lucide-react';
 import type {
   CostCenter,
   CostCenterFilters,
@@ -39,35 +50,31 @@ const CostCenterList: React.FC<CostCenterListProps> = ({
   const [codeFilter, setCodeFilter] = useState('');
   const [departmentFilter, setDepartmentFilter] = useState('');
   const [isExporting, setIsExporting] = useState(false);
+  const pageSize = 15;
 
   const handleSearch = () => {
-    if (onFiltersChange) {
-      onFiltersChange({
-        name: nameFilter || undefined,
-        code: codeFilter || undefined,
-        departmentName: departmentFilter || undefined,
-      });
-    }
+    onFiltersChange?.({
+      name: nameFilter || undefined,
+      code: codeFilter || undefined,
+      departmentName: departmentFilter || undefined,
+    });
   };
 
   const handleClear = () => {
     setNameFilter('');
     setCodeFilter('');
     setDepartmentFilter('');
-    if (onFiltersChange) {
-      onFiltersChange({});
-    }
+    onFiltersChange?.({});
   };
 
   const handleExport = async () => {
     try {
       setIsExporting(true);
-      const filters: CostCenterFilters = {
+      const blob = await costCenterAPI.exportToExcel({
         name: nameFilter || undefined,
         code: codeFilter || undefined,
         departmentName: departmentFilter || undefined,
-      };
-      const blob = await costCenterAPI.exportToExcel(filters);
+      });
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
@@ -76,238 +83,256 @@ const CostCenterList: React.FC<CostCenterListProps> = ({
       a.click();
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
-    } catch (error) {
-      console.error('Export failed:', error);
-      alert('Failed to export cost centers. Please try again.');
+    } catch (err) {
+      console.error('Export failed:', err);
+      alert('Failed to export cost centers.');
     } finally {
       setIsExporting(false);
     }
   };
 
-  if (isLoading) {
-    return (
-      <div className='flex justify-center items-center h-64'>
-        <div className='animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600'></div>
-      </div>
-    );
-  }
+  const getPageNumbers = () => {
+    const pages: (number | string)[] = [];
+    if (totalPages <= 7) {
+      for (let i = 0; i < totalPages; i++) pages.push(i);
+    } else {
+      pages.push(0);
+      if (currentPage > 2) pages.push('...');
+      for (
+        let i = Math.max(1, currentPage - 1);
+        i <= Math.min(totalPages - 2, currentPage + 1);
+        i++
+      )
+        if (!pages.includes(i)) pages.push(i);
+      if (currentPage < totalPages - 3) pages.push('...');
+      if (!pages.includes(totalPages - 1)) pages.push(totalPages - 1);
+    }
+    return pages;
+  };
+
+  const startRecord = totalElements > 0 ? currentPage * pageSize + 1 : 0;
+  const endRecord = Math.min((currentPage + 1) * pageSize, totalElements);
 
   if (error) {
     return (
-      <div className='bg-white rounded-lg shadow-md p-6'>
-        <div className='bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded'>
-          Error loading cost centers: {error.message}
+      <div className='min-h-screen bg-[#f8f9fc] p-2'>
+        <div className='flex flex-col items-center justify-center py-16'>
+          <div className='w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mb-3'>
+            <AlertCircle className='w-6 h-6 text-red-500' />
+          </div>
+          <p className='text-red-600 font-medium'>Error loading cost centers</p>
+          <p className='text-gray-500 text-sm mt-1'>{error.message}</p>
         </div>
       </div>
     );
   }
 
-  const startRecord = totalElements > 0 ? currentPage * 15 + 1 : 0;
-  const endRecord = Math.min((currentPage + 1) * 15, totalElements);
-
   return (
-    <div className='bg-white rounded-lg shadow-md'>
-      {/* Header */}
-      <div className='border-b border-gray-200 p-6'>
-        <div className='flex justify-between items-center'>
-          <div>
-            <h2 className='text-2xl font-bold text-gray-900'>
-              Cost Center Master
-            </h2>
-            <p className='text-sm text-gray-600 mt-1'>
-              Manage cost center master records
-            </p>
-          </div>
-          <button
-            onClick={onCreate}
-            className='flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors'
-          >
-            <Plus size={20} />
-            <span>New</span>
-          </button>
+    <div className='min-h-screen bg-[#f8f9fc] p-2'>
+      <div className='flex items-center justify-between mb-6'>
+        <div>
+          <h1 className='text-xl font-semibold text-gray-900'>Cost Center</h1>
+          <p className='text-sm text-gray-500 mt-0.5'>
+            Manage cost center master records
+          </p>
         </div>
+        <button
+          onClick={onCreate}
+          className='inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-violet-600 rounded-md hover:bg-violet-700 transition-colors'
+        >
+          <Plus size={15} />
+          New Cost Center
+        </button>
       </div>
 
-      {/* Filter Section */}
-      <div className='p-6 bg-gray-50 border-b'>
+      <div className='bg-white rounded-lg border border-gray-200 p-5 mb-6'>
         <div className='grid grid-cols-1 md:grid-cols-6 gap-4'>
-          <input
-            type='text'
-            placeholder='Search by name...'
-            value={nameFilter}
-            onChange={e => setNameFilter(e.target.value)}
-            onKeyPress={e => e.key === 'Enter' && handleSearch()}
-            className='px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500'
-          />
-          <input
-            type='text'
-            placeholder='Search by code...'
-            value={codeFilter}
-            onChange={e => setCodeFilter(e.target.value)}
-            onKeyPress={e => e.key === 'Enter' && handleSearch()}
-            className='px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500'
-          />
-          <input
-            type='text'
-            placeholder='Search by department...'
-            value={departmentFilter}
-            onChange={e => setDepartmentFilter(e.target.value)}
-            onKeyPress={e => e.key === 'Enter' && handleSearch()}
-            className='px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500'
-          />
+          <div className='relative'>
+            <Search className='absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400' />
+            <input
+              type='text'
+              placeholder='Search by name...'
+              value={nameFilter}
+              onChange={e => setNameFilter(e.target.value)}
+              onKeyPress={e => e.key === 'Enter' && handleSearch()}
+              className='w-full pl-10 pr-4 py-2.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500'
+            />
+          </div>
+          <div className='relative'>
+            <Search className='absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400' />
+            <input
+              type='text'
+              placeholder='Search by code...'
+              value={codeFilter}
+              onChange={e => setCodeFilter(e.target.value)}
+              onKeyPress={e => e.key === 'Enter' && handleSearch()}
+              className='w-full pl-10 pr-4 py-2.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500'
+            />
+          </div>
+          <div className='relative'>
+            <Search className='absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400' />
+            <input
+              type='text'
+              placeholder='Search by department...'
+              value={departmentFilter}
+              onChange={e => setDepartmentFilter(e.target.value)}
+              onKeyPress={e => e.key === 'Enter' && handleSearch()}
+              className='w-full pl-10 pr-4 py-2.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500'
+            />
+          </div>
           <div className='flex gap-2'>
             <button
               onClick={handleSearch}
-              className='flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex-1'
+              className='flex-1 inline-flex items-center justify-center gap-1.5 px-4 py-2.5 text-sm font-semibold text-white bg-violet-600 rounded-lg hover:bg-violet-700'
             >
-              <Search size={18} />
-              <span>Search</span>
+              <Search size={15} />
+              Search
             </button>
             <button
               onClick={handleClear}
-              className='flex items-center justify-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors'
+              className='p-2.5 text-gray-500 bg-white border border-gray-200 rounded-lg hover:bg-gray-50'
             >
               <X size={18} />
             </button>
           </div>
           <button
             onClick={onImport}
-            className='flex items-center justify-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors'
+            className='inline-flex items-center justify-center gap-1.5 px-4 py-2.5 text-sm font-semibold text-violet-600 bg-violet-50 border border-violet-200 rounded-lg hover:bg-violet-100'
           >
-            <Upload size={18} />
-            <span>Import</span>
+            <Upload size={15} />
+            Import
           </button>
           <button
             onClick={handleExport}
             disabled={isExporting}
-            className='flex items-center justify-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed'
+            className='inline-flex items-center justify-center gap-1.5 px-4 py-2.5 text-sm font-semibold text-white bg-green-600 rounded-lg hover:bg-green-700 disabled:opacity-50'
           >
-            <Download size={18} />
-            <span>{isExporting ? 'Exporting...' : 'Export'}</span>
+            <Download size={15} />
+            {isExporting ? 'Exporting...' : 'Export'}
           </button>
         </div>
       </div>
 
-      {/* Table */}
-      <div className='overflow-x-auto'>
-        <table className='w-full'>
-          <thead className='bg-gray-50 border-b border-gray-200'>
-            <tr>
-              <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
-                S.No
-              </th>
-              <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
-                Cost Center Name
-              </th>
-              <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
-                Cost Center Code
-              </th>
-              <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
-                Department
-              </th>
-              <th className='px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider'>
-                Actions
-              </th>
-            </tr>
-          </thead>
-          <tbody className='bg-white divide-y divide-gray-200'>
-            {costCenters.length === 0 ? (
-              <tr>
-                <td
-                  colSpan={5}
-                  className='px-6 py-12 text-center text-gray-500'
-                >
-                  No cost centers found. Click "New" to create one.
-                </td>
-              </tr>
-            ) : (
-              costCenters.map((costCenter, index) => (
-                <tr
-                  key={costCenter.id}
-                  onClick={() => onEdit(costCenter)}
-                  className='hover:bg-gray-50 cursor-pointer transition-colors'
-                >
-                  <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-900'>
-                    {currentPage * 15 + index + 1}
-                  </td>
-                  <td className='px-6 py-4 whitespace-nowrap'>
-                    <div className='text-sm font-medium text-gray-900'>
-                      {costCenter.name}
-                    </div>
-                  </td>
-                  <td className='px-6 py-4 whitespace-nowrap'>
-                    <div className='text-sm text-gray-700'>
-                      {costCenter.code || '-'}
-                    </div>
-                  </td>
-                  <td className='px-6 py-4 whitespace-nowrap'>
-                    <div className='text-sm text-gray-700'>
-                      {costCenter.departmentName || '-'}
-                    </div>
-                  </td>
-                  <td className='px-6 py-4 whitespace-nowrap text-right text-sm font-medium'>
-                    <button
-                      onClick={e => {
-                        e.stopPropagation();
-                        onEdit(costCenter);
-                      }}
-                      className='text-blue-600 hover:text-blue-900 mr-4'
-                      title='Edit'
-                    >
-                      <Edit size={18} />
-                    </button>
-                    <button
-                      onClick={e => {
-                        e.stopPropagation();
-                        if (
-                          costCenter.id &&
-                          window.confirm(
-                            `Are you sure you want to delete "${costCenter.name}"?`
-                          )
-                        ) {
-                          onDelete(costCenter.id);
-                        }
-                      }}
-                      className='text-red-600 hover:text-red-900'
-                      title='Delete'
-                    >
-                      <Trash2 size={18} />
-                    </button>
-                  </td>
+      <div className='bg-white rounded-lg border border-gray-200 overflow-hidden'>
+        <div className='overflow-x-auto'>
+          {isLoading ? (
+            <div className='flex flex-col items-center justify-center py-16'>
+              <div className='animate-spin rounded-full h-8 w-8 border-2 border-violet-600 border-t-transparent'></div>
+              <p className='text-sm text-gray-500 mt-3'>
+                Loading cost centers...
+              </p>
+            </div>
+          ) : costCenters.length === 0 ? (
+            <div className='flex flex-col items-center justify-center py-16'>
+              <div className='w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-3'>
+                <Target className='w-6 h-6 text-gray-400' />
+              </div>
+              <p className='text-gray-600 font-medium'>No cost centers found</p>
+              <p className='text-gray-400 text-sm mt-1'>
+                Click "New Cost Center" to create one
+              </p>
+            </div>
+          ) : (
+            <table className='w-full'>
+              <thead>
+                <tr className='bg-[#fafbfc]'>
+                  <th className='px-4 py-3.5 text-center text-xs font-semibold text-gray-600 w-16'>
+                    S.No
+                  </th>
+                  <th className='px-4 py-3.5 text-left text-xs font-semibold text-gray-600'>
+                    Cost Center Name
+                  </th>
+                  <th className='px-4 py-3.5 text-left text-xs font-semibold text-gray-600'>
+                    Cost Center Code
+                  </th>
+                  <th className='px-4 py-3.5 text-left text-xs font-semibold text-gray-600'>
+                    Department
+                  </th>
+                  <th className='px-4 py-3.5 text-center text-xs font-semibold text-gray-600 w-24'>
+                    Actions
+                  </th>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
-
-      {/* Pagination */}
-      {totalPages > 0 && (
-        <div className='p-4 border-t flex justify-between items-center'>
-          <div className='text-sm text-gray-600'>
-            Showing {startRecord}-{endRecord} of {totalElements} records
-          </div>
-          <div className='flex gap-2 items-center'>
-            <button
-              onClick={() => onPageChange && onPageChange(currentPage - 1)}
-              disabled={currentPage === 0}
-              className='px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors'
-            >
-              Previous
-            </button>
-            <span className='text-sm text-gray-700'>
-              Page {currentPage + 1} of {totalPages}
-            </span>
-            <button
-              onClick={() => onPageChange && onPageChange(currentPage + 1)}
-              disabled={currentPage >= totalPages - 1}
-              className='px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors'
-            >
-              Next
-            </button>
-          </div>
+              </thead>
+              <tbody className='divide-y divide-gray-100'>
+                {costCenters.map((cc, idx) => (
+                  <tr
+                    key={cc.id}
+                    onClick={() => onEdit(cc)}
+                    className='hover:bg-gray-50 cursor-pointer transition-colors'
+                  >
+                    <td className='px-4 py-3.5 text-center text-sm text-gray-600'>
+                      {currentPage * pageSize + idx + 1}
+                    </td>
+                    <td className='px-4 py-3.5'>
+                      <span className='text-sm font-medium text-violet-600'>
+                        {cc.name}
+                      </span>
+                    </td>
+                    <td className='px-4 py-3.5 text-sm text-gray-700'>
+                      {cc.code || '-'}
+                    </td>
+                    <td className='px-4 py-3.5 text-sm text-gray-700'>
+                      {cc.departmentName || '-'}
+                    </td>
+                    <td className='px-4 py-3.5 text-center'>
+                      <button
+                        onClick={e => {
+                          e.stopPropagation();
+                          if (cc.id && window.confirm(`Delete "${cc.name}"?`))
+                            onDelete(cc.id);
+                        }}
+                        className='p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg'
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
         </div>
-      )}
+
+        {totalPages > 0 && !isLoading && costCenters.length > 0 && (
+          <div className='px-6 py-4 border-t border-gray-200 flex items-center justify-between'>
+            <p className='text-sm text-gray-600'>
+              Showing <span className='font-medium'>{startRecord}</span> to{' '}
+              <span className='font-medium'>{endRecord}</span> of{' '}
+              <span className='font-medium'>{totalElements}</span> results
+            </p>
+            <div className='flex items-center gap-1'>
+              <button
+                onClick={() => onPageChange?.(currentPage - 1)}
+                disabled={currentPage === 0}
+                className='p-2 rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50 disabled:opacity-40'
+              >
+                <ChevronLeft className='w-4 h-4' />
+              </button>
+              {getPageNumbers().map((p, i) => (
+                <React.Fragment key={i}>
+                  {p === '...' ? (
+                    <span className='px-3 py-2 text-sm text-gray-400'>...</span>
+                  ) : (
+                    <button
+                      onClick={() => onPageChange?.(p as number)}
+                      className={`min-w-[36px] h-9 px-3 rounded-lg text-sm font-medium ${currentPage === p ? 'bg-violet-600 text-white' : 'border border-gray-200 text-gray-600 hover:bg-gray-50'}`}
+                    >
+                      {(p as number) + 1}
+                    </button>
+                  )}
+                </React.Fragment>
+              ))}
+              <button
+                onClick={() => onPageChange?.(currentPage + 1)}
+                disabled={currentPage >= totalPages - 1}
+                className='p-2 rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50 disabled:opacity-40'
+              >
+                <ChevronRight className='w-4 h-4' />
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 };

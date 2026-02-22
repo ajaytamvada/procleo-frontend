@@ -2,7 +2,18 @@ import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Edit2, Trash2, Download, X } from 'lucide-react';
+import {
+  Edit2,
+  Trash2,
+  Download,
+  X,
+  Plus,
+  ArrowLeft,
+  Save,
+  CreditCard,
+  ChevronLeft,
+  ChevronRight,
+} from 'lucide-react';
 import {
   usePaymentTerms,
   useCreatePaymentTerm,
@@ -27,18 +38,17 @@ const PaymentTermPage: React.FC = () => {
   >(undefined);
   const [page, setPage] = useState(0);
   const [nameFilter, setNameFilter] = useState('');
+  const pageSize = 20;
 
-  // Fetch payment terms
   const { data, isLoading, error, refetch } = usePaymentTerms(
     page,
-    20,
+    pageSize,
     nameFilter
   );
   const paymentTerms = data?.content || [];
   const totalPages = data?.totalPages || 0;
   const totalElements = data?.totalElements || 0;
 
-  // Mutations
   const createMutation = useCreatePaymentTerm();
   const updateMutation = useUpdatePaymentTerm();
   const deleteMutation = useDeletePaymentTerm();
@@ -55,29 +65,20 @@ const PaymentTermPage: React.FC = () => {
   });
 
   React.useEffect(() => {
-    if (selectedPaymentTerm) {
-      reset(selectedPaymentTerm);
-    } else {
-      reset({ name: '' });
-    }
+    reset(selectedPaymentTerm || { name: '' });
   }, [selectedPaymentTerm, reset]);
 
   const handleCreate = () => {
     setSelectedPaymentTerm(undefined);
     setShowForm(true);
   };
-
-  const handleEdit = (paymentTerm: PaymentTerm) => {
-    setSelectedPaymentTerm(paymentTerm);
+  const handleEdit = (pt: PaymentTerm) => {
+    setSelectedPaymentTerm(pt);
     setShowForm(true);
   };
-
   const handleDelete = (id: number) => {
-    if (window.confirm('Are you sure you want to delete this payment term?')) {
-      deleteMutation.mutate(id, {
-        onSuccess: () => refetch(),
-      });
-    }
+    if (window.confirm('Delete this payment term?'))
+      deleteMutation.mutate(id, { onSuccess: () => refetch() });
   };
 
   const onSubmit = (data: PaymentTermFormData) => {
@@ -104,79 +105,138 @@ const PaymentTermPage: React.FC = () => {
   };
 
   const handleExport = () => {
-    const headers = ['S.No', 'Payment Term'];
-    const rows = paymentTerms.map((pt, index) => [index + 1, pt.name]);
-    const csv = [headers, ...rows].map(row => row.join(',')).join('\n');
-    const blob = new Blob([csv], { type: 'text/csv' });
-    const url = window.URL.createObjectURL(blob);
+    const csv = [
+      ['S.No', 'Payment Term'],
+      ...paymentTerms.map((pt, i) => [i + 1, pt.name]),
+    ]
+      .map(r => r.join(','))
+      .join('\n');
     const a = document.createElement('a');
-    a.href = url;
+    a.href = window.URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
     a.download = `payment_terms_${new Date().toISOString().split('T')[0]}.csv`;
-    document.body.appendChild(a);
     a.click();
-    window.URL.revokeObjectURL(url);
-    document.body.removeChild(a);
   };
+
+  const getPageNumbers = () => {
+    const pages: (number | string)[] = [];
+    if (totalPages <= 7) {
+      for (let i = 0; i < totalPages; i++) pages.push(i);
+    } else {
+      pages.push(0);
+      if (page > 2) pages.push('...');
+      for (
+        let i = Math.max(1, page - 1);
+        i <= Math.min(totalPages - 2, page + 1);
+        i++
+      )
+        if (!pages.includes(i)) pages.push(i);
+      if (page < totalPages - 3) pages.push('...');
+      if (!pages.includes(totalPages - 1)) pages.push(totalPages - 1);
+    }
+    return pages;
+  };
+
+  const startRecord = totalElements > 0 ? page * pageSize + 1 : 0;
+  const endRecord = Math.min((page + 1) * pageSize, totalElements);
 
   if (showForm) {
     return (
-      <div className='container mx-auto p-6'>
-        <div className='bg-white rounded-lg shadow-md p-6'>
-          <div className='mb-6'>
-            <h2 className='text-2xl font-bold text-gray-900'>
-              {selectedPaymentTerm
-                ? 'Edit Payment Term'
-                : 'Create Payment Term'}
-            </h2>
-          </div>
-
-          <form onSubmit={handleSubmit(onSubmit)} className='space-y-6'>
+      <div className='min-h-screen bg-[#f8f9fc] p-2'>
+        <div className='flex items-center justify-between mb-6'>
+          <div className='flex items-center gap-4'>
+            <button
+              onClick={() => {
+                setShowForm(false);
+                setSelectedPaymentTerm(undefined);
+              }}
+              className='p-2 text-gray-500 hover:text-gray-700 hover:bg-white rounded-lg border border-gray-200'
+            >
+              <ArrowLeft size={18} />
+            </button>
             <div>
-              <label className='block text-sm font-medium text-gray-700 mb-2'>
-                Payment Term <span className='text-red-500'>*</span>
-              </label>
-              <input
-                type='text'
-                {...register('name')}
-                className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                  errors.name ? 'border-red-300' : 'border-gray-300'
-                }`}
-                placeholder='Enter payment term (e.g., NET 30, NET 60)'
-              />
-              {errors.name && (
-                <p className='mt-1 text-sm text-red-600'>
-                  {errors.name.message}
-                </p>
-              )}
+              <h1 className='text-xl font-semibold text-gray-900'>
+                {selectedPaymentTerm
+                  ? 'Edit Payment Term'
+                  : 'Create Payment Term'}
+              </h1>
+              <p className='text-sm text-gray-500 mt-0.5'>
+                {selectedPaymentTerm
+                  ? 'Update payment term details'
+                  : 'Create a new payment term'}
+              </p>
             </div>
+          </div>
+          <button
+            type='submit'
+            form='pt-form'
+            disabled={
+              createMutation.isPending || updateMutation.isPending || !isValid
+            }
+            className='inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-violet-600 rounded-md hover:bg-violet-700 disabled:bg-gray-400'
+          >
+            <Save size={15} />
+            {createMutation.isPending || updateMutation.isPending
+              ? 'Saving...'
+              : 'Save'}
+          </button>
+        </div>
 
-            <div className='border-t pt-6 flex justify-end space-x-4'>
+        <div className='bg-white rounded-lg border border-gray-200 overflow-hidden'>
+          <form id='pt-form' onSubmit={handleSubmit(onSubmit)}>
+            <div className='px-6 py-4 border-b border-gray-100 bg-[#fafbfc]'>
+              <div className='flex items-center gap-3'>
+                <div className='p-2 bg-violet-100 rounded-lg'>
+                  <CreditCard size={18} className='text-violet-600' />
+                </div>
+                <div>
+                  <h2 className='text-sm font-semibold text-gray-800'>
+                    Payment Term Information
+                  </h2>
+                  <p className='text-xs text-gray-500'>
+                    Fill in the payment term details
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div className='p-6'>
+              <div>
+                <label className='block text-sm font-medium text-gray-700 mb-1.5'>
+                  Payment Term <span className='text-red-500'>*</span>
+                </label>
+                <input
+                  {...register('name')}
+                  className={`w-full px-4 py-2.5 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500 ${errors.name ? 'border-red-500' : 'border-gray-200'}`}
+                  placeholder='e.g., NET 30, NET 60'
+                />
+                {errors.name && (
+                  <p className='mt-1.5 text-sm text-red-500'>
+                    {errors.name.message}
+                  </p>
+                )}
+              </div>
+            </div>
+            <div className='px-6 py-4 border-t border-gray-100 bg-[#fafbfc] flex items-center justify-end gap-3'>
               <button
                 type='button'
                 onClick={() => {
                   setShowForm(false);
                   setSelectedPaymentTerm(undefined);
                 }}
-                className='px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50'
-                disabled={createMutation.isPending || updateMutation.isPending}
+                className='px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50'
               >
                 Cancel
               </button>
-
               <button
                 type='submit'
-                className='px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 disabled:opacity-50'
                 disabled={
                   createMutation.isPending ||
                   updateMutation.isPending ||
                   !isValid
                 }
+                className='inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-violet-600 rounded-lg hover:bg-violet-700 disabled:bg-gray-400'
               >
-                {createMutation.isPending || updateMutation.isPending
-                  ? 'Saving...'
-                  : selectedPaymentTerm
-                    ? 'Update'
-                    : 'Create'}
+                <Save size={15} />
+                {selectedPaymentTerm ? 'Update' : 'Create'}
               </button>
             </div>
           </form>
@@ -186,40 +246,36 @@ const PaymentTermPage: React.FC = () => {
   }
 
   return (
-    <div className='container mx-auto p-6 space-y-6'>
-      {/* Header */}
-      <div className='flex justify-between items-center'>
+    <div className='min-h-screen bg-[#f8f9fc] p-2'>
+      <div className='flex items-center justify-between mb-6'>
         <div>
-          <h1 className='text-2xl font-bold text-gray-900'>Payment Terms</h1>
-          <p className='text-sm text-gray-600 mt-1'>
+          <h1 className='text-xl font-semibold text-gray-900'>Payment Terms</h1>
+          <p className='text-sm text-gray-500 mt-0.5'>
             Manage payment terms for purchase orders and invoices
           </p>
         </div>
-        <div className='flex space-x-3'>
+        <div className='flex items-center gap-3'>
           <button
             onClick={handleExport}
             disabled={paymentTerms.length === 0}
-            className='inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50'
+            className='inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-green-600 rounded-md hover:bg-green-700 disabled:opacity-50'
           >
-            <Download size={16} className='mr-2' />
+            <Download size={15} />
             Export
           </button>
           <button
             onClick={handleCreate}
-            className='inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700'
+            className='inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-violet-600 rounded-md hover:bg-violet-700'
           >
-            + New Payment Term
+            <Plus size={15} />
+            New Payment Term
           </button>
         </div>
       </div>
 
-      {/* Filter */}
-      <div className='bg-white p-4 rounded-lg shadow-sm border border-gray-200'>
+      <div className='bg-white rounded-lg border border-gray-200 p-5 mb-6'>
         <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
-          <div>
-            <label className='block text-sm font-medium text-gray-700 mb-1'>
-              Search
-            </label>
+          <div className='relative'>
             <input
               type='text'
               value={nameFilter}
@@ -228,139 +284,139 @@ const PaymentTermPage: React.FC = () => {
                 setPage(0);
               }}
               placeholder='Search payment terms...'
-              className='w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500'
+              className='w-full px-4 py-2.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500'
             />
           </div>
-          <div className='flex items-end'>
-            <button
-              onClick={() => {
-                setNameFilter('');
-                setPage(0);
-              }}
-              className='inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50'
-            >
-              <X size={16} className='mr-2' />
-              Clear
-            </button>
-          </div>
+          <button
+            onClick={() => {
+              setNameFilter('');
+              setPage(0);
+            }}
+            className='inline-flex items-center justify-center gap-1.5 px-4 py-2.5 text-sm font-medium text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50'
+          >
+            <X size={15} />
+            Clear
+          </button>
         </div>
       </div>
 
-      {/* Summary */}
-      <div className='bg-blue-50 border border-blue-200 rounded-md p-3'>
-        <p className='text-sm text-blue-800'>
-          Showing <span className='font-semibold'>{paymentTerms.length}</span>{' '}
-          of <span className='font-semibold'>{totalElements}</span> payment
-          terms
-        </p>
-      </div>
-
-      {/* Table */}
-      <div className='bg-white rounded-lg shadow overflow-hidden'>
-        {isLoading ? (
-          <div className='flex items-center justify-center h-64'>
-            <div className='text-lg'>Loading payment terms...</div>
-          </div>
-        ) : error ? (
-          <div className='flex items-center justify-center h-64'>
-            <div className='text-lg text-red-600'>Error: {error.message}</div>
-          </div>
-        ) : (
-          <table className='min-w-full divide-y divide-gray-200'>
-            <thead className='bg-gray-50'>
-              <tr>
-                <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
-                  S.No
-                </th>
-                <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
-                  Payment Term
-                </th>
-                <th className='px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider'>
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody className='bg-white divide-y divide-gray-200'>
-              {paymentTerms.length === 0 ? (
-                <tr>
-                  <td
-                    colSpan={3}
-                    className='px-6 py-12 text-center text-gray-500'
-                  >
-                    <div className='flex flex-col items-center'>
-                      <p className='text-lg mb-2'>No payment terms found</p>
-                      <p className='text-sm'>
-                        Create your first payment term to get started
-                      </p>
-                    </div>
-                  </td>
+      <div className='bg-white rounded-lg border border-gray-200 overflow-hidden'>
+        <div className='overflow-x-auto'>
+          {isLoading ? (
+            <div className='flex flex-col items-center justify-center py-16'>
+              <div className='animate-spin rounded-full h-8 w-8 border-2 border-violet-600 border-t-transparent'></div>
+              <p className='text-sm text-gray-500 mt-3'>
+                Loading payment terms...
+              </p>
+            </div>
+          ) : error ? (
+            <div className='flex flex-col items-center justify-center py-16'>
+              <p className='text-red-600 font-medium'>Error: {error.message}</p>
+            </div>
+          ) : paymentTerms.length === 0 ? (
+            <div className='flex flex-col items-center justify-center py-16'>
+              <div className='w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-3'>
+                <CreditCard className='w-6 h-6 text-gray-400' />
+              </div>
+              <p className='text-gray-600 font-medium'>
+                No payment terms found
+              </p>
+              <p className='text-gray-400 text-sm mt-1'>
+                Create your first payment term to get started
+              </p>
+            </div>
+          ) : (
+            <table className='w-full'>
+              <thead>
+                <tr className='bg-[#fafbfc]'>
+                  <th className='px-4 py-3.5 text-center text-xs font-semibold text-gray-600 w-16'>
+                    S.No
+                  </th>
+                  <th className='px-4 py-3.5 text-left text-xs font-semibold text-gray-600'>
+                    Payment Term
+                  </th>
+                  <th className='px-4 py-3.5 text-center text-xs font-semibold text-gray-600 w-24'>
+                    Actions
+                  </th>
                 </tr>
-              ) : (
-                paymentTerms.map((paymentTerm, index) => (
-                  <tr key={paymentTerm.id} className='hover:bg-gray-50'>
-                    <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-900'>
-                      {page * 20 + index + 1}
+              </thead>
+              <tbody className='divide-y divide-gray-100'>
+                {paymentTerms.map((pt, idx) => (
+                  <tr
+                    key={pt.id}
+                    className='hover:bg-gray-50 transition-colors'
+                  >
+                    <td className='px-4 py-3.5 text-center text-sm text-gray-600'>
+                      {page * pageSize + idx + 1}
                     </td>
-                    <td className='px-6 py-4 text-sm font-medium text-gray-900'>
-                      {paymentTerm.name}
+                    <td className='px-4 py-3.5'>
+                      <span className='text-sm font-medium text-violet-600'>
+                        {pt.name}
+                      </span>
                     </td>
-                    <td className='px-6 py-4 whitespace-nowrap text-right text-sm font-medium'>
-                      <div className='flex justify-end space-x-2'>
+                    <td className='px-4 py-3.5 text-center'>
+                      <div className='flex items-center justify-center gap-1'>
                         <button
-                          onClick={() => handleEdit(paymentTerm)}
-                          className='text-blue-600 hover:text-blue-900 p-1'
-                          title='Edit'
+                          onClick={() => handleEdit(pt)}
+                          className='p-1.5 text-gray-400 hover:text-violet-600 hover:bg-violet-50 rounded-lg'
                         >
                           <Edit2 size={16} />
                         </button>
                         <button
-                          onClick={() =>
-                            paymentTerm.id && handleDelete(paymentTerm.id)
-                          }
-                          className='text-red-600 hover:text-red-900 p-1'
-                          title='Delete'
+                          onClick={() => pt.id && handleDelete(pt.id)}
+                          className='p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg'
                         >
                           <Trash2 size={16} />
                         </button>
                       </div>
                     </td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        )}
-      </div>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </div>
 
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <div className='flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6 rounded-lg shadow'>
-          <div>
-            <p className='text-sm text-gray-700'>
-              Page <span className='font-medium'>{page + 1}</span> of{' '}
-              <span className='font-medium'>{totalPages}</span>
+        {totalPages > 1 && !isLoading && paymentTerms.length > 0 && (
+          <div className='px-6 py-4 border-t border-gray-200 flex items-center justify-between'>
+            <p className='text-sm text-gray-600'>
+              Showing <span className='font-medium'>{startRecord}</span> to{' '}
+              <span className='font-medium'>{endRecord}</span> of{' '}
+              <span className='font-medium'>{totalElements}</span> results
             </p>
-          </div>
-          <div>
-            <nav className='isolate inline-flex -space-x-px rounded-md shadow-sm'>
+            <div className='flex items-center gap-1'>
               <button
                 onClick={() => setPage(page - 1)}
                 disabled={page === 0}
-                className='relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 disabled:opacity-50'
+                className='p-2 rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50 disabled:opacity-40'
               >
-                Previous
+                <ChevronLeft className='w-4 h-4' />
               </button>
+              {getPageNumbers().map((p, i) => (
+                <React.Fragment key={i}>
+                  {p === '...' ? (
+                    <span className='px-3 py-2 text-sm text-gray-400'>...</span>
+                  ) : (
+                    <button
+                      onClick={() => setPage(p as number)}
+                      className={`min-w-[36px] h-9 px-3 rounded-lg text-sm font-medium ${page === p ? 'bg-violet-600 text-white' : 'border border-gray-200 text-gray-600 hover:bg-gray-50'}`}
+                    >
+                      {(p as number) + 1}
+                    </button>
+                  )}
+                </React.Fragment>
+              ))}
               <button
                 onClick={() => setPage(page + 1)}
-                disabled={page === totalPages - 1}
-                className='relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 disabled:opacity-50'
+                disabled={page >= totalPages - 1}
+                className='p-2 rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50 disabled:opacity-40'
               >
-                Next
+                <ChevronRight className='w-4 h-4' />
               </button>
-            </nav>
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 };

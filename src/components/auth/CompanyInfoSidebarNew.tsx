@@ -442,6 +442,13 @@ export function CompanyInfoSidebar({
               />
             ))}
           </div>
+          <div className='flex space-x-2 mb-5 mt-5'>
+            <img
+              src={import.meta.env.BASE_URL + 'banner2.png'}
+              alt='RiditStack Logo'
+              className='h-9 w-auto'
+            />
+          </div>
         </div>
 
         {/* Contact Info - Always Visible */}

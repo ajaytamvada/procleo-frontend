@@ -99,7 +99,7 @@ const FinancialYearPage: React.FC = () => {
 
   if (showForm) {
     return (
-      <div className='container mx-auto p-6'>
+      <div className=''>
         <FinancialYearForm
           financialYear={selectedFinancialYear}
           onSubmit={handleSubmit}
@@ -113,7 +113,7 @@ const FinancialYearPage: React.FC = () => {
 
   return (
     <>
-      <div className='container mx-auto p-6'>
+      <div className='container mx-auto'>
         <FinancialYearList
           financialYears={financialYears}
           isLoading={isLoading}

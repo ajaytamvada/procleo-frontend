@@ -2,7 +2,7 @@ import React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { ArrowLeft, Save } from 'lucide-react';
+import { ArrowLeft, Save, Receipt } from 'lucide-react';
 import type { Tax } from '../../hooks/useTaxAPI';
 
 const taxSchema = z.object({
@@ -79,269 +79,211 @@ const TaxForm: React.FC<TaxFormProps> = ({
   });
 
   React.useEffect(() => {
-    if (tax) {
-      reset(tax);
-    }
+    if (tax) reset(tax);
   }, [tax, reset]);
 
-  const primaryTaxPercentage = watch('primaryTaxPercentage') || 0;
-  const secondaryTaxPercentage = watch('secondaryTaxPercentage') || 0;
-  const totalTax =
-    Number(primaryTaxPercentage) + Number(secondaryTaxPercentage);
+  const primaryPct = watch('primaryTaxPercentage') || 0;
+  const secondaryPct = watch('secondaryTaxPercentage') || 0;
+  const totalTax = Number(primaryPct) + Number(secondaryPct);
 
   return (
-    <div className='bg-white rounded-lg shadow-md'>
-      <div className='border-b border-gray-200 p-6'>
+    <div className='min-h-screen bg-[#f8f9fc] p-2'>
+      <div className='flex items-center justify-between mb-6'>
         <div className='flex items-center gap-4'>
           <button
             onClick={onCancel}
-            className='text-gray-600 hover:text-gray-800 transition-colors'
+            className='p-2 text-gray-500 hover:text-gray-700 hover:bg-white rounded-lg border border-gray-200'
             disabled={isSubmitting}
           >
-            <ArrowLeft size={24} />
+            <ArrowLeft size={18} />
           </button>
-          <h2 className='text-2xl font-bold text-gray-800'>
-            {tax?.id ? 'Edit Tax' : 'New Tax'}
-          </h2>
-        </div>
-      </div>
-
-      <form onSubmit={handleSubmit(onSubmit)} className='p-6'>
-        <div className='space-y-6 max-w-4xl'>
-          {/* Primary Tax Section */}
-          <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
-            <div>
-              <label
-                htmlFor='primaryTaxName'
-                className='block text-sm font-medium text-gray-700 mb-2'
-              >
-                Primary Tax Name <span className='text-red-500'>*</span>
-              </label>
-              <input
-                {...register('primaryTaxName')}
-                type='text'
-                id='primaryTaxName'
-                className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                  errors.primaryTaxName ? 'border-red-500' : 'border-gray-300'
-                }`}
-                placeholder='Enter primary tax name (e.g., GST, VAT)'
-                disabled={isSubmitting}
-              />
-              {errors.primaryTaxName && (
-                <p className='mt-1 text-sm text-red-600'>
-                  {errors.primaryTaxName.message}
-                </p>
-              )}
-            </div>
-
-            <div>
-              <label
-                htmlFor='primaryTaxPercentage'
-                className='block text-sm font-medium text-gray-700 mb-2'
-              >
-                Primary Tax Percentage (%)
-              </label>
-              <input
-                {...register('primaryTaxPercentage', { valueAsNumber: true })}
-                type='number'
-                step='0.01'
-                id='primaryTaxPercentage'
-                className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                  errors.primaryTaxPercentage
-                    ? 'border-red-500'
-                    : 'border-gray-300'
-                }`}
-                placeholder='0.00'
-                disabled={isSubmitting}
-              />
-              {errors.primaryTaxPercentage && (
-                <p className='mt-1 text-sm text-red-600'>
-                  {errors.primaryTaxPercentage.message}
-                </p>
-              )}
-            </div>
-          </div>
-
-          {/* Secondary Tax Section */}
-          <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
-            <div>
-              <label
-                htmlFor='secondaryTaxName'
-                className='block text-sm font-medium text-gray-700 mb-2'
-              >
-                Secondary Tax Name
-              </label>
-              <input
-                {...register('secondaryTaxName')}
-                type='text'
-                id='secondaryTaxName'
-                className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                  errors.secondaryTaxName ? 'border-red-500' : 'border-gray-300'
-                }`}
-                placeholder='Enter secondary tax name (optional)'
-                disabled={isSubmitting}
-              />
-              {errors.secondaryTaxName && (
-                <p className='mt-1 text-sm text-red-600'>
-                  {errors.secondaryTaxName.message}
-                </p>
-              )}
-            </div>
-
-            <div>
-              <label
-                htmlFor='secondaryTaxPercentage'
-                className='block text-sm font-medium text-gray-700 mb-2'
-              >
-                Secondary Tax Percentage (%)
-              </label>
-              <input
-                {...register('secondaryTaxPercentage', { valueAsNumber: true })}
-                type='number'
-                step='0.01'
-                id='secondaryTaxPercentage'
-                className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                  errors.secondaryTaxPercentage
-                    ? 'border-red-500'
-                    : 'border-gray-300'
-                }`}
-                placeholder='0.00'
-                disabled={isSubmitting}
-              />
-              {errors.secondaryTaxPercentage && (
-                <p className='mt-1 text-sm text-red-600'>
-                  {errors.secondaryTaxPercentage.message}
-                </p>
-              )}
-            </div>
-          </div>
-
-          {/* Total Tax Display */}
-          <div className='bg-blue-50 p-4 rounded-lg'>
-            <p className='text-sm font-medium text-gray-700'>
-              Total Tax Percentage:{' '}
-              <span className='text-xl font-bold text-blue-600'>
-                {totalTax.toFixed(2)}%
-              </span>
+          <div>
+            <h1 className='text-xl font-semibold text-gray-900'>
+              {tax?.id ? 'Edit Tax' : 'New Tax'}
+            </h1>
+            <p className='text-sm text-gray-500 mt-0.5'>
+              {tax?.id ? 'Update tax details' : 'Create a new tax record'}
             </p>
           </div>
+        </div>
+        <button
+          type='submit'
+          form='tax-form'
+          disabled={isSubmitting}
+          className='inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-violet-600 rounded-md hover:bg-violet-700 disabled:bg-gray-400'
+        >
+          <Save size={15} />
+          {isSubmitting ? 'Saving...' : 'Save'}
+        </button>
+      </div>
 
-          {/* Tax Code and PO Type */}
-          <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
-            <div>
-              <label
-                htmlFor='taxCode'
-                className='block text-sm font-medium text-gray-700 mb-2'
-              >
-                Tax Code
-              </label>
-              <input
-                {...register('taxCode')}
-                type='text'
-                id='taxCode'
-                className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                  errors.taxCode ? 'border-red-500' : 'border-gray-300'
-                }`}
-                placeholder='Enter tax code'
-                disabled={isSubmitting}
-              />
-              {errors.taxCode && (
-                <p className='mt-1 text-sm text-red-600'>
-                  {errors.taxCode.message}
+      <div className='bg-white rounded-lg border border-gray-200 overflow-hidden'>
+        <form id='tax-form' onSubmit={handleSubmit(onSubmit)}>
+          <div className='px-6 py-4 border-b border-gray-100 bg-[#fafbfc]'>
+            <div className='flex items-center gap-3'>
+              <div className='p-2 bg-violet-100 rounded-lg'>
+                <Receipt size={18} className='text-violet-600' />
+              </div>
+              <div>
+                <h2 className='text-sm font-semibold text-gray-800'>
+                  Tax Information
+                </h2>
+                <p className='text-xs text-gray-500'>
+                  Fill in the tax details below
                 </p>
-              )}
-            </div>
-
-            <div>
-              <label
-                htmlFor='purchaseOrderType'
-                className='block text-sm font-medium text-gray-700 mb-2'
-              >
-                Purchase Order Type
-              </label>
-              <input
-                {...register('purchaseOrderType')}
-                type='text'
-                id='purchaseOrderType'
-                className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                  errors.purchaseOrderType
-                    ? 'border-red-500'
-                    : 'border-gray-300'
-                }`}
-                placeholder='Enter PO type'
-                disabled={isSubmitting}
-              />
-              {errors.purchaseOrderType && (
-                <p className='mt-1 text-sm text-red-600'>
-                  {errors.purchaseOrderType.message}
-                </p>
-              )}
+              </div>
             </div>
           </div>
 
-          {/* Remarks */}
-          <div>
-            <label
-              htmlFor='remarks'
-              className='block text-sm font-medium text-gray-700 mb-2'
-            >
-              Remarks
-            </label>
-            <textarea
-              {...register('remarks')}
-              id='remarks'
-              rows={3}
-              className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                errors.remarks ? 'border-red-500' : 'border-gray-300'
-              }`}
-              placeholder='Enter remarks'
-              disabled={isSubmitting}
-            />
-            {errors.remarks && (
-              <p className='mt-1 text-sm text-red-600'>
-                {errors.remarks.message}
+          <div className='p-6 space-y-5'>
+            {/* Primary Tax */}
+            <div className='grid grid-cols-1 md:grid-cols-2 gap-5'>
+              <div>
+                <label className='block text-sm font-medium text-gray-700 mb-1.5'>
+                  Primary Tax Name <span className='text-red-500'>*</span>
+                </label>
+                <input
+                  {...register('primaryTaxName')}
+                  className={`w-full px-4 py-2.5 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500 ${errors.primaryTaxName ? 'border-red-500' : 'border-gray-200'}`}
+                  placeholder='e.g., GST, VAT'
+                  disabled={isSubmitting}
+                />
+                {errors.primaryTaxName && (
+                  <p className='mt-1.5 text-sm text-red-500'>
+                    {errors.primaryTaxName.message}
+                  </p>
+                )}
+              </div>
+              <div>
+                <label className='block text-sm font-medium text-gray-700 mb-1.5'>
+                  Primary Tax Percentage (%)
+                </label>
+                <input
+                  {...register('primaryTaxPercentage', { valueAsNumber: true })}
+                  type='number'
+                  step='0.01'
+                  className='w-full px-4 py-2.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500'
+                  placeholder='0.00'
+                  disabled={isSubmitting}
+                />
+              </div>
+            </div>
+
+            {/* Secondary Tax */}
+            <div className='grid grid-cols-1 md:grid-cols-2 gap-5'>
+              <div>
+                <label className='block text-sm font-medium text-gray-700 mb-1.5'>
+                  Secondary Tax Name
+                </label>
+                <input
+                  {...register('secondaryTaxName')}
+                  className='w-full px-4 py-2.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500'
+                  placeholder='Enter secondary tax name (optional)'
+                  disabled={isSubmitting}
+                />
+              </div>
+              <div>
+                <label className='block text-sm font-medium text-gray-700 mb-1.5'>
+                  Secondary Tax Percentage (%)
+                </label>
+                <input
+                  {...register('secondaryTaxPercentage', {
+                    valueAsNumber: true,
+                  })}
+                  type='number'
+                  step='0.01'
+                  className='w-full px-4 py-2.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500'
+                  placeholder='0.00'
+                  disabled={isSubmitting}
+                />
+              </div>
+            </div>
+
+            {/* Total Tax Display */}
+            <div className='p-4 bg-violet-50 border border-violet-200 rounded-lg'>
+              <p className='text-sm font-medium text-gray-700'>
+                Total Tax Percentage:{' '}
+                <span className='text-xl font-bold text-violet-600'>
+                  {totalTax.toFixed(2)}%
+                </span>
               </p>
-            )}
+            </div>
+
+            {/* Tax Code and PO Type */}
+            <div className='grid grid-cols-1 md:grid-cols-2 gap-5'>
+              <div>
+                <label className='block text-sm font-medium text-gray-700 mb-1.5'>
+                  Tax Code
+                </label>
+                <input
+                  {...register('taxCode')}
+                  className='w-full px-4 py-2.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500'
+                  placeholder='Enter tax code'
+                  disabled={isSubmitting}
+                />
+              </div>
+              <div>
+                <label className='block text-sm font-medium text-gray-700 mb-1.5'>
+                  Purchase Order Type
+                </label>
+                <input
+                  {...register('purchaseOrderType')}
+                  className='w-full px-4 py-2.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500'
+                  placeholder='Enter PO type'
+                  disabled={isSubmitting}
+                />
+              </div>
+            </div>
+
+            {/* Remarks */}
+            <div>
+              <label className='block text-sm font-medium text-gray-700 mb-1.5'>
+                Remarks
+              </label>
+              <textarea
+                {...register('remarks')}
+                rows={3}
+                className='w-full px-4 py-2.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500 resize-none'
+                placeholder='Enter remarks'
+                disabled={isSubmitting}
+              />
+            </div>
+
+            {/* Active Checkbox */}
+            <div className='flex items-center gap-2'>
+              <input
+                {...register('active')}
+                type='checkbox'
+                id='active'
+                className='h-4 w-4 text-violet-600 focus:ring-violet-500 border-gray-300 rounded'
+                disabled={isSubmitting}
+              />
+              <label htmlFor='active' className='text-sm text-gray-700'>
+                Active
+              </label>
+            </div>
           </div>
 
-          {/* Active Checkbox */}
-          <div className='flex items-center'>
-            <input
-              {...register('active')}
-              type='checkbox'
-              id='active'
-              className='h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded'
-              disabled={isSubmitting}
-            />
-            <label
-              htmlFor='active'
-              className='ml-2 block text-sm text-gray-700'
-            >
-              Active
-            </label>
-          </div>
-
-          {/* Action Buttons */}
-          <div className='flex gap-4 pt-4'>
-            <button
-              type='submit'
-              disabled={isSubmitting}
-              className='flex items-center gap-2 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed'
-            >
-              <Save size={20} />
-              <span>{isSubmitting ? 'Saving...' : 'Save'}</span>
-            </button>
+          <div className='px-6 py-4 border-t border-gray-100 bg-[#fafbfc] flex items-center justify-end gap-3'>
             <button
               type='button'
               onClick={onCancel}
               disabled={isSubmitting}
-              className='px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors disabled:bg-gray-100 disabled:cursor-not-allowed'
+              className='px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-50'
             >
               Cancel
             </button>
+            <button
+              type='submit'
+              disabled={isSubmitting}
+              className='inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-violet-600 rounded-lg hover:bg-violet-700 disabled:bg-gray-400'
+            >
+              <Save size={15} />
+              {isSubmitting ? 'Saving...' : tax?.id ? 'Update' : 'Create'}
+            </button>
           </div>
-        </div>
-      </form>
+        </form>
+      </div>
     </div>
   );
 };

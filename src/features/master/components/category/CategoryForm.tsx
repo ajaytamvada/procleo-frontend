@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
+import { ArrowLeft, Save, FolderOpen } from 'lucide-react';
 import type { Category } from '../../hooks/useCategoryAPI';
 
 interface CategoryFormProps {
@@ -35,67 +36,143 @@ const CategoryForm: React.FC<CategoryFormProps> = ({
   }, [category, reset]);
 
   return (
-    <div className='p-6'>
-      <h1 className='text-2xl font-bold mb-6'>
-        {category ? 'Edit Category' : 'Create Category'}
-      </h1>
-
-      <div className='bg-white rounded-lg shadow p-6'>
-        <form onSubmit={handleSubmit(onSubmit)} className='space-y-6'>
+    <div className='min-h-screen bg-[#f8f9fc] p-2'>
+      {/* Page Header */}
+      <div className='flex items-center justify-between mb-6'>
+        <div className='flex items-center gap-4'>
+          <button
+            onClick={onCancel}
+            className='p-2 text-gray-500 hover:text-gray-700 hover:bg-white rounded-lg border border-gray-200 transition-colors'
+            disabled={isSubmitting}
+          >
+            <ArrowLeft size={18} />
+          </button>
           <div>
-            <label className='block text-sm font-medium text-gray-700 mb-1'>
-              Category Name <span className='text-red-500'>*</span>
-            </label>
-            <input
-              type='text'
-              {...register('name', { required: 'Category name is required' })}
-              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                errors.name ? 'border-red-500' : 'border-gray-300'
-              }`}
-              placeholder='Enter category name'
-            />
-            {errors.name && (
-              <p className='mt-1 text-sm text-red-500'>{errors.name.message}</p>
-            )}
+            <h1 className='text-xl font-semibold text-gray-900'>
+              {category ? 'Edit Category' : 'New Category'}
+            </h1>
+            <p className='text-sm text-gray-500 mt-0.5'>
+              {category
+                ? 'Update category details'
+                : 'Create a new category record'}
+            </p>
+          </div>
+        </div>
+        <button
+          type='submit'
+          form='category-form'
+          disabled={isSubmitting}
+          className='inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-violet-600 rounded-md hover:bg-violet-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed'
+        >
+          <Save size={15} />
+          {isSubmitting ? 'Saving...' : 'Save'}
+        </button>
+      </div>
+
+      {/* Form Card */}
+      <div className='bg-white rounded-lg border border-gray-200 overflow-hidden'>
+        <form id='category-form' onSubmit={handleSubmit(onSubmit)}>
+          {/* Form Header */}
+          <div className='px-6 py-4 border-b border-gray-100 bg-[#fafbfc]'>
+            <div className='flex items-center gap-3'>
+              <div className='p-2 bg-violet-100 rounded-lg'>
+                <FolderOpen size={18} className='text-violet-600' />
+              </div>
+              <div>
+                <h2 className='text-sm font-semibold text-gray-800'>
+                  Category Information
+                </h2>
+                <p className='text-xs text-gray-500'>
+                  Fill in the category details below
+                </p>
+              </div>
+            </div>
           </div>
 
-          <div>
-            <label className='block text-sm font-medium text-gray-700 mb-1'>
-              Category Code
-            </label>
-            <input
-              type='text'
-              {...register('code')}
-              className='w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500'
-              placeholder='Enter category code'
-            />
+          {/* Form Fields */}
+          <div className='p-6 space-y-5'>
+            <div className='grid grid-cols-1 md:grid-cols-2 gap-5'>
+              {/* Category Name */}
+              <div>
+                <label
+                  htmlFor='name'
+                  className='block text-sm font-medium text-gray-700 mb-1.5'
+                >
+                  Category Name <span className='text-red-500'>*</span>
+                </label>
+                <input
+                  type='text'
+                  id='name'
+                  {...register('name', {
+                    required: 'Category name is required',
+                  })}
+                  className={`w-full px-4 py-2.5 text-sm border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 transition-colors ${
+                    errors.name ? 'border-red-500' : 'border-gray-200'
+                  }`}
+                  placeholder='Enter category name'
+                  disabled={isSubmitting}
+                />
+                {errors.name && (
+                  <p className='mt-1.5 text-sm text-red-500'>
+                    {errors.name.message}
+                  </p>
+                )}
+              </div>
+
+              {/* Category Code */}
+              <div>
+                <label
+                  htmlFor='code'
+                  className='block text-sm font-medium text-gray-700 mb-1.5'
+                >
+                  Category Code
+                </label>
+                <input
+                  type='text'
+                  id='code'
+                  {...register('code')}
+                  className='w-full px-4 py-2.5 text-sm border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 transition-colors'
+                  placeholder='Enter category code'
+                  disabled={isSubmitting}
+                />
+              </div>
+            </div>
+
+            {/* Description */}
+            <div>
+              <label
+                htmlFor='description'
+                className='block text-sm font-medium text-gray-700 mb-1.5'
+              >
+                Description
+              </label>
+              <textarea
+                id='description'
+                {...register('description')}
+                rows={4}
+                className='w-full px-4 py-2.5 text-sm border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 transition-colors resize-none'
+                placeholder='Enter description (optional)'
+                disabled={isSubmitting}
+              />
+            </div>
           </div>
 
-          <div>
-            <label className='block text-sm font-medium text-gray-700 mb-1'>
-              Description
-            </label>
-            <textarea
-              {...register('description')}
-              rows={4}
-              className='w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500'
-              placeholder='Enter description'
-            />
-          </div>
-
-          <div className='flex justify-end gap-4'>
+          {/* Form Footer */}
+          <div className='px-6 py-4 border-t border-gray-100 bg-[#fafbfc] flex items-center justify-end gap-3'>
             <button
               type='button'
               onClick={onCancel}
-              className='px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50'
+              disabled={isSubmitting}
+              className='px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 hover:border-gray-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed'
             >
               Cancel
             </button>
             <button
               type='submit'
               disabled={isSubmitting}
-              className='px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 disabled:bg-gray-400'
+              className='inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-violet-600 rounded-lg hover:bg-violet-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed'
             >
+              <Save size={15} />
               {isSubmitting ? 'Saving...' : category ? 'Update' : 'Create'}
             </button>
           </div>
