@@ -421,7 +421,7 @@ export function CompanyInfoSidebar({
         {/* Section Indicators - Horizontal lines like Cashfree */}
 
         {/* Scrollable Content */}
-        <div className='flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar mt-5'>
+        <div className='flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar mt-5 flex flex-col'>
           {renderSection()}
 
           <div className='flex space-x-2 mb-5 mt-5'>
@@ -442,11 +442,11 @@ export function CompanyInfoSidebar({
               />
             ))}
           </div>
-          <div className='flex space-x-2 mb-5 mt-5'>
+          <div className='flex space-x-2 mt-auto'>
             <img
               src={import.meta.env.BASE_URL + 'banner2.png'}
-              alt='RiditStack Logo'
-              className='h-9 w-auto'
+              alt='Sidebar Image'
+              className='w-100'
             />
           </div>
         </div>
