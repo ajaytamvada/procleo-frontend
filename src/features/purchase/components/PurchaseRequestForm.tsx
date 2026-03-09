@@ -50,7 +50,7 @@ const purchaseRequestSchema = z.object({
   locationId: z.number().min(1, 'Location is required'),
   purchaseType: z.string().min(1, 'Purchase Type is required'),
   projectCode: z.string().optional(),
-  projectName: z.string().min(1, 'Project Name is required'),
+  projectName: z.string().optional(),
   remarks: z.string().optional(),
   attachments: z.string().optional(),
   items: z
@@ -180,7 +180,7 @@ const PurchaseRequestForm: React.FC<PurchaseRequestFormProps> = ({
       requestedBy: AuthService.getUserFullName(),
       departmentId: undefined,
       locationId: undefined,
-      purchaseType: '',
+      purchaseType: 'PURCHASE_ORDER',
       projectCode: '',
       projectName: '',
       remarks: '',
@@ -706,20 +706,16 @@ const PurchaseRequestForm: React.FC<PurchaseRequestFormProps> = ({
                   disabled={isSubmitting}
                 >
                   <option value=''>Select Purchase Type</option>
-                  <option value='PURCHASE_ORDER'>
-                    Purchase Order (Standard)
-                  </option>
-                  <option value='PURCHASE_AGREEMENT'>
-                    Purchase Agreement (Contract)
-                  </option>
-                  <option value='CATALOG'>Catalog (Auto-PO)</option>
+                  <option value='PURCHASE_ORDER'>Purchase Requisition</option>
+                  <option value='PURCHASE_AGREEMENT'>Purchase Agreement</option>
+                  <option value='CATALOG'>Catalog</option>
                 </select>
                 <ChevronDown className='absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none' />
               </div>
             </div>
             <div>
               <label className='block text-sm font-medium text-gray-700 mb-2'>
-                <span className='text-red-500'>*</span> Project Name
+                Project Name
               </label>
               <input
                 {...register('projectName')}
@@ -730,14 +726,14 @@ const PurchaseRequestForm: React.FC<PurchaseRequestFormProps> = ({
             </div>
             <div className='md:col-span-3'>
               <label className='block text-sm font-medium text-gray-700 mb-2'>
-                Justification
+                Description
               </label>
               <textarea
                 {...register('remarks')}
                 rows={3}
                 className='w-full px-4 py-3 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-violet-500 resize-none'
                 disabled={isSubmitting}
-                placeholder='Enter justification...'
+                placeholder='Enter description...'
               />
             </div>
           </div>
