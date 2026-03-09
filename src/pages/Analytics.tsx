@@ -157,14 +157,14 @@ const Analytics: React.FC = () => {
               {getCurrentDate()}
             </p>
           </div>
-          <div className='flex items-center gap-3'>
+          {/* <div className='flex items-center gap-3'>
             <select className='px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-medium text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent cursor-pointer hover:border-slate-300 transition-colors'>
               <option>Last 7 days</option>
               <option>Last 30 days</option>
               <option>Last 90 days</option>
               <option>This Year</option>
             </select>
-          </div>
+          </div> */}
         </div>
 
         {/* Charts Grid with Insights */}
