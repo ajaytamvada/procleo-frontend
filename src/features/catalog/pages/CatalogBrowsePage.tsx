@@ -74,7 +74,19 @@ export const useCatalogCart = () => {
   };
 };
 
-const CatalogBrowsePage: React.FC = () => {
+interface CatalogBrowsePageProps {
+  onBack?: () => void;
+  onSubmit?: (catalogItems: any[], sendForApproval: boolean) => void;
+  headerData?: any;
+  isSubmitting?: boolean;
+}
+
+const CatalogBrowsePage: React.FC<CatalogBrowsePageProps> = ({
+  onBack,
+  onSubmit,
+  headerData,
+  isSubmitting,
+}) => {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('');
@@ -131,11 +143,10 @@ const CatalogBrowsePage: React.FC = () => {
             {/* Cart Button */}
             <button
               onClick={() => navigate('/catalog/cart')}
-              className={`relative flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm transition-all shadow-sm ${
-                cartCount > 0
-                  ? 'bg-violet-600 text-white hover:bg-violet-700'
-                  : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
-              }`}
+              className={`relative flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm transition-all shadow-sm ${cartCount > 0
+                ? 'bg-violet-600 text-white hover:bg-violet-700'
+                : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                }`}
             >
               <ShoppingCart size={18} />
               <span>Cart</span>
@@ -214,9 +225,9 @@ const CatalogBrowsePage: React.FC = () => {
                       <div className='flex-1 min-w-0'>
                         <h4
                           className='font-semibold text-gray-900 text-sm line-clamp-1'
-                          title={product.modelName}
+                          title={product.model}
                         >
-                          {product.modelName}
+                          {product.model}
                         </h4>
                         <p className='text-xs text-gray-500 mt-0.5'>
                           {product.make}
@@ -240,7 +251,7 @@ const CatalogBrowsePage: React.FC = () => {
                         {(product.vendorName?.length || 0) > 20 && '...'}
                       </span>
                       <span className='text-gray-400'>
-                        {product.uomName || 'Each'}
+                        {product.uom || 'Each'}
                       </span>
                     </div>
 
@@ -305,11 +316,10 @@ const CatalogBrowsePage: React.FC = () => {
                     ) : (
                       <button
                         onClick={() => setPage(pageNum as number)}
-                        className={`min-w-[36px] h-9 px-3 rounded-lg text-sm font-medium transition-colors ${
-                          page === pageNum
-                            ? 'bg-violet-600 text-white'
-                            : 'border border-gray-200 text-gray-600 hover:bg-gray-50'
-                        }`}
+                        className={`min-w-[36px] h-9 px-3 rounded-lg text-sm font-medium transition-colors ${page === pageNum
+                          ? 'bg-violet-600 text-white'
+                          : 'border border-gray-200 text-gray-600 hover:bg-gray-50'
+                          }`}
                       >
                         {(pageNum as number) + 1}
                       </button>

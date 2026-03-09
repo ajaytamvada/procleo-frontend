@@ -75,12 +75,19 @@ const Overview: React.FC = () => {
     return 'Good Evening';
   };
 
+  const formatCurrency = (value: number) => {
+    if (value >= 10000000) return `₹${(value / 10000000).toFixed(2)}Cr`;
+    if (value >= 100000) return `₹${(value / 100000).toFixed(2)}L`;
+    if (value >= 1000) return `₹${(value / 1000).toFixed(1)}K`;
+    return `₹${value.toLocaleString('en-IN')}`;
+  };
+
   const statsList = [
     {
-      name: 'Total Purchase Orders',
-      value: stats.totalPurchaseOrders.toString(),
-      change: `${stats.pendingPOs} pending`,
-      changeType: 'warning',
+      name: 'Total Purchase Value',
+      value: formatCurrency(stats.totalPurchaseValue || 0),
+      change: `${stats.spendChangePercentage?.toFixed(1) || 0}% vs last month`,
+      changeType: stats.spendChangePercentage >= 0 ? 'increase' : 'decrease',
       icon: ShoppingCart,
       href: '/purchase-orders',
       gradient: 'from-blue-500 to-blue-600',
@@ -99,23 +106,24 @@ const Overview: React.FC = () => {
       iconColor: 'text-emerald-600',
     },
     {
-      name: 'Purchase Requests',
-      value: stats.totalPurchaseRequests.toString(),
-      change: `${stats.pendingPRs} pending`,
+      name: 'Open PO Value',
+      value: formatCurrency(stats.openPOValue || 0),
+      change: `${stats.openPOCount || 0} open POs`,
       changeType: 'warning',
       icon: FileText,
-      href: '/purchase-requisition/manage',
+      href: '/purchase-orders',
       gradient: 'from-amber-500 to-orange-500',
       lightBg: 'bg-amber-50',
       iconColor: 'text-amber-600',
     },
     {
-      name: 'Total RFPs',
-      value: stats.totalRFPs.toString(),
-      change: `${stats.activeRFPs} active`,
-      changeType: 'increase',
+      name: 'Invoice Due',
+      value: formatCurrency(stats.invoiceDueValue || 0),
+      change: `${stats.overdueInvoiceCount || 0} overdue`,
+      changeType:
+        (stats.overdueInvoiceCount || 0) > 0 ? 'decrease' : 'increase',
       icon: TrendingUp,
-      href: '/rfp/manage',
+      href: '/invoices',
       gradient: 'from-violet-500 to-purple-600',
       lightBg: 'bg-violet-50',
       iconColor: 'text-violet-600',
