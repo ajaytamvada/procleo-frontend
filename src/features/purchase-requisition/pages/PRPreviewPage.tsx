@@ -96,19 +96,16 @@ export const PRPreviewPage: React.FC = () => {
     const maxVisiblePages = 5;
 
     if (totalPages <= maxVisiblePages + 2) {
-      // Show all pages if total is small
       for (let i = 1; i <= totalPages; i++) {
         pages.push(i);
       }
     } else {
-      // Always show first page
       pages.push(1);
 
       if (currentPage > 3) {
         pages.push('...');
       }
 
-      // Show pages around current page
       const start = Math.max(2, currentPage - 1);
       const end = Math.min(totalPages - 1, currentPage + 1);
 
@@ -122,7 +119,6 @@ export const PRPreviewPage: React.FC = () => {
         pages.push('...');
       }
 
-      // Always show last page
       if (!pages.includes(totalPages)) {
         pages.push(totalPages);
       }
@@ -192,437 +188,787 @@ export const PRPreviewPage: React.FC = () => {
   }
 
   return (
-    <div className='min-h-screen bg-[#f8f9fc] p-2'>
-      {/* Page Header */}
-      <div className='flex items-center justify-between mb-6 print:hidden'>
-        <div className='flex items-center space-x-4'>
-          {id && (
-            <button
-              onClick={handleBack}
-              className='text-gray-600 hover:text-gray-900 transition-colors'
-            >
-              <ArrowLeft className='h-6 w-6' />
-            </button>
-          )}
-          <div>
-            <h1 className='text-xl font-semibold text-gray-900'>PR Preview</h1>
-            <p className='text-sm text-gray-500 mt-1'>
-              Preview and print purchase requisitions
-            </p>
-          </div>
-        </div>
-        <button
-          onClick={handlePrint}
-          className='inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-violet-600 rounded-md hover:bg-violet-700 transition-colors'
-        >
-          <Printer className='h-4 w-4' />
-          <span>Print</span>
-        </button>
-      </div>
+    <>
+      {/* Print Styles - Clean table only, hide all app UI */}
+      <style>
+        {`
+          @media print {
+            /* Page setup */
+            @page {
+              size: A4 landscape;
+              margin: 12mm 15mm;
+            }
+            
+            /* Ensure colors print */
+            * {
+              -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
+              color-adjust: exact !important;
+            }
+            
+            /* HIDE EVERYTHING - Sidebar, Header, Nav, Footer, etc. */
+            body * {
+              visibility: hidden;
+            }
+            
+            /* SHOW ONLY PRINT CONTENT */
+            #print-content,
+            #print-content * {
+              visibility: visible;
+            }
+            
+            #print-content {
+              position: absolute;
+              left: 0;
+              top: 0;
+              width: 100%;
+              padding: 0 !important;
+              margin: 0 !important;
+              background: white !important;
+            }
+            
+            /* Hide interactive elements */
+            .no-print,
+            button,
+            input,
+            select,
+            .pagination,
+            nav {
+              display: none !important;
+            }
+            
+            /* ========== PRINT HEADER ========== */
+            .print-header-section {
+              display: flex !important;
+              justify-content: space-between !important;
+              align-items: center !important;
+              padding: 0 0 16px 0 !important;
+              margin-bottom: 16px !important;
+              border-bottom: 2px solid #111827 !important;
+            }
+            
+            .print-header-section h1 {
+              font-size: 18px !important;
+              font-weight: 700 !important;
+              color: #111827 !important;
+              margin: 0 !important;
+            }
+            
+            .print-header-section p {
+              display: none !important;
+            }
+            
+            .print-date-stamp {
+              font-size: 11px !important;
+              color: #4b5563 !important;
+            }
+            
+            /* ========== TABLE STYLES ========== */
+            .print-card {
+              border: none !important;
+              border-radius: 0 !important;
+              box-shadow: none !important;
+            }
+            
+            table {
+              width: 100% !important;
+              border-collapse: collapse !important;
+              border: 1px solid #d1d5db !important;
+            }
+            
+            thead {
+              display: table-header-group !important;
+            }
+            
+            thead tr {
+              background-color: #f3f4f6 !important;
+            }
+            
+            th {
+              padding: 10px 12px !important;
+              text-align: left !important;
+              font-size: 10px !important;
+              font-weight: 600 !important;
+              color: #374151 !important;
+              text-transform: uppercase !important;
+              letter-spacing: 0.05em !important;
+              border: 1px solid #d1d5db !important;
+              background-color: #f3f4f6 !important;
+            }
+            
+            td {
+              padding: 10px 12px !important;
+              font-size: 12px !important;
+              color: #111827 !important;
+              border: 1px solid #e5e7eb !important;
+              background: white !important;
+            }
+            
+            /* Text alignments */
+            th:first-child,
+            td:first-child {
+              text-align: center !important;
+              width: 50px !important;
+            }
+            
+            /* Grand Total column - right align */
+            th:nth-last-child(2),
+            td:nth-last-child(2) {
+              text-align: right !important;
+            }
+            
+            /* Request number - keep violet color */
+            .req-number {
+              color: #7c3aed !important;
+              font-weight: 500 !important;
+            }
+            
+            /* ========== STATUS BADGES ========== */
+            .status-approved,
+            .status-waiting,
+            .status-rejected,
+            .status-pending,
+            .status-draft {
+              display: inline-block !important;
+              padding: 3px 10px !important;
+              border-radius: 4px !important;
+              font-size: 10px !important;
+              font-weight: 600 !important;
+            }
+            
+            .status-approved {
+              background-color: #dcfce7 !important;
+              color: #166534 !important;
+            }
+            
+            .status-waiting {
+              background-color: #fef3c7 !important;
+              color: #92400e !important;
+            }
+            
+            .status-rejected {
+              background-color: #fee2e2 !important;
+              color: #991b1b !important;
+            }
+            
+            .status-pending {
+              background-color: #fef9c3 !important;
+              color: #854d0e !important;
+            }
+            
+            .status-draft {
+              background-color: #f3f4f6 !important;
+              color: #374151 !important;
+            }
+            
+            /* ========== PRINT FOOTER ========== */
+            .print-footer {
+              display: flex !important;
+              justify-content: space-between !important;
+              padding: 12px 0 !important;
+              margin-top: 12px !important;
+              border-top: 1px solid #d1d5db !important;
+              font-size: 10px !important;
+              color: #6b7280 !important;
+            }
+            
+            /* Page breaks */
+            thead {
+              display: table-header-group !important;
+            }
+            
+            tr {
+              page-break-inside: avoid !important;
+            }
+            
+            /* ========== DETAIL VIEW ========== */
+            .detail-section {
+              display: grid !important;
+              grid-template-columns: 1fr 1fr !important;
+              gap: 16px !important;
+              margin-bottom: 20px !important;
+              padding: 16px !important;
+              border: 1px solid #e5e7eb !important;
+              background: #fafbfc !important;
+            }
+            
+            .detail-item {
+              display: flex !important;
+              margin-bottom: 6px !important;
+            }
+            
+            .detail-label {
+              width: 100px !important;
+              font-size: 11px !important;
+              font-weight: 600 !important;
+              color: #6b7280 !important;
+            }
+            
+            .detail-value {
+              font-size: 11px !important;
+              color: #111827 !important;
+            }
+            
+            .section-title {
+              font-size: 13px !important;
+              font-weight: 600 !important;
+              color: #111827 !important;
+              margin-bottom: 12px !important;
+              padding-bottom: 8px !important;
+              border-bottom: 1px solid #e5e7eb !important;
+            }
+            
+            .total-footer {
+              display: flex !important;
+              justify-content: flex-end !important;
+              align-items: center !important;
+              gap: 24px !important;
+              padding: 12px 16px !important;
+              border-top: 2px solid #111827 !important;
+              background: #f9fafb !important;
+            }
+            
+            .total-label {
+              font-size: 12px !important;
+              font-weight: 600 !important;
+              color: #374151 !important;
+            }
+            
+            .total-value {
+              font-size: 16px !important;
+              font-weight: 700 !important;
+              color: #111827 !important;
+            }
+          }
+        `}
+      </style>
 
-      {/* Search and Filter - Only show in list view */}
-      {!id && (
-        <div className='flex flex-col sm:flex-row gap-4 mb-6 print:hidden'>
-          <div className='relative flex-1'>
-            <Search className='absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400' />
-            <Input
-              type='text'
-              placeholder='Search by request number, requestor, or department...'
-              value={searchTerm}
-              onChange={e => setSearchTerm(e.target.value)}
-              className='pl-10 py-2.5 border-gray-200 rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-violet-500'
-            />
-          </div>
-
-          <div className='flex items-center gap-2'>
-            <Filter className='h-4 w-4 text-gray-400' />
-            <select
-              value={statusFilter}
-              onChange={e => setStatusFilter(e.target.value)}
-              className='px-4 py-2.5 border border-gray-200 rounded-lg bg-white text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500'
-            >
-              <option value=''>All Status</option>
-              {uniqueStatuses.map(status => (
-                <option key={status} value={status}>
-                  {status
-                    ? status.charAt(0).toUpperCase() + status.slice(1)
-                    : ''}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
-      )}
-
-      {/* Table - Only show in list view */}
-      {!id && (
-        <div className='bg-white rounded-lg border border-gray-200 overflow-hidden'>
-          <div className='overflow-x-auto'>
-            <table className='min-w-full'>
-              <thead>
-                <tr className='bg-[#fafbfc]'>
-                  <th className='px-6 py-3.5 text-center text-xs font-semibold text-gray-600 tracking-wide w-16'>
-                    S.No
-                  </th>
-                  <th className='px-6 py-3.5 text-left text-xs font-semibold text-gray-600 tracking-wide'>
-                    Request Number
-                  </th>
-                  <th className='px-6 py-3.5 text-left text-xs font-semibold text-gray-600 tracking-wide'>
-                    Request Date
-                  </th>
-                  <th className='px-6 py-3.5 text-left text-xs font-semibold text-gray-600 tracking-wide'>
-                    Requested By
-                  </th>
-                  <th className='px-6 py-3.5 text-left text-xs font-semibold text-gray-600 tracking-wide'>
-                    Department
-                  </th>
-                  <th className='px-6 py-3.5 text-left text-xs font-semibold text-gray-600 tracking-wide'>
-                    Project
-                  </th>
-                  <th className='px-6 py-3.5 text-right text-xs font-semibold text-gray-600 tracking-wide'>
-                    Grand Total
-                  </th>
-                  <th className='px-6 py-3.5 text-left text-xs font-semibold text-gray-600 tracking-wide'>
-                    Status
-                  </th>
-                </tr>
-              </thead>
-              <tbody className='divide-y divide-gray-100'>
-                {paginatedItems.map((item, index) => (
-                  <tr
-                    key={item.requestNumber}
-                    className='hover:bg-gray-50 transition-colors'
-                  >
-                    <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-600 text-center'>
-                      {startIndex + index + 1}
-                    </td>
-                    <td className='px-6 py-4 whitespace-nowrap'>
-                      <button
-                        onClick={() => handleView(item.requestNumber || '')}
-                        className='text-sm font-medium text-violet-600 hover:text-violet-700 hover:underline'
-                      >
-                        {item.requestNumber || '-'}
-                      </button>
-                    </td>
-                    <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-600'>
-                      {item.requestDate
-                        ? new Date(item.requestDate).toLocaleDateString()
-                        : '-'}
-                    </td>
-                    <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-600'>
-                      {item.requestedBy || '-'}
-                    </td>
-                    <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-600'>
-                      {item.departmentName || '-'}
-                    </td>
-                    <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-600'>
-                      {item.projectName || '-'}
-                    </td>
-                    <td className='px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900 text-right'>
-                      ₹
-                      {item.grandTotal?.toLocaleString('en-IN', {
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2,
-                      }) || '0.00'}
-                    </td>
-                    <td className='px-6 py-4 whitespace-nowrap'>
-                      <Badge className={getStatusColor(item.status || '')}>
-                        {item.status
-                          ? item.status.charAt(0).toUpperCase() +
-                            item.status.slice(1)
-                          : 'Draft'}
-                      </Badge>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-
-          {/* Empty State for filtered results */}
-          {paginatedItems.length === 0 && (
-            <div className='py-16 text-center'>
-              <div className='w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4'>
-                <Search className='w-8 h-8 text-gray-400' />
-              </div>
-              <p className='text-gray-600 font-medium'>No results found</p>
-              <p className='text-gray-400 text-sm mt-1'>
-                Try adjusting your search or filter criteria
-              </p>
-            </div>
-          )}
-
-          {/* Pagination - Cashfree Style */}
-          {totalPages > 1 && (
-            <div className='px-6 py-4 border-t border-gray-200 flex items-center justify-between'>
-              <p className='text-sm text-gray-600'>
-                Showing <span className='font-medium'>{startIndex + 1}</span> to{' '}
-                <span className='font-medium'>
-                  {Math.min(endIndex, filteredItems.length)}
-                </span>{' '}
-                of <span className='font-medium'>{filteredItems.length}</span>{' '}
-                results
-              </p>
-
-              <div className='flex items-center gap-1'>
-                {/* Previous Button */}
-                <button
-                  onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                  disabled={currentPage === 1}
-                  className='p-2 rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50 hover:border-gray-300 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-white disabled:hover:border-gray-200 transition-colors'
-                >
-                  <ChevronLeft className='w-4 h-4' />
-                </button>
-
-                {/* Page Numbers */}
-                {getPageNumbers().map((page, index) => (
-                  <React.Fragment key={index}>
-                    {page === '...' ? (
-                      <span className='px-3 py-2 text-sm text-gray-400'>
-                        ...
-                      </span>
-                    ) : (
-                      <button
-                        onClick={() => setCurrentPage(page as number)}
-                        className={`min-w-[36px] h-9 px-3 rounded-lg text-sm font-medium transition-colors ${
-                          currentPage === page
-                            ? 'bg-violet-600 text-white border border-violet-600'
-                            : 'text-gray-600 border border-gray-200 hover:bg-gray-50 hover:border-gray-300'
-                        }`}
-                      >
-                        {page}
-                      </button>
-                    )}
-                  </React.Fragment>
-                ))}
-
-                {/* Next Button */}
-                <button
-                  onClick={() =>
-                    setCurrentPage(prev => Math.min(prev + 1, totalPages))
-                  }
-                  disabled={currentPage === totalPages}
-                  className='p-2 rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50 hover:border-gray-300 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-white disabled:hover:border-gray-200 transition-colors'
-                >
-                  <ChevronRight className='w-4 h-4' />
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Detailed PR View for Single PR */}
-      {id && singlePR && singlePR.items && (
-        <div className='bg-white border border-gray-200 rounded-lg overflow-hidden mt-6'>
-          <div className='p-6'>
-            <h2 className='text-base font-semibold text-gray-900 mb-6'>
-              Purchase Request Details
-            </h2>
-
-            <div className='grid grid-cols-2 gap-6 mb-8'>
-              <div className='space-y-3'>
-                <div className='flex'>
-                  <span className='text-sm font-medium text-gray-500 w-32'>
-                    PR Number:
-                  </span>
-                  <span className='text-sm text-gray-900'>
-                    {singlePR.requestNumber}
-                  </span>
-                </div>
-                <div className='flex'>
-                  <span className='text-sm font-medium text-gray-500 w-32'>
-                    Department:
-                  </span>
-                  <span className='text-sm text-gray-900'>
-                    {singlePR.departmentName || '-'}
-                  </span>
-                </div>
-                <div className='flex'>
-                  <span className='text-sm font-medium text-gray-500 w-32'>
-                    Project:
-                  </span>
-                  <span className='text-sm text-gray-900'>
-                    {singlePR.projectName || '-'}
-                  </span>
-                </div>
-                <div className='flex'>
-                  <span className='text-sm font-medium text-gray-500 w-32'>
-                    Remarks:
-                  </span>
-                  <span className='text-sm text-gray-900'>
-                    {singlePR.remarks || '-'}
-                  </span>
-                </div>
-              </div>
-              <div className='space-y-3'>
-                <div className='flex'>
-                  <span className='text-sm font-medium text-gray-500 w-32'>
-                    PR Date:
-                  </span>
-                  <span className='text-sm text-gray-900'>
-                    {singlePR.requestDate
-                      ? new Date(singlePR.requestDate).toLocaleDateString()
-                      : '-'}
-                  </span>
-                </div>
-                <div className='flex'>
-                  <span className='text-sm font-medium text-gray-500 w-32'>
-                    Requested By:
-                  </span>
-                  <span className='text-sm text-gray-900'>
-                    {singlePR.requestedBy}
-                  </span>
-                </div>
-                <div className='flex items-center'>
-                  <span className='text-sm font-medium text-gray-500 w-32'>
-                    Status:
-                  </span>
-                  <Badge className={getStatusColor(singlePR.status || '')}>
-                    {singlePR.status || 'Draft'}
-                  </Badge>
-                </div>
-                <div className='flex'>
-                  <span className='text-sm font-medium text-gray-500 w-32'>
-                    Grand Total:
-                  </span>
-                  <span className='text-sm font-semibold text-gray-900'>
-                    ₹
-                    {singlePR.grandTotal?.toLocaleString('en-IN', {
-                      minimumFractionDigits: 2,
-                      maximumFractionDigits: 2,
-                    }) || '0.00'}
-                  </span>
-                </div>
-              </div>
-              {singlePR.attachments && (
-                <div className='flex flex-col mt-4 col-span-2'>
-                  <span className='text-sm font-medium text-gray-500 w-32 mb-1'>
-                    Attachments:
-                  </span>
-                  <div className='flex flex-wrap gap-2'>
-                    {singlePR.attachments
-                      .split(',')
-                      .filter(f => f.trim())
-                      .map((filename, idx) => (
-                        <button
-                          key={idx}
-                          onClick={() => setPreviewFile(filename)}
-                          className='inline-flex items-center px-3 py-1 bg-gray-100 border border-gray-300 rounded text-sm text-blue-600 hover:bg-gray-200 hover:underline cursor-pointer'
-                        >
-                          {filename}
-                        </button>
-                      ))}
-                  </div>
-                </div>
-              )}
-            </div>
-
-            <FilePreviewModal
-              isOpen={!!previewFile}
-              onClose={() => setPreviewFile(null)}
-              filename={previewFile || ''}
-            />
-
-            {/* Items Table */}
+      <div className='min-h-screen bg-[#f8f9fc] p-2'>
+        {/* Page Header - Hidden in print */}
+        <div className='flex items-center justify-between mb-6 no-print'>
+          <div className='flex items-center space-x-4'>
+            {id && (
+              <button
+                onClick={handleBack}
+                className='text-gray-600 hover:text-gray-900 transition-colors'
+              >
+                <ArrowLeft className='h-6 w-6' />
+              </button>
+            )}
             <div>
-              <h3 className='text-sm font-semibold text-gray-900 mb-4'>
-                Line Items
-              </h3>
-              <div className='border border-gray-200 rounded-lg overflow-hidden'>
+              <h1 className='text-xl font-semibold text-gray-900'>
+                PR Preview
+              </h1>
+              <p className='text-sm text-gray-500 mt-1'>
+                Preview and print purchase requisitions
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={handlePrint}
+            className='inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-violet-600 rounded-md hover:bg-violet-700 transition-colors'
+          >
+            <Printer className='h-4 w-4' />
+            <span>Print</span>
+          </button>
+        </div>
+
+        {/* Search and Filter - Hidden in print */}
+        {!id && (
+          <div className='flex flex-col sm:flex-row gap-4 mb-6 no-print'>
+            <div className='relative flex-1'>
+              <Search className='absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400' />
+              <Input
+                type='text'
+                placeholder='Search by request number, requestor, or department...'
+                value={searchTerm}
+                onChange={e => setSearchTerm(e.target.value)}
+                className='pl-10 py-2.5 border-gray-200 rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-violet-500'
+              />
+            </div>
+
+            <div className='flex items-center gap-2'>
+              <Filter className='h-4 w-4 text-gray-400' />
+              <select
+                value={statusFilter}
+                onChange={e => setStatusFilter(e.target.value)}
+                className='px-4 py-2.5 border border-gray-200 rounded-lg bg-white text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500'
+              >
+                <option value=''>All Status</option>
+                {uniqueStatuses.map(status => (
+                  <option key={status} value={status}>
+                    {status
+                      ? status.charAt(0).toUpperCase() + status.slice(1)
+                      : ''}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+        )}
+
+        {/* Printable Content - List View */}
+        {!id && (
+          <div id='print-content'>
+            {/* Print Header - Matches screen header style */}
+            <div className='hidden print:flex print-header-section'>
+              <div>
+                <h1>PR Preview</h1>
+                <p>Preview and print purchase requisitions</p>
+              </div>
+              <div className='print-date-stamp'>
+                Printed on:{' '}
+                {new Date().toLocaleDateString('en-IN', {
+                  day: '2-digit',
+                  month: 'short',
+                  year: 'numeric',
+                })}
+                ,{' '}
+                {new Date().toLocaleTimeString('en-IN', {
+                  hour: '2-digit',
+                  minute: '2-digit',
+                })}
+              </div>
+            </div>
+
+            <div className='bg-white rounded-lg border border-gray-200 overflow-hidden print-card'>
+              <div className='overflow-x-auto'>
                 <table className='min-w-full'>
                   <thead>
                     <tr className='bg-[#fafbfc]'>
-                      <th className='px-4 py-3.5 text-center text-xs font-semibold text-gray-600 tracking-wide w-16'>
+                      <th className='px-6 py-3.5 text-center text-xs font-semibold text-gray-600 tracking-wide w-16'>
                         S.No
                       </th>
-                      <th className='px-4 py-3.5 text-left text-xs font-semibold text-gray-600 tracking-wide'>
-                        Model Name
+                      <th className='px-6 py-3.5 text-left text-xs font-semibold text-gray-600 tracking-wide'>
+                        Request Number
                       </th>
-                      <th className='px-4 py-3.5 text-left text-xs font-semibold text-gray-600 tracking-wide'>
-                        Make
+                      <th className='px-6 py-3.5 text-left text-xs font-semibold text-gray-600 tracking-wide'>
+                        Request Date
                       </th>
-                      <th className='px-4 py-3.5 text-left text-xs font-semibold text-gray-600 tracking-wide'>
-                        Category
+                      <th className='px-6 py-3.5 text-left text-xs font-semibold text-gray-600 tracking-wide'>
+                        Requested By
                       </th>
-                      <th className='px-4 py-3.5 text-left text-xs font-semibold text-gray-600 tracking-wide'>
-                        Description
+                      <th className='px-6 py-3.5 text-left text-xs font-semibold text-gray-600 tracking-wide'>
+                        Department
                       </th>
-                      <th className='px-4 py-3.5 text-right text-xs font-semibold text-gray-600 tracking-wide'>
-                        Quantity
+                      <th className='px-6 py-3.5 text-left text-xs font-semibold text-gray-600 tracking-wide'>
+                        Project
                       </th>
-                      <th className='px-4 py-3.5 text-right text-xs font-semibold text-gray-600 tracking-wide'>
-                        Unit Price
+                      <th className='px-6 py-3.5 text-right text-xs font-semibold text-gray-600 tracking-wide'>
+                        Grand Total
                       </th>
-                      <th className='px-4 py-3.5 text-right text-xs font-semibold text-gray-600 tracking-wide'>
-                        Total Price
+                      <th className='px-6 py-3.5 text-left text-xs font-semibold text-gray-600 tracking-wide'>
+                        Status
                       </th>
                     </tr>
                   </thead>
                   <tbody className='divide-y divide-gray-100'>
-                    {singlePR.items.map((item, index) => (
+                    {paginatedItems.map((item, index) => (
                       <tr
-                        key={index}
+                        key={item.requestNumber}
                         className='hover:bg-gray-50 transition-colors'
                       >
-                        <td className='px-4 py-3.5 text-sm text-gray-600 text-center'>
-                          {index + 1}
+                        <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-600 text-center'>
+                          {startIndex + index + 1}
                         </td>
-                        <td className='px-4 py-3.5 text-sm text-gray-700'>
-                          {item.modelName || '-'}
+                        <td className='px-6 py-4 whitespace-nowrap'>
+                          {/* Screen version - clickable link */}
+                          <button
+                            onClick={() => handleView(item.requestNumber || '')}
+                            className='text-sm font-medium text-violet-600 hover:text-violet-700 hover:underline no-print'
+                          >
+                            {item.requestNumber || '-'}
+                          </button>
+                          {/* Print version - styled like link but not clickable */}
+                          <span className='hidden print:inline text-sm font-medium req-number'>
+                            {item.requestNumber || '-'}
+                          </span>
                         </td>
-                        <td className='px-4 py-3.5 text-sm text-gray-600'>
-                          {item.make || '-'}
+                        <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-600'>
+                          {item.requestDate
+                            ? new Date(item.requestDate).toLocaleDateString(
+                                'en-IN',
+                                {
+                                  day: '2-digit',
+                                  month: '2-digit',
+                                  year: 'numeric',
+                                }
+                              )
+                            : '-'}
                         </td>
-                        <td className='px-4 py-3.5 text-sm text-gray-600'>
-                          {item.categoryName || '-'}
+                        <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-600'>
+                          {item.requestedBy || '-'}
                         </td>
-                        <td className='px-4 py-3.5 text-sm text-gray-600'>
-                          {item.description || '-'}
+                        <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-600'>
+                          {item.departmentName || '-'}
                         </td>
-                        <td className='px-4 py-3.5 text-sm text-gray-600 text-right'>
-                          {item.quantity || 0}
+                        <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-600'>
+                          {item.projectName || '-'}
                         </td>
-                        <td className='px-4 py-3.5 text-sm text-gray-600 text-right'>
+                        <td className='px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900 text-right col-total'>
                           ₹
-                          {item.unitPrice?.toLocaleString('en-IN', {
+                          {item.grandTotal?.toLocaleString('en-IN', {
                             minimumFractionDigits: 2,
                             maximumFractionDigits: 2,
                           }) || '0.00'}
                         </td>
-                        <td className='px-4 py-3.5 text-sm font-medium text-gray-900 text-right'>
-                          ₹
-                          {item.totalPrice?.toLocaleString('en-IN', {
-                            minimumFractionDigits: 2,
-                            maximumFractionDigits: 2,
-                          }) || '0.00'}
+                        <td className='px-6 py-4 whitespace-nowrap'>
+                          <span
+                            className={`inline-flex px-2.5 py-1 rounded text-xs font-medium
+                            ${item.status?.toLowerCase() === 'approved' ? 'bg-green-100 text-green-800 border border-green-200 status-approved' : ''}
+                            ${item.status?.toLowerCase() === 'waiting' ? 'bg-amber-100 text-amber-800 border border-amber-200 status-waiting' : ''}
+                            ${item.status?.toLowerCase() === 'rejected' ? 'bg-red-100 text-red-800 border border-red-200 status-rejected' : ''}
+                            ${item.status?.toLowerCase() === 'pending' ? 'bg-yellow-100 text-yellow-800 border border-yellow-200 status-pending' : ''}
+                            ${item.status?.toLowerCase() === 'draft' || !item.status ? 'bg-gray-100 text-gray-800 border border-gray-200 status-draft' : ''}
+                            ${!['approved', 'waiting', 'rejected', 'pending', 'draft'].includes(item.status?.toLowerCase() || '') ? 'bg-blue-100 text-blue-800 border border-blue-200 status-approved' : ''}
+                          `}
+                          >
+                            {item.status
+                              ? item.status.charAt(0).toUpperCase() +
+                                item.status.slice(1)
+                              : 'Draft'}
+                          </span>
                         </td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
+              </div>
 
-                {/* Grand Total Row */}
-                <div className='px-6 py-4 bg-white border-t border-gray-200 flex justify-end'>
-                  <div className='flex items-center gap-8'>
-                    <span className='text-sm font-semibold text-gray-600'>
-                      Grand Total
-                    </span>
-                    <span className='text-lg font-bold text-gray-900'>
-                      ₹
-                      {singlePR.grandTotal?.toLocaleString('en-IN', {
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2,
-                      }) || '0.00'}
-                    </span>
+              {/* Empty State */}
+              {paginatedItems.length === 0 && (
+                <div className='py-16 text-center no-print'>
+                  <div className='w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4'>
+                    <Search className='w-8 h-8 text-gray-400' />
+                  </div>
+                  <p className='text-gray-600 font-medium'>No results found</p>
+                  <p className='text-gray-400 text-sm mt-1'>
+                    Try adjusting your search or filter criteria
+                  </p>
+                </div>
+              )}
+
+              {/* Print Footer - Record count */}
+              <div className='hidden print:flex justify-between px-6 py-3 border-t border-gray-200 text-xs text-gray-500'>
+                <span>Total Records: {filteredItems.length}</span>
+                <span>
+                  Page {currentPage} of {totalPages || 1}
+                </span>
+              </div>
+
+              {/* Pagination - Hidden in print */}
+              {totalPages > 1 && (
+                <div className='px-6 py-4 border-t border-gray-200 flex items-center justify-between no-print'>
+                  <p className='text-sm text-gray-600'>
+                    Showing{' '}
+                    <span className='font-medium'>{startIndex + 1}</span> to{' '}
+                    <span className='font-medium'>
+                      {Math.min(endIndex, filteredItems.length)}
+                    </span>{' '}
+                    of{' '}
+                    <span className='font-medium'>{filteredItems.length}</span>{' '}
+                    results
+                  </p>
+
+                  <div className='flex items-center gap-1'>
+                    <button
+                      onClick={() =>
+                        setCurrentPage(prev => Math.max(prev - 1, 1))
+                      }
+                      disabled={currentPage === 1}
+                      className='p-2 rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50 hover:border-gray-300 disabled:opacity-40 disabled:cursor-not-allowed transition-colors'
+                    >
+                      <ChevronLeft className='w-4 h-4' />
+                    </button>
+
+                    {getPageNumbers().map((page, index) => (
+                      <React.Fragment key={index}>
+                        {page === '...' ? (
+                          <span className='px-3 py-2 text-sm text-gray-400'>
+                            ...
+                          </span>
+                        ) : (
+                          <button
+                            onClick={() => setCurrentPage(page as number)}
+                            className={`min-w-[36px] h-9 px-3 rounded-lg text-sm font-medium transition-colors ${
+                              currentPage === page
+                                ? 'bg-violet-600 text-white border border-violet-600'
+                                : 'text-gray-600 border border-gray-200 hover:bg-gray-50 hover:border-gray-300'
+                            }`}
+                          >
+                            {page}
+                          </button>
+                        )}
+                      </React.Fragment>
+                    ))}
+
+                    <button
+                      onClick={() =>
+                        setCurrentPage(prev => Math.min(prev + 1, totalPages))
+                      }
+                      disabled={currentPage === totalPages}
+                      className='p-2 rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50 hover:border-gray-300 disabled:opacity-40 disabled:cursor-not-allowed transition-colors'
+                    >
+                      <ChevronRight className='w-4 h-4' />
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Single PR Detail View */}
+        {id && singlePR && singlePR.items && (
+          <div id='print-content'>
+            {/* Print Header for Detail View */}
+            <div className='hidden print:flex print-header-section'>
+              <div>
+                <h1>Purchase Requisition - {singlePR.requestNumber}</h1>
+                <p>Requisition details and line items</p>
+              </div>
+              <div className='print-date-stamp'>
+                Printed on:{' '}
+                {new Date().toLocaleDateString('en-IN', {
+                  day: '2-digit',
+                  month: 'short',
+                  year: 'numeric',
+                })}
+                ,{' '}
+                {new Date().toLocaleTimeString('en-IN', {
+                  hour: '2-digit',
+                  minute: '2-digit',
+                })}
+              </div>
+            </div>
+
+            <div className='bg-white border border-gray-200 rounded-lg overflow-hidden mt-6 print:mt-0 print-card'>
+              <div className='p-6'>
+                <h2 className='text-base font-semibold text-gray-900 mb-6 section-title'>
+                  Purchase Request Details
+                </h2>
+
+                <div className='grid grid-cols-2 gap-6 mb-8 detail-section'>
+                  <div className='space-y-3'>
+                    <div className='flex detail-item'>
+                      <span className='text-sm font-medium text-gray-500 w-32 detail-label'>
+                        PR Number:
+                      </span>
+                      <span className='text-sm text-gray-900 detail-value'>
+                        {singlePR.requestNumber}
+                      </span>
+                    </div>
+                    <div className='flex detail-item'>
+                      <span className='text-sm font-medium text-gray-500 w-32 detail-label'>
+                        Department:
+                      </span>
+                      <span className='text-sm text-gray-900 detail-value'>
+                        {singlePR.departmentName || '-'}
+                      </span>
+                    </div>
+                    <div className='flex detail-item'>
+                      <span className='text-sm font-medium text-gray-500 w-32 detail-label'>
+                        Project:
+                      </span>
+                      <span className='text-sm text-gray-900 detail-value'>
+                        {singlePR.projectName || '-'}
+                      </span>
+                    </div>
+                    <div className='flex detail-item'>
+                      <span className='text-sm font-medium text-gray-500 w-32 detail-label'>
+                        Remarks:
+                      </span>
+                      <span className='text-sm text-gray-900 detail-value'>
+                        {singlePR.remarks || '-'}
+                      </span>
+                    </div>
+                  </div>
+                  <div className='space-y-3'>
+                    <div className='flex detail-item'>
+                      <span className='text-sm font-medium text-gray-500 w-32 detail-label'>
+                        PR Date:
+                      </span>
+                      <span className='text-sm text-gray-900 detail-value'>
+                        {singlePR.requestDate
+                          ? new Date(singlePR.requestDate).toLocaleDateString(
+                              'en-IN',
+                              {
+                                day: '2-digit',
+                                month: '2-digit',
+                                year: 'numeric',
+                              }
+                            )
+                          : '-'}
+                      </span>
+                    </div>
+                    <div className='flex detail-item'>
+                      <span className='text-sm font-medium text-gray-500 w-32 detail-label'>
+                        Requested By:
+                      </span>
+                      <span className='text-sm text-gray-900 detail-value'>
+                        {singlePR.requestedBy}
+                      </span>
+                    </div>
+                    <div className='flex items-center detail-item'>
+                      <span className='text-sm font-medium text-gray-500 w-32 detail-label'>
+                        Status:
+                      </span>
+                      <span
+                        className={`inline-flex px-2.5 py-1 rounded text-xs font-medium
+                        ${singlePR.status?.toLowerCase() === 'approved' ? 'bg-green-100 text-green-800 border border-green-200 status-approved' : ''}
+                        ${singlePR.status?.toLowerCase() === 'waiting' ? 'bg-amber-100 text-amber-800 border border-amber-200 status-waiting' : ''}
+                        ${singlePR.status?.toLowerCase() === 'rejected' ? 'bg-red-100 text-red-800 border border-red-200 status-rejected' : ''}
+                        ${singlePR.status?.toLowerCase() === 'pending' ? 'bg-yellow-100 text-yellow-800 border border-yellow-200 status-pending' : ''}
+                        ${singlePR.status?.toLowerCase() === 'draft' || !singlePR.status ? 'bg-gray-100 text-gray-800 border border-gray-200 status-draft' : ''}
+                        ${!['approved', 'waiting', 'rejected', 'pending', 'draft'].includes(singlePR.status?.toLowerCase() || '') ? 'bg-blue-100 text-blue-800 border border-blue-200 status-approved' : ''}
+                      `}
+                      >
+                        {singlePR.status || 'Draft'}
+                      </span>
+                    </div>
+                    <div className='flex detail-item'>
+                      <span className='text-sm font-medium text-gray-500 w-32 detail-label'>
+                        Grand Total:
+                      </span>
+                      <span className='text-sm font-semibold text-gray-900 detail-value'>
+                        ₹
+                        {singlePR.grandTotal?.toLocaleString('en-IN', {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2,
+                        }) || '0.00'}
+                      </span>
+                    </div>
+                  </div>
+                  {singlePR.attachments && (
+                    <div className='flex flex-col mt-4 col-span-2 no-print'>
+                      <span className='text-sm font-medium text-gray-500 w-32 mb-1'>
+                        Attachments:
+                      </span>
+                      <div className='flex flex-wrap gap-2'>
+                        {singlePR.attachments
+                          .split(',')
+                          .filter(f => f.trim())
+                          .map((filename, idx) => (
+                            <button
+                              key={idx}
+                              onClick={() => setPreviewFile(filename)}
+                              className='inline-flex items-center px-3 py-1 bg-gray-100 border border-gray-300 rounded text-sm text-blue-600 hover:bg-gray-200 hover:underline cursor-pointer'
+                            >
+                              {filename}
+                            </button>
+                          ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <FilePreviewModal
+                  isOpen={!!previewFile}
+                  onClose={() => setPreviewFile(null)}
+                  filename={previewFile || ''}
+                />
+
+                {/* Items Table */}
+                <div>
+                  <h3 className='text-sm font-semibold text-gray-900 mb-4 section-title'>
+                    Line Items
+                  </h3>
+                  <div className='border border-gray-200 rounded-lg overflow-hidden print-card'>
+                    <table className='min-w-full'>
+                      <thead>
+                        <tr className='bg-[#fafbfc]'>
+                          <th className='px-4 py-3.5 text-center text-xs font-semibold text-gray-600 tracking-wide w-16'>
+                            S.No
+                          </th>
+                          <th className='px-4 py-3.5 text-left text-xs font-semibold text-gray-600 tracking-wide'>
+                            Model Name
+                          </th>
+                          <th className='px-4 py-3.5 text-left text-xs font-semibold text-gray-600 tracking-wide'>
+                            Make
+                          </th>
+                          <th className='px-4 py-3.5 text-left text-xs font-semibold text-gray-600 tracking-wide'>
+                            Category
+                          </th>
+                          <th className='px-4 py-3.5 text-left text-xs font-semibold text-gray-600 tracking-wide'>
+                            Description
+                          </th>
+                          <th className='px-4 py-3.5 text-right text-xs font-semibold text-gray-600 tracking-wide'>
+                            Quantity
+                          </th>
+                          <th className='px-4 py-3.5 text-right text-xs font-semibold text-gray-600 tracking-wide'>
+                            Unit Price
+                          </th>
+                          <th className='px-4 py-3.5 text-right text-xs font-semibold text-gray-600 tracking-wide'>
+                            Total Price
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className='divide-y divide-gray-100'>
+                        {singlePR.items.map((item, index) => (
+                          <tr
+                            key={index}
+                            className='hover:bg-gray-50 transition-colors'
+                          >
+                            <td className='px-4 py-3.5 text-sm text-gray-600 text-center'>
+                              {index + 1}
+                            </td>
+                            <td className='px-4 py-3.5 text-sm text-gray-700'>
+                              {item.modelName || '-'}
+                            </td>
+                            <td className='px-4 py-3.5 text-sm text-gray-600'>
+                              {item.make || '-'}
+                            </td>
+                            <td className='px-4 py-3.5 text-sm text-gray-600'>
+                              {item.categoryName || '-'}
+                            </td>
+                            <td className='px-4 py-3.5 text-sm text-gray-600'>
+                              {item.description || '-'}
+                            </td>
+                            <td className='px-4 py-3.5 text-sm text-gray-600 text-right'>
+                              {item.quantity || 0}
+                            </td>
+                            <td className='px-4 py-3.5 text-sm text-gray-600 text-right'>
+                              ₹
+                              {item.unitPrice?.toLocaleString('en-IN', {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2,
+                              }) || '0.00'}
+                            </td>
+                            <td className='px-4 py-3.5 text-sm font-medium text-gray-900 text-right'>
+                              ₹
+                              {item.totalPrice?.toLocaleString('en-IN', {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2,
+                              }) || '0.00'}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+
+                    {/* Grand Total Row */}
+                    <div className='px-6 py-4 bg-white border-t border-gray-200 flex justify-end total-footer'>
+                      <div className='flex items-center gap-8'>
+                        <span className='text-sm font-semibold text-gray-600 total-label'>
+                          Grand Total
+                        </span>
+                        <span className='text-lg font-bold text-gray-900 total-value'>
+                          ₹
+                          {singlePR.grandTotal?.toLocaleString('en-IN', {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2,
+                          }) || '0.00'}
+                        </span>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
-      )}
-    </div>
+        )}
+      </div>
+    </>
   );
 };
 

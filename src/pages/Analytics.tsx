@@ -149,9 +149,9 @@ const Analytics: React.FC = () => {
         {/* Header Section */}
         <div className='flex flex-col md:flex-row md:items-center md:justify-between gap-4'>
           <div>
-            <h1 className='text-xl lg:text-xl font-bold text-slate-800'>
+            {/* <h1 className='text-xl lg:text-xl font-bold text-slate-800'>
               {getGreeting()}, {user?.firstName || 'User'} 👋
-            </h1>
+            </h1> */}
             <p className='text-slate-500 mt-1 flex items-center font-medium gap-2 text-sm'>
               <Calendar className='w-4 h-4' />
               {getCurrentDate()}
@@ -407,86 +407,6 @@ const Analytics: React.FC = () => {
               ))}
             </div>
           </div>
-        </div>
-
-        {/* Recent Purchase Orders - Cashfree Style Table */}
-        <div className='bg-white rounded-2xl border border-slate-100 overflow-hidden hover:shadow-lg hover:shadow-slate-200/50 transition-all duration-300'>
-          <div className='p-6 border-b border-slate-100 flex items-center justify-between'>
-            <div>
-              <h2 className='text-lg font-semibold text-slate-800'>
-                Recent Purchase Orders
-              </h2>
-              <p className='text-sm text-slate-500 mt-1'>
-                Your latest procurement activities
-              </p>
-            </div>
-            <Link
-              to='/purchase-orders'
-              className='inline-flex items-center gap-2 px-4 py-2 bg-indigo-50 text-indigo-600 rounded-xl text-sm font-medium hover:bg-indigo-100 transition-colors'
-            >
-              View All
-              <ArrowUpRight className='w-4 h-4' />
-            </Link>
-          </div>
-
-          {recentOrders.length > 0 ? (
-            <div className='divide-y divide-slate-100'>
-              {recentOrders.slice(0, 5).map(order => (
-                <div
-                  key={order.id}
-                  className='flex items-center justify-between p-5 hover:bg-slate-50 transition-colors group'
-                >
-                  <div className='flex items-center gap-4'>
-                    <div className='w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-semibold shadow-lg shadow-indigo-200'>
-                      {order.poNumber.slice(-2)}
-                    </div>
-                    <div>
-                      <p className='text-sm font-semibold text-slate-800 group-hover:text-indigo-600 transition-colors'>
-                        {order.poNumber}
-                      </p>
-                      <p className='text-sm text-slate-500 mt-0.5'>
-                        {order.supplierName}
-                      </p>
-                    </div>
-                  </div>
-                  <div className='flex items-center gap-6'>
-                    <div className='text-right'>
-                      <p className='text-sm font-semibold text-slate-800'>
-                        ₹{order.totalAmount.toLocaleString()}
-                      </p>
-                      <p className='text-xs text-slate-400 mt-0.5 flex items-center justify-end gap-1'>
-                        <Calendar className='w-3 h-3' />
-                        {order.poDate}
-                      </p>
-                    </div>
-                    <div
-                      className={`px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1.5 ${getStatusColor(
-                        order.status
-                      )}`}
-                    >
-                      {getStatusIcon(order.status)}
-                      <span className='capitalize'>
-                        {order.status.replace('_', ' ')}
-                      </span>
-                    </div>
-                    <ChevronRight className='w-5 h-5 text-slate-300 group-hover:text-slate-500 group-hover:translate-x-1 transition-all' />
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className='p-12 text-center'>
-              <div className='w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4'>
-                <ShoppingCart className='w-8 h-8 text-slate-400' />
-              </div>
-              <p className='text-slate-500 font-medium'>
-                No recent purchase orders
-              </p>
-              <p className='text-slate-400 text-sm mt-1'>
-                New orders will appear here
-              </p>
-            </div>
-          )}
         </div>
 
         {/* Footer */}

@@ -25,7 +25,7 @@ export function LoginPage() {
               className='h-9 w-auto'
             />
           </a>
-          <p className='text-sm font-medium text-gray-600'>
+          {/* <p className='text-sm font-medium text-gray-600'>
             Don't have an account?{' '}
             <a
               href='/register'
@@ -33,7 +33,7 @@ export function LoginPage() {
             >
               Sign Up
             </a>
-          </p>
+          </p> */}
         </header>
 
         {/* Main Content */}
