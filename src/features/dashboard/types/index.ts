@@ -16,6 +16,15 @@ export interface DashboardStats {
   rejectedPRs: number;
   pendingPOs: number;
   overduePOs: number;
+  // New dashboard card metrics
+  totalPurchaseValue: number;
+  totalPurchaseValueFormatted: string;
+  openPOValue: number;
+  openPOValueFormatted: string;
+  openPOCount: number;
+  invoiceDueValue: number;
+  invoiceDueValueFormatted: string;
+  overdueInvoiceCount: number;
 }
 
 export interface RecentPurchaseOrder {

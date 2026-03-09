@@ -311,11 +311,7 @@ export const PRPreviewPage: React.FC = () => {
               width: 50px !important;
             }
             
-            /* Grand Total column - right align */
-            th:nth-last-child(2),
-            td:nth-last-child(2) {
-              text-align: right !important;
-            }
+            /* Status column styling (if needed) */
             
             /* Request number - keep violet color */
             .req-number {
@@ -554,9 +550,6 @@ export const PRPreviewPage: React.FC = () => {
                       <th className='px-6 py-3.5 text-left text-xs font-semibold text-gray-600 tracking-wide'>
                         Project
                       </th>
-                      <th className='px-6 py-3.5 text-right text-xs font-semibold text-gray-600 tracking-wide'>
-                        Grand Total
-                      </th>
                       <th className='px-6 py-3.5 text-left text-xs font-semibold text-gray-600 tracking-wide'>
                         Status
                       </th>
@@ -604,13 +597,6 @@ export const PRPreviewPage: React.FC = () => {
                         </td>
                         <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-600'>
                           {item.projectName || '-'}
-                        </td>
-                        <td className='px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900 text-right col-total'>
-                          ₹
-                          {item.grandTotal?.toLocaleString('en-IN', {
-                            minimumFractionDigits: 2,
-                            maximumFractionDigits: 2,
-                          }) || '0.00'}
                         </td>
                         <td className='px-6 py-4 whitespace-nowrap'>
                           <span

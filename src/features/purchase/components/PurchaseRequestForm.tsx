@@ -50,7 +50,7 @@ const purchaseRequestSchema = z.object({
   locationId: z.number().min(1, 'Location is required'),
   purchaseType: z.string().min(1, 'Purchase Type is required'),
   projectCode: z.string().optional(),
-  projectName: z.string().min(1, 'Project Name is required'),
+  projectName: z.string().optional(),
   remarks: z.string().optional(),
   attachments: z.string().optional(),
   items: z
@@ -719,7 +719,7 @@ const PurchaseRequestForm: React.FC<PurchaseRequestFormProps> = ({
             </div>
             <div>
               <label className='block text-sm font-medium text-gray-700 mb-2'>
-                <span className='text-red-500'>*</span> Project Name
+                Project Name
               </label>
               <input
                 {...register('projectName')}
