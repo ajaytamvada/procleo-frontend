@@ -11,6 +11,8 @@ export const routeToModuleMap: Record<string, string> = {
   '/purchase-requisition/create': 'PR_CREATE',
   '/purchase-requisition/manage': 'PR_MANAGE',
   '/purchase-requisition/approve': 'PR_APPROVE',
+  '/purchase-requisition/approve-l2': 'PR_APPROVE',
+  '/purchase-requisition/approve-l3': 'PR_APPROVE',
   '/purchase-requisition/status': 'PR_STATUS',
   '/purchase-requisition/preview': 'PR_PREVIEW',
   '/purchase-requisition/:id/edit': 'PR_MANAGE',
@@ -40,7 +42,6 @@ export const routeToModuleMap: Record<string, string> = {
   '/catalog/cart': 'CATALOG_CART',
 
   '/purchase-orders': 'PO',
-
 
   '/purchase-orders/approve': 'PO_APPROVE',
   '/purchase-orders/modify': 'PO_MODIFY',
