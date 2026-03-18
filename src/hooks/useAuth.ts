@@ -222,8 +222,8 @@ export function useVerifyEmail() {
 
 // Combined auth hook with all functionality
 export function useAuth() {
-  // DEVELOPMENT MODE: Skip authentication
-  const DEV_MODE = false; // Set to false to enable real authentication
+  // Development mode is controlled via environment variable VITE_DEV_MODE=true
+  const DEV_MODE = import.meta.env.VITE_DEV_MODE === 'true';
 
   const { data: user, isLoading: isLoadingUser } = useCurrentUser();
   const { data: permissions } = useUserPermissions();

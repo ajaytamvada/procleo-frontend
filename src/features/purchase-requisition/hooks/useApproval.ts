@@ -14,10 +14,10 @@ import type { PRApprovalRequest } from '../types/approval.types';
 /**
  * Hook to fetch PRs pending approval
  */
-export const usePRsPendingApproval = () => {
+export const usePRsPendingApproval = (status: string = 'waiting') => {
   return useQuery({
-    queryKey: ['prs-pending-approval'],
-    queryFn: getPRsPendingApproval,
+    queryKey: ['prs-pending-approval', status],
+    queryFn: () => getPRsPendingApproval(status),
     staleTime: 30000, // 30 seconds
   });
 };
@@ -25,10 +25,13 @@ export const usePRsPendingApproval = () => {
 /**
  * Hook to fetch PR details for approval
  */
-export const usePRDetailsForApproval = (prId: number | null) => {
+export const usePRDetailsForApproval = (
+  prId: number | null,
+  status: string = 'waiting'
+) => {
   return useQuery({
-    queryKey: ['pr-approval-details', prId],
-    queryFn: () => getPRDetailsForApproval(prId!),
+    queryKey: ['pr-approval-details', prId, status],
+    queryFn: () => getPRDetailsForApproval(prId!, status),
     enabled: prId !== null,
     staleTime: 60000, // 1 minute
   });

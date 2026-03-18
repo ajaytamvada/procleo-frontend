@@ -28,7 +28,15 @@ interface EditableItem extends ApprovalItemRequest {
   originalTotalPrice: number;
 }
 
-export const PRApprovalDetailPage: React.FC = () => {
+interface PRApprovalDetailPageProps {
+  status?: string;
+  backUrl?: string;
+}
+
+export const PRApprovalDetailPage: React.FC<PRApprovalDetailPageProps> = ({
+  status = 'waiting',
+  backUrl = '/purchase-requisition/approve',
+}) => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const prId = searchParams.get('id');
@@ -43,7 +51,7 @@ export const PRApprovalDetailPage: React.FC = () => {
     data: prDetails,
     isLoading,
     error,
-  } = usePRDetailsForApproval(prId ? parseInt(prId, 10) : 0);
+  } = usePRDetailsForApproval(prId ? parseInt(prId, 10) : 0, status);
 
   // Approve/Reject mutation
   const approveMutation = useApprovePRItems();
@@ -156,7 +164,7 @@ export const PRApprovalDetailPage: React.FC = () => {
       });
 
       // Navigate back to approval list on success
-      navigate('/purchase-requisition/approve');
+      navigate(backUrl);
     } catch (error) {
       // Error handled by mutation
       console.error('Approval failed:', error);
@@ -164,7 +172,7 @@ export const PRApprovalDetailPage: React.FC = () => {
   };
 
   const handleBack = () => {
-    navigate('/purchase-requisition/approve');
+    navigate(backUrl);
   };
 
   if (isLoading) {
@@ -316,6 +324,124 @@ export const PRApprovalDetailPage: React.FC = () => {
           />
         </div>
       </div>
+
+      {prDetails.items &&
+        prDetails.items.length > 0 &&
+        prDetails.items.some(
+          item => item.approvedBy || item.approvedL2By || item.approvedL3By
+        ) && (
+          <div className='bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden'>
+            <div className='px-6 py-4 border-b border-gray-200'>
+              <h3 className='text-lg font-semibold text-gray-900'>
+                Approval History
+              </h3>
+            </div>
+            <div className='overflow-x-auto'>
+              <table className='min-w-full divide-y divide-gray-200'>
+                <thead className='bg-[#F7F8FA]'>
+                  <tr>
+                    <th className='px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wide'>
+                      Item
+                    </th>
+                    <th className='px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wide'>
+                      L1 Approver
+                    </th>
+                    <th className='px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wide'>
+                      L1 Remarks
+                    </th>
+                    <th className='px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wide'>
+                      L2 Approver
+                    </th>
+                    <th className='px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wide'>
+                      L2 Remarks
+                    </th>
+                    <th className='px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wide'>
+                      L3 Approver
+                    </th>
+                    <th className='px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wide'>
+                      L3 Remarks
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className='bg-white divide-y divide-gray-200'>
+                  {prDetails.items.map((item, index) => (
+                    <tr
+                      key={`history-${item.itemId}`}
+                      className='hover:bg-gray-50 transition-colors'
+                    >
+                      <td className='px-4 py-3 text-sm font-medium text-gray-700'>
+                        {item.description}
+                      </td>
+                      <td className='px-4 py-3 text-sm text-gray-700'>
+                        {item.approvedBy ? (
+                          <>
+                            <div className='font-medium'>
+                              {item.approvedByName || item.approvedBy}
+                            </div>
+                            <div className='text-xs text-gray-500'>
+                              {item.approvalDate
+                                ? new Date(
+                                    item.approvalDate
+                                  ).toLocaleDateString()
+                                : ''}
+                            </div>
+                          </>
+                        ) : (
+                          '-'
+                        )}
+                      </td>
+                      <td className='px-4 py-3 text-sm text-gray-700 max-w-xs break-words'>
+                        {item.approvalRemarks || '-'}
+                      </td>
+                      <td className='px-4 py-3 text-sm text-gray-700'>
+                        {item.approvedL2By ? (
+                          <>
+                            <div className='font-medium'>
+                              {item.approvedL2ByName || item.approvedL2By}
+                            </div>
+                            <div className='text-xs text-gray-500'>
+                              {item.approvalDateL2
+                                ? new Date(
+                                    item.approvalDateL2
+                                  ).toLocaleDateString()
+                                : ''}
+                            </div>
+                          </>
+                        ) : (
+                          '-'
+                        )}
+                      </td>
+                      <td className='px-4 py-3 text-sm text-gray-700 max-w-xs break-words'>
+                        {item.approvalRemarksL2 || '-'}
+                      </td>
+                      <td className='px-4 py-3 text-sm text-gray-700'>
+                        {item.approvedL3By ? (
+                          <>
+                            <div className='font-medium'>
+                              {item.approvedL3ByName || item.approvedL3By}
+                            </div>
+                            <div className='text-xs text-gray-500'>
+                              {item.approvalDateL3
+                                ? new Date(
+                                    item.approvalDateL3
+                                  ).toLocaleDateString()
+                                : ''}
+                            </div>
+                          </>
+                        ) : (
+                          '-'
+                        )}
+                      </td>
+                      <td className='px-4 py-3 text-sm text-gray-700 max-w-xs break-words'>
+                        {item.approvalRemarksL3 || '-'}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
 
       {/* Items Table */}
       <div className='bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden'>

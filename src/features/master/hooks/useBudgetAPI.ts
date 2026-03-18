@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api';
 import { toast } from 'react-hot-toast';
-import type { Budget, PagedResponse } from '../types';
+import type { Budget, BudgetTransaction, PagedResponse } from '../types';
 
 // API Service functions
 const budgetAPI = {
@@ -52,6 +52,35 @@ const budgetAPI = {
 
   delete: async (id: number) => {
     await apiClient.delete(`/master/budget/${id}`);
+  },
+
+  // ---- New Budget Enforcement APIs ----
+
+  checkBudget: async (departmentId: number): Promise<Budget> => {
+    const response = await apiClient.get<Budget>(
+      `/master/budget/check?departmentId=${departmentId}`
+    );
+    return response.data;
+  },
+
+  getTransactions: async (budgetId: number): Promise<BudgetTransaction[]> => {
+    const response = await apiClient.get<BudgetTransaction[]>(
+      `/master/budget/${budgetId}/transactions`
+    );
+    return response.data;
+  },
+
+  reviseBudget: async (
+    budgetId: number,
+    newAmount: number,
+    revisedBy?: number,
+    remarks?: string
+  ): Promise<Budget> => {
+    const response = await apiClient.put<Budget>(
+      `/master/budget/${budgetId}/revise`,
+      { newAmount, revisedBy, remarks }
+    );
+    return response.data;
   },
 };
 
@@ -137,6 +166,51 @@ export const useDeleteBudget = () => {
     onError: (error: any) => {
       const message =
         error.response?.data?.message || 'Failed to delete budget';
+      toast.error(message);
+    },
+  });
+};
+
+// ---- New Budget Enforcement hooks ----
+
+export const useBudgetCheck = (departmentId: number, enabled = true) => {
+  return useQuery({
+    queryKey: ['budget-check', departmentId],
+    queryFn: () => budgetAPI.checkBudget(departmentId),
+    enabled: enabled && !!departmentId,
+  });
+};
+
+export const useBudgetTransactions = (budgetId: number, enabled = true) => {
+  return useQuery({
+    queryKey: ['budget-transactions', budgetId],
+    queryFn: () => budgetAPI.getTransactions(budgetId),
+    enabled: enabled && !!budgetId,
+  });
+};
+
+export const useReviseBudget = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      budgetId,
+      newAmount,
+      revisedBy,
+      remarks,
+    }: {
+      budgetId: number;
+      newAmount: number;
+      revisedBy?: number;
+      remarks?: string;
+    }) => budgetAPI.reviseBudget(budgetId, newAmount, revisedBy, remarks),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['budgets'] });
+      toast.success('Budget revised successfully');
+    },
+    onError: (error: any) => {
+      const message =
+        error.response?.data?.message || 'Failed to revise budget';
       toast.error(message);
     },
   });

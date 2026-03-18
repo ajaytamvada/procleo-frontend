@@ -10,6 +10,7 @@ import {
   ChevronDown,
   ClipboardList,
   Cog,
+  Monitor,
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -34,6 +35,8 @@ const navigation: NavigationItem[] = [
       { name: 'Create PR', href: '/purchase-requisition/create' },
       { name: 'Manage PR', href: '/purchase-requisition/manage' },
       { name: 'Approve PR', href: '/purchase-requisition/approve' },
+      { name: 'Approve PR (L2)', href: '/purchase-requisition/approve-l2' },
+      { name: 'Approve PR (L3)', href: '/purchase-requisition/approve-l3' },
       { name: 'PR Status', href: '/purchase-requisition/status' },
       { name: 'PR Preview', href: '/purchase-requisition/preview' },
     ],
@@ -82,6 +85,17 @@ const navigation: NavigationItem[] = [
     ],
   },
   { name: 'GRN', href: '/grn', icon: Package },
+  {
+    name: 'Assets',
+    href: '/assets',
+    icon: Monitor,
+    subItems: [
+      { name: 'Dashboard', href: '/assets/dashboard' },
+      { name: 'Asset Inventory', href: '/assets/list' },
+      { name: 'Transfers', href: '/assets/transfers' },
+      { name: 'Maintenance', href: '/assets/maintenance' },
+    ],
+  },
   {
     name: 'Master Configuration',
     href: '/master',

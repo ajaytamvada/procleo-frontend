@@ -37,7 +37,24 @@ export interface PRApprovalItem {
   unitPrice: number;
   totalPrice: number;
   rmApprovalStatus: string;
+
+  // L1 Audit
   approvalRemarks: string;
+  approvedBy?: number;
+  approvedByName?: string;
+  approvalDate?: string;
+
+  // L2 Audit
+  approvalRemarksL2?: string;
+  approvedL2By?: number;
+  approvedL2ByName?: string;
+  approvalDateL2?: string;
+
+  // L3 Audit
+  approvalRemarksL3?: string;
+  approvedL3By?: number;
+  approvedL3ByName?: string;
+  approvalDateL3?: string;
 }
 
 /**

@@ -66,11 +66,38 @@ export interface FinancialYear {
 export interface Budget {
   id?: number;
   financialYearId: number;
-  departmentId: string;
+  departmentId: number;
   annualBudget: number;
+  // Usage tracking
+  pendingAmount?: number;
+  committedAmount?: number;
+  utilizedAmount?: number;
+  availableAmount?: number;
+  isActive?: boolean;
+  // Audit
+  createdBy?: number;
+  createdDate?: string;
+  updatedBy?: number;
+  updatedDate?: string;
   // Display fields
   departmentName?: string;
   financialYearDisplay?: string;
+}
+
+export interface BudgetTransaction {
+  id?: number;
+  budgetId: number;
+  txnType: string;
+  refType: string;
+  refId?: number;
+  refNumber?: string;
+  amount: number;
+  bucketFrom?: string;
+  bucketTo?: string;
+  remarks?: string;
+  createdBy?: number;
+  createdByName?: string;
+  createdDate?: string;
 }
 
 export interface PaymentTerm {

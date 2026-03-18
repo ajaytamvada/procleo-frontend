@@ -10,13 +10,11 @@ import RegisterPage from '@/pages/auth/Register';
 import ForgotPasswordPage from '@/pages/auth/ForgotPassword';
 import UnauthorizedPage from '@/pages/Unauthorized';
 import Dashboard from '@/pages/Dashboard';
-import PurchaseOrders from '@/pages/PurchaseOrders';
 import Vendors from '@/pages/Vendors';
 import CreateUser from '@/features/users/pages/CreateUser';
 import UserManagement from '@/features/users/pages/UserManagement';
 import ComponentShowcase from '@/pages/ComponentShowcase';
 import CacheManagerDebug from '@/components/debug/CacheManager';
-import { PurchaseOrderForm } from '@/pages/purchase-orders/PurchaseOrderForm';
 import {
   CreatePRPage,
   ManagePRPage,
@@ -74,6 +72,13 @@ import CreateGRNPage from '@/features/grn/pages/CreateGRNPage';
 import ModifyGRNPage from '@/features/grn/pages/ModifyGRNPage';
 import GRNApprovalPage from '@/features/grn/pages/GRNApprovalPage';
 import GRNPreviewPage from '@/features/grn/pages/GRNPreviewPage';
+import {
+  AssetListPage,
+  AssetDetailPage,
+  AssetDashboardPage,
+  AssetTransfersPage,
+  AssetMaintenancePage,
+} from '@/features/assets';
 import InvoiceListPage from '@/features/invoice/pages/InvoiceListPage';
 import InvoiceEntryPage from '@/features/invoice/pages/InvoiceEntryPage';
 import DirectInvoicePage from '@/features/invoice/pages/DirectInvoicePage';
@@ -237,11 +242,61 @@ const App: React.FC = () => {
                   />
                   <Route
                     path='purchase-requisition/approve'
-                    element={<ApprovePRPage />}
+                    element={
+                      <ApprovePRPage
+                        status='waiting'
+                        title='Pending For Approval (L1)'
+                      />
+                    }
                   />
                   <Route
                     path='purchase-requisition/approve/detail'
-                    element={<PRApprovalDetailPage />}
+                    element={
+                      <PRApprovalDetailPage
+                        status='waiting'
+                        backUrl='/purchase-requisition/approve'
+                      />
+                    }
+                  />
+
+                  {/* L2 Approval Routing */}
+                  <Route
+                    path='purchase-requisition/approve-l2'
+                    element={
+                      <ApprovePRPage
+                        status='waiting_l2'
+                        title='Pending L2 Approval'
+                      />
+                    }
+                  />
+                  <Route
+                    path='purchase-requisition/approve-l2/detail'
+                    element={
+                      <PRApprovalDetailPage
+                        status='waiting_l2'
+                        backUrl='/purchase-requisition/approve-l2'
+                      />
+                    }
+                  />
+
+                  {/* L3 Approval Routing */}
+                  <Route
+                    path='purchase-requisition/approve-l3'
+                    element={
+                      <ApprovePRPage
+                        status='waiting_l3'
+                        title='Pending L3 Approval'
+                      />
+                    }
+                  />
+                  <Route
+                    path='purchase-requisition/approve-l3/detail'
+                    element={
+                      <PRApprovalDetailPage
+                        status='waiting_l3'
+                        backUrl='/purchase-requisition/approve-l3'
+                      />
+                    }
                   />
                   <Route
                     path='purchase-requisition/status'
@@ -408,8 +463,14 @@ const App: React.FC = () => {
                     path='catalog'
                     element={<Navigate to='/catalog/browse' replace />}
                   />
-                  <Route path='catalog/browse' element={<CatalogBrowsePage />} />
-                  <Route path='catalog/manage' element={<CatalogManagePage />} />
+                  <Route
+                    path='catalog/browse'
+                    element={<CatalogBrowsePage />}
+                  />
+                  <Route
+                    path='catalog/manage'
+                    element={<CatalogManagePage />}
+                  />
                   <Route path='catalog/cart' element={<CatalogCartPage />} />
 
                   {/* Purchase Order Routes */}
@@ -476,6 +537,26 @@ const App: React.FC = () => {
                   <Route path='grn/:id/edit' element={<CreateGRNPage />} />
                   <Route path='grn/preview/:id' element={<GRNPreviewPage />} />
 
+                  {/* Asset Routes */}
+                  <Route
+                    path='assets'
+                    element={<Navigate to='/assets/dashboard' replace />}
+                  />
+                  <Route
+                    path='assets/dashboard'
+                    element={<AssetDashboardPage />}
+                  />
+                  <Route path='assets/list' element={<AssetListPage />} />
+                  <Route path='assets/view/:id' element={<AssetDetailPage />} />
+                  <Route
+                    path='assets/transfers'
+                    element={<AssetTransfersPage />}
+                  />
+                  <Route
+                    path='assets/maintenance'
+                    element={<AssetMaintenancePage />}
+                  />
+
                   {/* Invoice Routes */}
                   <Route
                     path='invoice'
@@ -495,24 +576,6 @@ const App: React.FC = () => {
                   <Route
                     path='invoice/preview/:id'
                     element={<InvoicePreviewPage />}
-                  />
-
-                  {/* Legacy invoice routes for backward compatibility */}
-                  <Route
-                    path='invoices'
-                    element={<Navigate to='/invoice/list' replace />}
-                  />
-                  <Route
-                    path='invoices/create'
-                    element={<Navigate to='/invoice/entry' replace />}
-                  />
-                  <Route
-                    path='invoices/:id'
-                    element={<Navigate to='/invoice/list' replace />}
-                  />
-                  <Route
-                    path='invoices/:id/edit'
-                    element={<Navigate to='/invoice/entry' replace />}
                   />
 
                   {/* Master Configuration Routes */}
@@ -725,7 +788,6 @@ const App: React.FC = () => {
                     />
                   </Route>
 
-                  <Route path='purchases' element={<PurchaseOrders />} />
                   <Route path='vendors' element={<Vendors />} />
                   <Route path='users' element={<UserManagement />} />
                   <Route path='users/create' element={<CreateUser />} />
@@ -762,26 +824,16 @@ const App: React.FC = () => {
                   <Route path='cache-debug' element={<CacheManagerDebug />} />
 
                   {/* Contract Routes */}
-                  <Route path='contracts' element={<Navigate to='/contracts/list' replace />} />
+                  <Route
+                    path='contracts'
+                    element={<Navigate to='/contracts/list' replace />}
+                  />
                   <Route path='contracts/list' element={<ContractList />} />
                   <Route path='contracts/create' element={<ContractCreate />} />
                   <Route path='contracts/:id' element={<ContractDetails />} />
 
                   {/* Test MasterDashboard in isolation */}
                   <Route path='master-test' element={<MasterDashboard />} />
-
-                  {/* Purchase Order Routes */}
-                  <Route
-                    path='purchases/new'
-                    element={<PurchaseOrderForm mode='create' />}
-                  />
-                  <Route
-                    path='purchases/:id/edit'
-                    element={<PurchaseOrderForm mode='edit' />}
-                  />
-                  {/* TODO: Add PurchaseOrderDetail component */}
-
-                  {/* TODO: Add VendorDetail component */}
                 </Route>
 
                 {/* ========== VENDOR PORTAL ROUTES ========== */}

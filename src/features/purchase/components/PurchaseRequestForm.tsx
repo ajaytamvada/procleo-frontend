@@ -12,6 +12,8 @@ import {
   X,
   ArrowRight,
   ShoppingCart,
+  AlertTriangle,
+  Wallet,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { AlertDialog } from '@/components/ui/Dialog';
@@ -29,6 +31,99 @@ import {
 import { apiClient } from '@/lib/api';
 import ExcelImportDialog from '@/components/ExcelImportDialog';
 import CatalogBrowserPage from '@/features/catalog/pages/CatalogBrowsePage';
+import { useBudgetCheck } from '@/features/master/hooks/useBudgetAPI';
+
+const BudgetIndicator: React.FC<{
+  budget?: any;
+  isLoading: boolean;
+  departmentId?: number;
+  currentTotal: number;
+}> = ({ budget, isLoading, departmentId, currentTotal }) => {
+  const formatCurrency = (amount: number = 0) =>
+    new Intl.NumberFormat('en-IN', {
+      style: 'currency',
+      currency: 'INR',
+      minimumFractionDigits: 2,
+    }).format(amount);
+
+  if (!departmentId) return null;
+  if (isLoading)
+    return (
+      <div className='text-xs text-gray-400 animate-pulse'>
+        Checking budget...
+      </div>
+    );
+  if (!budget || budget.id === undefined)
+    return (
+      <div className='flex items-center gap-1.5 px-3 py-1.5 bg-amber-50 border border-amber-200 rounded-md'>
+        <AlertTriangle size={14} className='text-amber-600' />
+        <span className='text-xs font-medium text-amber-700 text-nowrap'>
+          No budget assigned
+        </span>
+      </div>
+    );
+
+  const isExceeded = currentTotal > (budget.availableAmount || 0);
+  const remainingAfterPR = (budget.availableAmount || 0) - currentTotal;
+
+  return (
+    <div
+      className={`flex flex-col gap-1 p-3 rounded-lg border shadow-sm transition-all ${
+        isExceeded
+          ? 'bg-red-50 border-red-200 ring-1 ring-red-500'
+          : 'bg-green-50/50 border-green-100'
+      }`}
+    >
+      <div className='flex items-center justify-between'>
+        <div className='flex items-center gap-2'>
+          <div
+            className={`p-1 rounded ${isExceeded ? 'bg-red-100' : 'bg-green-100'}`}
+          >
+            <Wallet
+              size={14}
+              className={isExceeded ? 'text-red-600' : 'text-green-600'}
+            />
+          </div>
+          <span className='text-xs font-bold text-gray-700'>Budget Status</span>
+        </div>
+        <span
+          className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
+            isExceeded ? 'bg-red-600 text-white' : 'bg-green-600 text-white'
+          }`}
+        >
+          {isExceeded ? 'EXCEEDED' : 'OK'}
+        </span>
+      </div>
+
+      <div className='flex justify-between items-baseline mt-1'>
+        <span className='text-[10px] text-gray-500 font-medium'>Available</span>
+        <span className='text-xs font-bold text-gray-900'>
+          {formatCurrency(budget.availableAmount)}
+        </span>
+      </div>
+
+      <div className='flex justify-between items-baseline'>
+        <span className='text-[10px] text-gray-500 font-medium'>
+          Current PR
+        </span>
+        <span className='text-xs font-bold text-red-600'>
+          -{formatCurrency(currentTotal)}
+        </span>
+      </div>
+
+      <div className='pt-1 mt-1 border-t border-gray-200 flex justify-between items-baseline'>
+        <span className='text-[10px] text-gray-500 font-medium font-bold'>
+          Balance
+        </span>
+        <span
+          className={`text-xs font-black ${isExceeded ? 'text-red-600' : 'text-green-700'}`}
+        >
+          {formatCurrency(remainingAfterPR)}
+        </span>
+      </div>
+    </div>
+  );
+};
 
 type PurchaseRequestItemFormData = {
   id: number;
@@ -205,7 +300,25 @@ const PurchaseRequestForm: React.FC<PurchaseRequestFormProps> = ({
   });
 
   const purchaseType = watch('purchaseType');
+  const departmentId = watch('departmentId');
+  const items = watch('items');
+  const grandTotal =
+    items?.reduce(
+      (sum, item) => sum + (item.quantity || 0) * (item.unitPrice || 0),
+      0
+    ) || 0;
+
   const isCatalogFlow = purchaseType === 'CATALOG';
+
+  const { data: budget, isLoading: budgetLoading } = useBudgetCheck(
+    departmentId || 0,
+    !!departmentId
+  );
+  const isExceeded =
+    budget &&
+    budget.id !== undefined &&
+    grandTotal > (budget.availableAmount || 0);
+
   const { fields, append, remove, replace } = useFieldArray({
     control,
     name: 'items',
@@ -258,13 +371,18 @@ const PurchaseRequestForm: React.FC<PurchaseRequestFormProps> = ({
     if (!purchaseRequest) {
       const user = AuthService.getStoredUser();
       if (user) {
-        if (user.departmentName && departments.length > 0) {
+        // Use departmentId directly from user profile if available
+        if (user.departmentId) {
+          setValue('departmentId', user.departmentId);
+        } else if (user.departmentName && departments.length > 0) {
           const matchedDept = departments.find(
             d => d.name.toLowerCase() === user.departmentName?.toLowerCase()
           );
           if (matchedDept?.id) setValue('departmentId', matchedDept.id);
         }
-        if (user.locationName && cities.length > 0) {
+        if (user.locationId) {
+          setValue('locationId', user.locationId);
+        } else if (user.locationName && cities.length > 0) {
           const matchedLoc = cities.find(
             c => c.name.toLowerCase() === user.locationName?.toLowerCase()
           );
@@ -284,12 +402,6 @@ const PurchaseRequestForm: React.FC<PurchaseRequestFormProps> = ({
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
-
-  const items = watch('items');
-  const grandTotal = items.reduce(
-    (sum, item) => sum + (item.quantity || 0) * (item.unitPrice || 0),
-    0
-  );
 
   const handleSearchInput = (index: number, value: string) => {
     setSearchQueries(prev => ({ ...prev, [index]: value }));
@@ -343,6 +455,20 @@ const PurchaseRequestForm: React.FC<PurchaseRequestFormProps> = ({
     catalogItems: PurchaseRequestItem[],
     sendForApproval: boolean
   ) => {
+    const total = catalogItems.reduce(
+      (sum, item) => sum + (item.quantity || 0) * (item.unitPrice || 0),
+      0
+    );
+    const catalogIsExceeded =
+      budget &&
+      budget.id !== undefined &&
+      total > (budget.availableAmount || 0);
+
+    if (sendForApproval && catalogIsExceeded) {
+      toast.error('Budget exceeded! Cannot submit this request.');
+      return;
+    }
+
     replace(catalogItems as any);
     const formData: PurchaseRequestFormData = {
       requestDate: watch('requestDate'),
@@ -360,6 +486,11 @@ const PurchaseRequestForm: React.FC<PurchaseRequestFormProps> = ({
   };
 
   const handleFormSubmit = (sendForApproval: boolean) => {
+    if (sendForApproval && isExceeded) {
+      toast.error('Budget exceeded! Cannot submit for approval.');
+      return;
+    }
+
     handleSubmit(
       data => {
         if (sendForApproval) setShowConfirmDialog(true);
@@ -604,6 +735,21 @@ const PurchaseRequestForm: React.FC<PurchaseRequestFormProps> = ({
       })()}
 
       <form onSubmit={e => e.preventDefault()} className='space-y-6'>
+        {/* Budget Indicator */}
+        <div className='grid grid-cols-1 md:grid-cols-4 gap-4 items-start'>
+          <div className='md:col-span-3'>
+            {/* Original Header Content Start */}
+          </div>
+          <div className='md:col-span-1'>
+            <BudgetIndicator
+              budget={budget}
+              isLoading={budgetLoading}
+              departmentId={departmentId}
+              currentTotal={grandTotal}
+            />
+          </div>
+        </div>
+
         {/* Header Card */}
         <div className='bg-white rounded-lg border border-gray-200 p-6'>
           <div className='grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-5'>

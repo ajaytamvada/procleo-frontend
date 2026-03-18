@@ -1,18 +1,31 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Search } from 'lucide-react';
 import { Input } from '@/components/ui/Input';
 import { usePRsPendingApproval } from '../hooks/useApproval';
 
-export const ApprovePRPage: React.FC = () => {
+interface ApprovePRPageProps {
+  status?: string;
+  title?: string;
+}
+
+export const ApprovePRPage: React.FC<ApprovePRPageProps> = ({
+  status = 'waiting',
+  title = 'Pending For Approval',
+}) => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
 
   const itemsPerPage = 15;
 
   // Fetch PRs pending approval
-  const { data: pendingPRs = [], isLoading, error } = usePRsPendingApproval();
+  const {
+    data: pendingPRs = [],
+    isLoading,
+    error,
+  } = usePRsPendingApproval(status);
 
   // Filter PRs based on search
   const filteredPRs = pendingPRs.filter(
@@ -35,7 +48,14 @@ export const ApprovePRPage: React.FC = () => {
   }, [searchTerm]);
 
   const handleView = (prId: number) => {
-    navigate(`/purchase-requisition/approve/detail?id=${prId}`);
+    // Determine the target URL based on current path
+    const targetPath = location.pathname.includes('/approve-l2')
+      ? '/purchase-requisition/approve-l2/detail'
+      : location.pathname.includes('/approve-l3')
+        ? '/purchase-requisition/approve-l3/detail'
+        : '/purchase-requisition/approve/detail';
+
+    navigate(`${targetPath}?id=${prId}`);
   };
 
   if (isLoading) {
@@ -66,9 +86,7 @@ export const ApprovePRPage: React.FC = () => {
     <div className='space-y-6'>
       <div className='flex items-center justify-between'>
         <div>
-          <h1 className='text-xl font-semibold text-gray-800'>
-            Pending For Approval
-          </h1>
+          <h1 className='text-xl font-semibold text-gray-800'>{title}</h1>
           <p className='text-sm text-gray-500 mt-1'>
             Review and approve purchase requisitions
           </p>

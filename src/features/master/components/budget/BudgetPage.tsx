@@ -7,6 +7,7 @@ import {
   useCreateBudget,
   useUpdateBudget,
   useDeleteBudget,
+  useReviseBudget,
 } from '../../hooks/useBudgetAPI';
 import type { Budget } from '../../types';
 
@@ -35,6 +36,7 @@ const BudgetPage: React.FC = () => {
   const createMutation = useCreateBudget();
   const updateMutation = useUpdateBudget();
   const deleteMutation = useDeleteBudget();
+  const reviseMutation = useReviseBudget();
 
   const handleCreate = () => {
     setSelectedBudget(undefined);
@@ -56,20 +58,41 @@ const BudgetPage: React.FC = () => {
     }
   };
 
-  const handleSubmit = (data: Partial<Budget>) => {
+  const handleSubmit = (formData: any) => {
     if (selectedBudget?.id) {
-      updateMutation.mutate(
-        { id: selectedBudget.id, budget: data },
-        {
-          onSuccess: () => {
-            refetch();
-            setShowForm(false);
-            setSelectedBudget(undefined);
+      // If amount has changed, use the Revise API for audit tracking
+      if (selectedBudget.annualBudget !== formData.annualBudget) {
+        reviseMutation.mutate(
+          {
+            budgetId: selectedBudget.id,
+            newAmount: formData.annualBudget,
+            remarks: formData.remarks,
+            // In a real app, we'd get the current user ID from auth state
+            revisedBy: 1,
           },
-        }
-      );
+          {
+            onSuccess: () => {
+              refetch();
+              setShowForm(false);
+              setSelectedBudget(undefined);
+            },
+          }
+        );
+      } else {
+        // Otherwise use standard update for status/isActive
+        updateMutation.mutate(
+          { id: selectedBudget.id, budget: formData },
+          {
+            onSuccess: () => {
+              refetch();
+              setShowForm(false);
+              setSelectedBudget(undefined);
+            },
+          }
+        );
+      }
     } else {
-      createMutation.mutate(data as Omit<Budget, 'id'>, {
+      createMutation.mutate(formData as Omit<Budget, 'id'>, {
         onSuccess: () => {
           refetch();
           setShowForm(false);
@@ -96,7 +119,11 @@ const BudgetPage: React.FC = () => {
           budget={selectedBudget}
           onSubmit={handleSubmit}
           onCancel={handleCancel}
-          isLoading={createMutation.isPending || updateMutation.isPending}
+          isLoading={
+            createMutation.isPending ||
+            updateMutation.isPending ||
+            reviseMutation.isPending
+          }
           mode={selectedBudget ? 'edit' : 'create'}
         />
       </div>

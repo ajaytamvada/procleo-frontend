@@ -14,12 +14,13 @@ const API_BASE_URL = '/purchase/requests';
 /**
  * Get list of PRs pending approval
  */
-export const getPRsPendingApproval = async (): Promise<
-  PRApprovalListItem[]
-> => {
+export const getPRsPendingApproval = async (
+  status: string = 'waiting'
+): Promise<PRApprovalListItem[]> => {
   try {
     const response = await apiClient.get<PRApprovalListItem[]>(
-      `${API_BASE_URL}/pending-approval`
+      `${API_BASE_URL}/approval-queue`,
+      { params: { status } }
     );
     return Array.isArray(response.data) ? response.data : [];
   } catch (error) {
@@ -32,11 +33,13 @@ export const getPRsPendingApproval = async (): Promise<
  * Get PR details for approval with all items
  */
 export const getPRDetailsForApproval = async (
-  prId: number
+  prId: number,
+  status: string = 'waiting'
 ): Promise<PRApprovalDetail> => {
   try {
     const response = await apiClient.get<PRApprovalDetail>(
-      `${API_BASE_URL}/${prId}/approval-details`
+      `${API_BASE_URL}/approval-detail/${prId}`,
+      { params: { status } }
     );
     return response.data;
   } catch (error) {
