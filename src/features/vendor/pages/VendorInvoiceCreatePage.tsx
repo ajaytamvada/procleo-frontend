@@ -3,7 +3,6 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import {
   ArrowLeft,
   FileText,
-  Calendar,
   Package,
   DollarSign,
   Send,
@@ -14,7 +13,6 @@ import {
   Eye,
   Scan,
   X,
-  File as FileIcon
 } from 'lucide-react';
 import {
   useVendorOrder,
@@ -46,6 +44,7 @@ interface InvoiceItemForm {
   poItemId: number;
   itemName: string;
   itemCode?: string;
+  hsnSacCode?: string;
   poQuantity: number;
   remainingQuantity: number;
   invoiceQuantity: number;
@@ -61,7 +60,7 @@ interface InvoiceItemForm {
 }
 
 const VendorInvoiceCreatePage: React.FC = () => {
-  const { poId } = useParams<{ poId: string }>();
+  const { poId: _poId } = useParams<{ poId: string }>();
   const navigate = useNavigate();
 
   // Get PO ID from URL query params manually
@@ -96,6 +95,13 @@ const VendorInvoiceCreatePage: React.FC = () => {
   const [invoiceDate, setInvoiceDate] = useState(
     new Date().toISOString().split('T')[0]
   );
+  const [dueDate, setDueDate] = useState('');
+  const [currency, setCurrency] = useState('INR');
+  const [paymentTerms, setPaymentTerms] = useState('');
+  const [supplierGstin, setSupplierGstin] = useState('');
+  const [supplierPan, setSupplierPan] = useState('');
+  const [billingAddress, setBillingAddress] = useState('');
+  const [shippingAddress, setShippingAddress] = useState('');
   const [remarks, setRemarks] = useState('');
   const [items, setItems] = useState<InvoiceItemForm[]>([]);
 
@@ -103,7 +109,11 @@ const VendorInvoiceCreatePage: React.FC = () => {
   useEffect(() => {
     console.log('DEBUG: poItems changed:', poItems);
     if (poItems && poItems.length > 0) {
-      console.log('DEBUG: Initializing items state with', poItems.length, 'entries');
+      console.log(
+        'DEBUG: Initializing items state with',
+        poItems.length,
+        'entries'
+      );
       const initialItems: InvoiceItemForm[] = poItems.map(
         (item: VendorInvoiceItem) => ({
           poItemId: item.poItemId,
@@ -152,12 +162,16 @@ const VendorInvoiceCreatePage: React.FC = () => {
     try {
       // Call Backend OCR Endpoint
       // Note: apiClient adds the Authorization header automatically
-      const response = await apiClient.post<ApiResponse<ExtractedOcrData>>('/ocr/process', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-        timeout: 120000, // Increase timeout to 2 minutes for LLM processing
-      });
+      const response = await apiClient.post<ApiResponse<ExtractedOcrData>>(
+        '/ocr/process',
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+          timeout: 300000, // 5 minutes — allows for local GPU LLM processing
+        }
+      );
 
       if (response.data && response.data.success) {
         // According to OcrResultDto from backend: { success: true, extractedData: {...} }
@@ -175,13 +189,25 @@ const VendorInvoiceCreatePage: React.FC = () => {
             setInvoiceDate(extracted.invoiceDate);
           }
         } else if (extracted.rawText) {
-          // Fallback: simple regex for dd-mm-yyyy in rawText if LLM missed it
           const dateMatch = extracted.rawText.match(/(\d{2})-(\d{2})-(\d{4})/);
           if (dateMatch) {
-            const [_, dd, mm, yyyy] = dateMatch;
+            const [, dd, mm, yyyy] = dateMatch;
             setInvoiceDate(`${yyyy}-${mm}-${dd}`);
           }
         }
+
+        // Fill new fields from OCR
+        if (extracted.dueDate) setDueDate(extracted.dueDate);
+        if (extracted.currency) setCurrency(extracted.currency);
+        if (extracted.paymentTerms) setPaymentTerms(extracted.paymentTerms);
+        if (extracted.gstNumber) setSupplierGstin(extracted.gstNumber);
+        if (extracted.panNumber) setSupplierPan(extracted.panNumber);
+        if (extracted.billingAddress)
+          setBillingAddress(extracted.billingAddress);
+        if (extracted.shippingAddress)
+          setShippingAddress(extracted.shippingAddress);
+        if (extracted.supplierAddress && !billingAddress)
+          setBillingAddress(extracted.supplierAddress);
 
         setOcrData(extracted);
 
@@ -193,11 +219,11 @@ const VendorInvoiceCreatePage: React.FC = () => {
 
             extracted.lineItems?.forEach(ocrItem => {
               const ocrDesc = ocrItem.description?.toLowerCase() || '';
-              const ocrAmount = ocrItem.amount || 0;
+              const _ocrAmount = ocrItem.amount || 0;
               const ocrPrice = ocrItem.unitPrice || 0;
 
               // Find best match in PO items
-              // Strategy: 
+              // Strategy:
               // 1. Exact amount match (Unit Price)
               // 2. Description contains fuzzy match
 
@@ -225,7 +251,10 @@ const VendorInvoiceCreatePage: React.FC = () => {
 
                 // Update quantity based on OCR, but cap at remaining
                 const scannedQty = ocrItem.quantity || 1;
-                const validQty = Math.min(scannedQty, targetItem.remainingQuantity);
+                const validQty = Math.min(
+                  scannedQty,
+                  targetItem.remainingQuantity
+                );
 
                 newItems[bestMatchIndex] = {
                   ...targetItem,
@@ -297,7 +326,7 @@ const VendorInvoiceCreatePage: React.FC = () => {
     });
   };
 
-  const handleRemarksChange = (index: number, value: string) => {
+  const _handleRemarksChange = (index: number, value: string) => {
     setItems(prev => {
       const updated = [...prev];
       updated[index] = { ...updated[index], remarks: value };
@@ -389,26 +418,31 @@ const VendorInvoiceCreatePage: React.FC = () => {
   const renderTabs = () => (
     <div className='flex space-x-1 bg-gray-100 p-1 rounded-lg mb-6 w-fit'>
       <button
-        onClick={() => { setActiveTab('manual'); setSplitView(false); }}
-        className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${activeTab === 'manual'
-          ? 'bg-white text-violet-700 shadow-sm'
-          : 'text-gray-500 hover:text-gray-700'
-          }`}
+        onClick={() => {
+          setActiveTab('manual');
+          setSplitView(false);
+        }}
+        className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+          activeTab === 'manual'
+            ? 'bg-white text-violet-700 shadow-sm'
+            : 'text-gray-500 hover:text-gray-700'
+        }`}
       >
-        <span className="flex items-center gap-2">
-          <FileText className="w-4 h-4" />
+        <span className='flex items-center gap-2'>
+          <FileText className='w-4 h-4' />
           Manual Entry
         </span>
       </button>
       <button
         onClick={() => setActiveTab('upload')}
-        className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${activeTab === 'upload'
-          ? 'bg-white text-violet-700 shadow-sm'
-          : 'text-gray-500 hover:text-gray-700'
-          }`}
+        className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+          activeTab === 'upload'
+            ? 'bg-white text-violet-700 shadow-sm'
+            : 'text-gray-500 hover:text-gray-700'
+        }`}
       >
-        <span className="flex items-center gap-2">
-          <Scan className="w-4 h-4" />
+        <span className='flex items-center gap-2'>
+          <Scan className='w-4 h-4' />
           Upload & Auto-Fill
         </span>
       </button>
@@ -416,26 +450,28 @@ const VendorInvoiceCreatePage: React.FC = () => {
   );
 
   const renderUploadArea = () => (
-    <div className="bg-white border-2 border-dashed border-gray-300 rounded-lg p-12 mb-6 text-center hover:border-violet-500 transition-colors">
-      <div className="flex flex-col items-center">
-        <div className="w-16 h-16 bg-violet-50 rounded-full flex items-center justify-center mb-4">
-          <Upload className="w-8 h-8 text-violet-600" />
+    <div className='bg-white border-2 border-dashed border-gray-300 rounded-lg p-12 mb-6 text-center hover:border-violet-500 transition-colors'>
+      <div className='flex flex-col items-center'>
+        <div className='w-16 h-16 bg-violet-50 rounded-full flex items-center justify-center mb-4'>
+          <Upload className='w-8 h-8 text-violet-600' />
         </div>
-        <h3 className="text-lg font-medium text-gray-900 mb-2">Upload Invoice</h3>
-        <p className="text-gray-500 mb-6 max-w-md">
+        <h3 className='text-lg font-medium text-gray-900 mb-2'>
+          Upload Invoice
+        </h3>
+        <p className='text-gray-500 mb-6 max-w-md'>
           Drag and drop your PDF or image invoice here, or click to browse.
           We'll extract the details for you.
         </p>
         <input
-          type="file"
+          type='file'
           ref={fileInputRef}
           onChange={handleFileUpload}
-          accept=".pdf,.jpg,.jpeg,.png"
-          className="hidden"
+          accept='.pdf,.jpg,.jpeg,.png'
+          className='hidden'
         />
         <button
           onClick={() => fileInputRef.current?.click()}
-          className="px-6 py-2 bg-violet-600 text-white rounded-lg hover:bg-violet-700 transition-colors"
+          className='px-6 py-2 bg-violet-600 text-white rounded-lg hover:bg-violet-700 transition-colors'
         >
           Select File
         </button>
@@ -456,7 +492,7 @@ const VendorInvoiceCreatePage: React.FC = () => {
           </div>
           {ocrData && (
             <div className='flex items-center gap-1.5 text-xs bg-green-50 text-green-700 px-2.5 py-1 rounded-full border border-green-200'>
-              <CheckCircle className="w-3 h-3" />
+              <CheckCircle className='w-3 h-3' />
               Data Extracted
             </div>
           )}
@@ -494,6 +530,44 @@ const VendorInvoiceCreatePage: React.FC = () => {
           </div>
           <div>
             <label className='block text-sm font-medium text-gray-700 mb-2'>
+              Due Date
+            </label>
+            <input
+              type='date'
+              value={dueDate}
+              onChange={e => setDueDate(e.target.value)}
+              className='w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-violet-500'
+            />
+          </div>
+          <div>
+            <label className='block text-sm font-medium text-gray-700 mb-2'>
+              Currency
+            </label>
+            <select
+              value={currency}
+              onChange={e => setCurrency(e.target.value)}
+              className='w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-violet-500'
+            >
+              <option value='INR'>INR - Indian Rupee</option>
+              <option value='USD'>USD - US Dollar</option>
+              <option value='EUR'>EUR - Euro</option>
+              <option value='GBP'>GBP - British Pound</option>
+            </select>
+          </div>
+          <div>
+            <label className='block text-sm font-medium text-gray-700 mb-2'>
+              Payment Terms
+            </label>
+            <input
+              type='text'
+              value={paymentTerms}
+              onChange={e => setPaymentTerms(e.target.value)}
+              className='w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-violet-500'
+              placeholder='e.g., Net 30'
+            />
+          </div>
+          <div>
+            <label className='block text-sm font-medium text-gray-700 mb-2'>
               Remarks
             </label>
             <input
@@ -507,14 +581,74 @@ const VendorInvoiceCreatePage: React.FC = () => {
         </div>
       </div>
 
+      {/* Supplier & Address Details */}
+      <div className='bg-white border rounded-lg overflow-hidden shadow-sm'>
+        <div className='p-4 border-b bg-gray-50 flex items-center gap-2'>
+          <DollarSign className='w-5 h-5 text-violet-600' />
+          <h2 className='text-lg font-semibold text-gray-900'>
+            Supplier & Address Details
+          </h2>
+        </div>
+        <div className='p-6 grid grid-cols-1 md:grid-cols-2 gap-6'>
+          <div>
+            <label className='block text-sm font-medium text-gray-700 mb-2'>
+              Supplier GSTIN
+            </label>
+            <input
+              type='text'
+              value={supplierGstin}
+              onChange={e => setSupplierGstin(e.target.value)}
+              className='w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-violet-500'
+              placeholder='e.g., 27AABCU9603R1ZM'
+              maxLength={15}
+            />
+          </div>
+          <div>
+            <label className='block text-sm font-medium text-gray-700 mb-2'>
+              Supplier PAN
+            </label>
+            <input
+              type='text'
+              value={supplierPan}
+              onChange={e => setSupplierPan(e.target.value)}
+              className='w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-violet-500'
+              placeholder='e.g., AABCU9603R'
+              maxLength={10}
+            />
+          </div>
+          <div>
+            <label className='block text-sm font-medium text-gray-700 mb-2'>
+              Billing Address
+            </label>
+            <textarea
+              value={billingAddress}
+              onChange={e => setBillingAddress(e.target.value)}
+              rows={2}
+              className='w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-violet-500 resize-none'
+              placeholder='Billing address'
+            />
+          </div>
+          <div>
+            <label className='block text-sm font-medium text-gray-700 mb-2'>
+              Shipping Address
+            </label>
+            <textarea
+              value={shippingAddress}
+              onChange={e => setShippingAddress(e.target.value)}
+              rows={2}
+              className='w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-violet-500 resize-none'
+              placeholder='Shipping address'
+            />
+          </div>
+        </div>
+      </div>
+
       {/* Items Table */}
       <div className='bg-white border rounded-lg overflow-hidden shadow-sm'>
         <div className='p-4 border-b bg-gray-50 flex items-center justify-between'>
           <div className='flex items-center gap-2'>
             <Package className='w-5 h-5 text-violet-600' />
-            <h2 className='text-lg font-semibold text-gray-900'>
-              Line Items
-            </h2>
+            <h2 className='text-lg font-semibold text-gray-900'>Line Items</h2>
           </div>
           <div className='text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded'>
             Matches PO items
@@ -524,11 +658,30 @@ const VendorInvoiceCreatePage: React.FC = () => {
           <table className='w-full'>
             <thead className='bg-gray-50 border-b'>
               <tr>
-                <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase'>Item</th>
-                <th className='px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase'>Rem</th>
-                <th className='px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase'>Price</th>
-                <th className='px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase w-24'>Qty</th>
-                <th className='px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase'>Total</th>
+                <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase'>
+                  Item
+                </th>
+                <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase'>
+                  HSN/SAC
+                </th>
+                <th className='px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase'>
+                  Rem
+                </th>
+                <th className='px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase'>
+                  Price
+                </th>
+                <th className='px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase w-24'>
+                  Qty
+                </th>
+                <th className='px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase'>
+                  CGST%
+                </th>
+                <th className='px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase'>
+                  SGST%
+                </th>
+                <th className='px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase'>
+                  Total
+                </th>
               </tr>
             </thead>
             <tbody className='divide-y divide-gray-200'>
@@ -542,28 +695,60 @@ const VendorInvoiceCreatePage: React.FC = () => {
                   }
                 >
                   <td className='px-4 py-3'>
-                    <div className='font-medium text-gray-900 text-sm'>{item.itemName}</div>
+                    <div className='font-medium text-gray-900 text-sm'>
+                      {item.itemName}
+                    </div>
                     <div className='text-xs text-gray-500'>{item.itemCode}</div>
+                  </td>
+                  <td className='px-4 py-3'>
+                    <input
+                      type='text'
+                      value={item.hsnSacCode || ''}
+                      onChange={e => {
+                        setItems(prev => {
+                          const updated = [...prev];
+                          updated[index] = {
+                            ...updated[index],
+                            hsnSacCode: e.target.value,
+                          };
+                          return updated;
+                        });
+                      }}
+                      className='w-20 px-2 py-1 border rounded text-sm focus:ring-1 focus:ring-violet-500'
+                      placeholder='HSN'
+                    />
                   </td>
                   <td className='px-4 py-3 text-center text-sm font-medium text-violet-600'>
                     {item.remainingQuantity}
                   </td>
                   <td className='px-4 py-3 text-right text-sm text-gray-900'>
-                    {item.unitPrice.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                    {item.unitPrice.toLocaleString('en-IN', {
+                      minimumFractionDigits: 2,
+                    })}
                   </td>
                   <td className='px-4 py-3'>
                     <input
                       type='number'
                       value={item.invoiceQuantity}
-                      onChange={e => handleQuantityChange(index, e.target.value)}
+                      onChange={e =>
+                        handleQuantityChange(index, e.target.value)
+                      }
                       className='w-full px-2 py-1 border rounded text-center text-sm focus:ring-1 focus:ring-violet-500'
                       min='0'
                       max={item.remainingQuantity}
                       disabled={item.remainingQuantity <= 0}
                     />
                   </td>
+                  <td className='px-4 py-3 text-right text-xs text-gray-500'>
+                    {item.cgstRate}%
+                  </td>
+                  <td className='px-4 py-3 text-right text-xs text-gray-500'>
+                    {item.sgstRate}%
+                  </td>
                   <td className='px-4 py-3 text-right text-sm font-medium text-gray-900'>
-                    {item.totalAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                    {item.totalAmount.toLocaleString('en-IN', {
+                      minimumFractionDigits: 2,
+                    })}
                   </td>
                 </tr>
               ))}
@@ -572,61 +757,88 @@ const VendorInvoiceCreatePage: React.FC = () => {
         </div>
       </div>
 
-      {
-        ocrData?.lineItems && ocrData.lineItems.length > 0 && (
-          <div className='bg-white border rounded-lg overflow-hidden shadow-sm mt-6 border-orange-200'>
-            <div className='p-4 border-b bg-orange-50 flex items-center justify-between'>
-              <div className='flex items-center gap-2'>
-                <AlertCircle className='w-5 h-5 text-orange-600' />
-                <h2 className='text-lg font-semibold text-gray-900'>
-                  Scanned Items (Raw Data)
-                </h2>
-              </div>
-              <div className='text-xs text-orange-800 bg-orange-100 px-2 py-1 rounded'>
-                Verify & Match Manually if needed
-              </div>
+      {ocrData?.lineItems && ocrData.lineItems.length > 0 && (
+        <div className='bg-white border rounded-lg overflow-hidden shadow-sm mt-6 border-orange-200'>
+          <div className='p-4 border-b bg-orange-50 flex items-center justify-between'>
+            <div className='flex items-center gap-2'>
+              <AlertCircle className='w-5 h-5 text-orange-600' />
+              <h2 className='text-lg font-semibold text-gray-900'>
+                Scanned Items (Raw Data)
+              </h2>
             </div>
-            <div className='overflow-x-auto'>
-              <table className='w-full'>
-                <thead className='bg-gray-50 border-b'>
-                  <tr>
-                    <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase'>Description</th>
-                    <th className='px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase'>Qty</th>
-                    <th className='px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase'>Price</th>
-                    <th className='px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase'>Total</th>
-                  </tr>
-                </thead>
-                <tbody className='divide-y divide-gray-200'>
-                  {ocrData.lineItems.map((item, idx) => (
-                    <tr key={idx} className='hover:bg-gray-50'>
-                      <td className='px-4 py-3 text-sm text-gray-900'>{item.description}</td>
-                      <td className='px-4 py-3 text-right text-sm text-gray-900'>{item.quantity}</td>
-                      <td className='px-4 py-3 text-right text-sm text-gray-900'>{item.unitPrice}</td>
-                      <td className='px-4 py-3 text-right text-sm text-gray-900'>{item.amount}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            <div className='text-xs text-orange-800 bg-orange-100 px-2 py-1 rounded'>
+              Verify & Match Manually if needed
             </div>
           </div>
-        )
-      }
+          <div className='overflow-x-auto'>
+            <table className='w-full'>
+              <thead className='bg-gray-50 border-b'>
+                <tr>
+                  <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase'>
+                    Description
+                  </th>
+                  <th className='px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase'>
+                    Qty
+                  </th>
+                  <th className='px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase'>
+                    Price
+                  </th>
+                  <th className='px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase'>
+                    Total
+                  </th>
+                </tr>
+              </thead>
+              <tbody className='divide-y divide-gray-200'>
+                {ocrData.lineItems.map((item, idx) => (
+                  <tr key={idx} className='hover:bg-gray-50'>
+                    <td className='px-4 py-3 text-sm text-gray-900'>
+                      {item.description}
+                    </td>
+                    <td className='px-4 py-3 text-right text-sm text-gray-900'>
+                      {item.quantity}
+                    </td>
+                    <td className='px-4 py-3 text-right text-sm text-gray-900'>
+                      {item.unitPrice}
+                    </td>
+                    <td className='px-4 py-3 text-right text-sm text-gray-900'>
+                      {item.amount}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
 
       {/* Summary Card */}
       <div className='flex justify-end'>
         <div className='w-full md:w-2/3 bg-white border rounded-lg p-6 space-y-3 shadow-sm'>
           <div className='flex justify-between text-gray-600'>
             <span>Subtotal</span>
-            <span>₹ {totals.subtotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+            <span>
+              ₹{' '}
+              {totals.subtotal.toLocaleString('en-IN', {
+                minimumFractionDigits: 2,
+              })}
+            </span>
           </div>
           <div className='flex justify-between text-gray-600'>
             <span>Total Tax</span>
-            <span>₹ {totals.taxAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+            <span>
+              ₹{' '}
+              {totals.taxAmount.toLocaleString('en-IN', {
+                minimumFractionDigits: 2,
+              })}
+            </span>
           </div>
           <div className='pt-3 border-t flex justify-between font-bold text-lg text-gray-900'>
             <span>Grand Total</span>
             <span className='text-violet-600'>
-              ₹ {totals.grandTotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+              ₹{' '}
+              {totals.grandTotal.toLocaleString('en-IN', {
+                minimumFractionDigits: 2,
+              })}
             </span>
           </div>
 
@@ -644,7 +856,7 @@ const VendorInvoiceCreatePage: React.FC = () => {
           </button>
         </div>
       </div>
-    </div >
+    </div>
   );
 
   return (
@@ -666,60 +878,59 @@ const VendorInvoiceCreatePage: React.FC = () => {
       </div>
 
       {/* Tabs */}
-      <div className="flex-shrink-0">
-        {renderTabs()}
-      </div>
+      <div className='flex-shrink-0'>{renderTabs()}</div>
 
       {/* Content Area */}
-      <div className="flex-1 min-h-0">
+      <div className='flex-1 min-h-0'>
         {activeTab === 'upload' && !splitView && renderUploadArea()}
 
         {/* Split View Container */}
         {splitView ? (
-          <div className="flex h-full gap-6">
+          <div className='flex h-full gap-6'>
             {/* Left Pane: PDF Viewer */}
-            <div className="w-1/2 bg-gray-800 rounded-lg overflow-hidden flex flex-col shadow-lg">
-              <div className="p-3 bg-gray-900 text-white flex justify-between items-center">
-                <span className="flex items-center gap-2 text-sm font-medium">
-                  <Eye className="w-4 h-4" />
+            <div className='w-1/2 bg-gray-800 rounded-lg overflow-hidden flex flex-col shadow-lg'>
+              <div className='p-3 bg-gray-900 text-white flex justify-between items-center'>
+                <span className='flex items-center gap-2 text-sm font-medium'>
+                  <Eye className='w-4 h-4' />
                   Document Preview
                 </span>
-                <button onClick={handleClearUpload} className="text-gray-400 hover:text-white">
-                  <X className="w-4 h-4" />
+                <button
+                  onClick={handleClearUpload}
+                  className='text-gray-400 hover:text-white'
+                >
+                  <X className='w-4 h-4' />
                 </button>
               </div>
-              <div className="flex-1 bg-gray-700 items-center justify-center flex relative">
+              <div className='flex-1 bg-gray-700 items-center justify-center flex relative'>
                 {isUploading ? (
-                  <div className="text-center text-white">
-                    <Loader2 className="w-10 h-10 animate-spin mx-auto mb-3 text-violet-400" />
+                  <div className='text-center text-white'>
+                    <Loader2 className='w-10 h-10 animate-spin mx-auto mb-3 text-violet-400' />
                     <p>Analyzing document...</p>
-                    <p className="text-xs text-gray-400 mt-1">This may take a few seconds</p>
+                    <p className='text-xs text-gray-400 mt-1'>
+                      This may take a few seconds
+                    </p>
                   </div>
                 ) : previewUrl ? (
                   <iframe
                     src={previewUrl}
-                    className="w-full h-full object-contain bg-gray-500"
-                    title="Invoice Preview"
+                    className='w-full h-full object-contain bg-gray-500'
+                    title='Invoice Preview'
                   />
                 ) : (
-                  <div className="text-gray-400">No preview available</div>
+                  <div className='text-gray-400'>No preview available</div>
                 )}
               </div>
             </div>
 
             {/* Right Pane: Form */}
-            <div className="w-1/2 overflow-y-auto pr-2 pb-6">
-              <form onSubmit={handleSubmit}>
-                {renderFormContent()}
-              </form>
+            <div className='w-1/2 overflow-y-auto pr-2 pb-6'>
+              <form onSubmit={handleSubmit}>{renderFormContent()}</form>
             </div>
           </div>
         ) : (
           activeTab === 'manual' && (
-            <div className="max-w-7xl mx-auto">
-              <form onSubmit={handleSubmit}>
-                {renderFormContent()}
-              </form>
+            <div className='max-w-7xl mx-auto'>
+              <form onSubmit={handleSubmit}>{renderFormContent()}</form>
             </div>
           )
         )}

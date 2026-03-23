@@ -161,10 +161,18 @@ export interface UpdateInvoiceItemRequest {
 export interface CreateDirectInvoiceRequest {
   invoiceNumber: string;
   invoiceDate: string;
+  dueDate?: string;
   poNumber?: string;
   poDate?: string;
   supplierId: number;
   locationId: number;
+  currency?: string;
+  paymentTerms?: string;
+  supplierGstin?: string;
+  supplierPan?: string;
+  supplierAddress?: string;
+  billingAddress?: string;
+  shippingAddress?: string;
   raisedBy?: string;
   remarks?: string;
   attachmentPath?: string;
@@ -175,6 +183,7 @@ export interface CreateDirectInvoiceRequest {
 export interface DirectInvoiceItemRequest {
   itemName: string;
   itemCode?: string;
+  hsnSacCode?: string;
   manufacturer?: string;
   categoryId?: number;
   subCategoryId?: number;

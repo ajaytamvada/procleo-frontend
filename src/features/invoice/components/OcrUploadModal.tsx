@@ -7,7 +7,11 @@ import {
   CheckCircle,
   AlertCircle,
   Scan,
+  ChevronDown,
+  ChevronUp,
+  RotateCcw,
 } from 'lucide-react';
+import toast from 'react-hot-toast';
 import { useOcrStatus, useProcessOcrImage } from '../hooks/useOcr';
 import type { ExtractedInvoiceData } from '../api/ocrApi';
 
@@ -17,6 +21,24 @@ interface OcrUploadModalProps {
   onApplyData: (data: ExtractedInvoiceData) => void;
 }
 
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+
+const ConfidenceBadge: React.FC<{ value?: number }> = ({ value }) => {
+  if (value == null) return null;
+  const pct = Math.round(value * 100);
+  const color =
+    pct >= 80
+      ? 'bg-green-100 text-green-700'
+      : pct >= 50
+        ? 'bg-yellow-100 text-yellow-700'
+        : 'bg-red-100 text-red-700';
+  return (
+    <span className={`ml-2 px-1.5 py-0.5 rounded text-xs font-medium ${color}`}>
+      {pct}%
+    </span>
+  );
+};
+
 const OcrUploadModal: React.FC<OcrUploadModalProps> = ({
   isOpen,
   onClose,
@@ -25,42 +47,45 @@ const OcrUploadModal: React.FC<OcrUploadModalProps> = ({
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [dragActive, setDragActive] = useState(false);
+  const [showRawText, setShowRawText] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { data: ocrStatus, isLoading: statusLoading } = useOcrStatus();
   const processOcrMutation = useProcessOcrImage();
 
+  const validateAndSetFile = useCallback((file: File) => {
+    if (file.size > MAX_FILE_SIZE) {
+      toast.error(
+        `File size (${(file.size / 1024 / 1024).toFixed(1)}MB) exceeds 10MB limit`
+      );
+      return;
+    }
+    setSelectedFile(file);
+    if (file.type.startsWith('image/')) {
+      const url = URL.createObjectURL(file);
+      setPreviewUrl(url);
+    } else {
+      setPreviewUrl(null);
+    }
+  }, []);
+
   const handleFileChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
       const file = event.target.files?.[0];
-      if (file) {
-        setSelectedFile(file);
-        // Create preview URL for images
-        if (file.type.startsWith('image/')) {
-          const url = URL.createObjectURL(file);
-          setPreviewUrl(url);
-        } else {
-          setPreviewUrl(null);
-        }
-      }
+      if (file) validateAndSetFile(file);
     },
-    []
+    [validateAndSetFile]
   );
 
-  const handleDrop = useCallback((event: React.DragEvent) => {
-    event.preventDefault();
-    setDragActive(false);
-    const file = event.dataTransfer.files?.[0];
-    if (file) {
-      setSelectedFile(file);
-      if (file.type.startsWith('image/')) {
-        const url = URL.createObjectURL(file);
-        setPreviewUrl(url);
-      } else {
-        setPreviewUrl(null);
-      }
-    }
-  }, []);
+  const handleDrop = useCallback(
+    (event: React.DragEvent) => {
+      event.preventDefault();
+      setDragActive(false);
+      const file = event.dataTransfer.files?.[0];
+      if (file) validateAndSetFile(file);
+    },
+    [validateAndSetFile]
+  );
 
   const handleDragOver = useCallback((event: React.DragEvent) => {
     event.preventDefault();
@@ -75,19 +100,21 @@ const OcrUploadModal: React.FC<OcrUploadModalProps> = ({
     if (!selectedFile) return;
 
     try {
-      const result = await processOcrMutation.mutateAsync(selectedFile);
-      if (result.success && result.extractedData) {
-        onApplyData(result.extractedData);
-        handleClose();
-      }
-    } catch (error) {
+      await processOcrMutation.mutateAsync(selectedFile);
+    } catch {
       // Error is handled by the mutation hook
     }
+  };
+
+  const handleRetry = () => {
+    processOcrMutation.reset();
+    setShowRawText(false);
   };
 
   const handleClose = () => {
     setSelectedFile(null);
     setPreviewUrl(null);
+    setShowRawText(false);
     processOcrMutation.reset();
     onClose();
   };
@@ -95,6 +122,8 @@ const OcrUploadModal: React.FC<OcrUploadModalProps> = ({
   const handleClearFile = () => {
     setSelectedFile(null);
     setPreviewUrl(null);
+    setShowRawText(false);
+    processOcrMutation.reset();
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -105,6 +134,7 @@ const OcrUploadModal: React.FC<OcrUploadModalProps> = ({
   const isProcessing = processOcrMutation.isPending;
   const result = processOcrMutation.data;
   const showResult = result && result.success && result.extractedData;
+  const ed = result?.extractedData;
 
   return (
     <div className='fixed inset-0 bg-black/50 flex items-center justify-center z-50'>
@@ -152,7 +182,7 @@ const OcrUploadModal: React.FC<OcrUploadModalProps> = ({
           ) : null}
 
           {/* File Upload Area */}
-          {!showResult && (
+          {!showResult && !isProcessing && (
             <div
               className={`border-2 border-dashed rounded-xl p-8 text-center transition-colors ${
                 dragActive
@@ -197,7 +227,7 @@ const OcrUploadModal: React.FC<OcrUploadModalProps> = ({
                     Drag & drop your invoice image here
                   </p>
                   <p className='text-sm text-gray-500 mb-4'>
-                    or click to browse files
+                    or click to browse files (max 10MB)
                   </p>
                   <input
                     ref={fileInputRef}
@@ -229,12 +259,14 @@ const OcrUploadModal: React.FC<OcrUploadModalProps> = ({
             <div className='mt-6 flex flex-col items-center py-8'>
               <Loader2 className='w-10 h-10 animate-spin text-blue-600 mb-4' />
               <p className='text-gray-700 font-medium'>Processing file...</p>
-              <p className='text-sm text-gray-500'>Extracting invoice data</p>
+              <p className='text-sm text-gray-500'>
+                Running PaddleOCR + AI extraction
+              </p>
             </div>
           )}
 
           {/* Results */}
-          {showResult && result.extractedData && (
+          {showResult && ed && (
             <div className='mt-4 space-y-4'>
               <div className='flex items-center p-4 bg-green-50 border border-green-200 rounded-lg'>
                 <CheckCircle className='w-5 h-5 text-green-600 mr-3' />
@@ -243,7 +275,7 @@ const OcrUploadModal: React.FC<OcrUploadModalProps> = ({
                     Invoice scanned successfully
                   </p>
                   <p className='text-xs text-green-600'>
-                    Confidence: {result.confidence.toFixed(0)}% • Processing
+                    Confidence: {result.confidence.toFixed(0)}% | Processing
                     time: {result.processingTimeMs}ms
                   </p>
                 </div>
@@ -254,130 +286,173 @@ const OcrUploadModal: React.FC<OcrUploadModalProps> = ({
                   Extracted Data
                 </h3>
                 <div className='grid grid-cols-2 gap-4 text-sm'>
-                  {result.extractedData.invoiceNumber && (
+                  {ed.invoiceNumber && (
                     <div>
                       <span className='text-gray-500'>Invoice Number:</span>
                       <p className='font-medium'>
-                        {result.extractedData.invoiceNumber}
+                        {ed.invoiceNumber}
+                        <ConfidenceBadge value={ed.invoiceNumberConfidence} />
                       </p>
                     </div>
                   )}
-                  {result.extractedData.invoiceDate && (
+                  {ed.invoiceDate && (
                     <div>
                       <span className='text-gray-500'>Invoice Date:</span>
                       <p className='font-medium'>
-                        {result.extractedData.invoiceDate}
+                        {ed.invoiceDate}
+                        <ConfidenceBadge value={ed.invoiceDateConfidence} />
                       </p>
                     </div>
                   )}
-                  {result.extractedData.supplierName && (
+                  {ed.supplierName && (
                     <div>
                       <span className='text-gray-500'>Supplier:</span>
-                      <p className='font-medium'>
-                        {result.extractedData.supplierName}
-                      </p>
+                      <p className='font-medium'>{ed.supplierName}</p>
                     </div>
                   )}
-                  {result.extractedData.currency && (
+                  {ed.gstNumber && (
+                    <div>
+                      <span className='text-gray-500'>GSTIN:</span>
+                      <p className='font-medium'>{ed.gstNumber}</p>
+                    </div>
+                  )}
+                  {ed.currency && (
                     <div>
                       <span className='text-gray-500'>Currency:</span>
-                      <p className='font-medium'>
-                        {result.extractedData.currency}
-                      </p>
+                      <p className='font-medium'>{ed.currency}</p>
                     </div>
                   )}
-                  {result.extractedData.grandTotal && (
-                    <div className='col-span-2'>
+                  {ed.grandTotal != null && (
+                    <div>
                       <span className='text-gray-500'>Grand Total:</span>
                       <p className='font-medium text-lg text-blue-600'>
-                        {result.extractedData.currency === 'USD'
+                        {ed.currency === 'USD'
                           ? '$'
-                          : result.extractedData.currency === 'EUR'
+                          : ed.currency === 'EUR'
                             ? '€'
-                            : result.extractedData.currency === 'GBP'
+                            : ed.currency === 'GBP'
                               ? '£'
                               : '₹'}{' '}
-                        {result.extractedData.grandTotal.toLocaleString()}
+                        {ed.grandTotal.toLocaleString()}
+                        <ConfidenceBadge value={ed.totalAmountConfidence} />
                       </p>
                     </div>
                   )}
-                  {result.extractedData.billingAddress && (
+                  {(ed.cgstRate != null ||
+                    ed.sgstRate != null ||
+                    ed.igstRate != null) && (
+                    <div className='col-span-2'>
+                      <span className='text-gray-500'>Tax Rates:</span>
+                      <p className='font-medium'>
+                        {ed.cgstRate ? `CGST: ${ed.cgstRate}%` : ''}
+                        {ed.cgstRate && ed.sgstRate ? ' | ' : ''}
+                        {ed.sgstRate ? `SGST: ${ed.sgstRate}%` : ''}
+                        {(ed.cgstRate || ed.sgstRate) && ed.igstRate
+                          ? ' | '
+                          : ''}
+                        {ed.igstRate ? `IGST: ${ed.igstRate}%` : ''}
+                      </p>
+                    </div>
+                  )}
+                  {ed.billingAddress && (
                     <div className='col-span-2'>
                       <span className='text-gray-500'>Billing Address:</span>
-                      <p className='font-medium text-sm'>
-                        {result.extractedData.billingAddress}
-                      </p>
+                      <p className='font-medium text-sm'>{ed.billingAddress}</p>
                     </div>
                   )}
                 </div>
 
                 {/* Line Items */}
-                {result.extractedData.lineItems &&
-                  result.extractedData.lineItems.length > 0 && (
-                    <div className='mt-4'>
-                      <h4 className='text-sm font-semibold text-gray-700 mb-2'>
-                        Line Items
-                      </h4>
-                      <div className='overflow-x-auto'>
-                        <table className='min-w-full text-xs'>
-                          <thead>
-                            <tr className='bg-gray-100'>
-                              <th className='px-2 py-1 text-left'>
-                                Description
-                              </th>
-                              <th className='px-2 py-1 text-right'>Qty</th>
-                              <th className='px-2 py-1 text-right'>Rate</th>
-                              <th className='px-2 py-1 text-right'>Amount</th>
+                {ed.lineItems && ed.lineItems.length > 0 && (
+                  <div className='mt-4'>
+                    <h4 className='text-sm font-semibold text-gray-700 mb-2'>
+                      Line Items ({ed.lineItems.length})
+                    </h4>
+                    <div className='overflow-x-auto'>
+                      <table className='min-w-full text-xs'>
+                        <thead>
+                          <tr className='bg-gray-100'>
+                            <th className='px-2 py-1 text-left'>Description</th>
+                            <th className='px-2 py-1 text-right'>Qty</th>
+                            <th className='px-2 py-1 text-right'>Rate</th>
+                            <th className='px-2 py-1 text-right'>Amount</th>
+                            <th className='px-2 py-1 text-left'>HSN</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {ed.lineItems.slice(0, 10).map((item, idx) => (
+                            <tr key={idx} className='border-b border-gray-100'>
+                              <td className='px-2 py-1'>{item.description}</td>
+                              <td className='px-2 py-1 text-right'>
+                                {item.quantity || '-'}
+                              </td>
+                              <td className='px-2 py-1 text-right'>
+                                {item.unitPrice
+                                  ? item.unitPrice.toLocaleString()
+                                  : '-'}
+                              </td>
+                              <td className='px-2 py-1 text-right'>
+                                {item.amount
+                                  ? item.amount.toLocaleString()
+                                  : '-'}
+                              </td>
+                              <td className='px-2 py-1'>
+                                {item.hsnCode || '-'}
+                              </td>
                             </tr>
-                          </thead>
-                          <tbody>
-                            {result.extractedData.lineItems
-                              .slice(0, 10)
-                              .map((item, idx) => (
-                                <tr
-                                  key={idx}
-                                  className='border-b border-gray-100'
-                                >
-                                  <td className='px-2 py-1'>
-                                    {item.description}
-                                  </td>
-                                  <td className='px-2 py-1 text-right'>
-                                    {item.quantity || '-'}
-                                  </td>
-                                  <td className='px-2 py-1 text-right'>
-                                    {item.unitPrice
-                                      ? item.unitPrice.toLocaleString()
-                                      : '-'}
-                                  </td>
-                                  <td className='px-2 py-1 text-right'>
-                                    {item.amount
-                                      ? item.amount.toLocaleString()
-                                      : '-'}
-                                  </td>
-                                </tr>
-                              ))}
-                          </tbody>
-                        </table>
-                        {result.extractedData.lineItems.length > 10 && (
-                          <p className='text-xs text-gray-500 mt-1'>
-                            + {result.extractedData.lineItems.length - 10} more
-                            items
-                          </p>
-                        )}
-                      </div>
+                          ))}
+                        </tbody>
+                      </table>
+                      {ed.lineItems.length > 10 && (
+                        <p className='text-xs text-gray-500 mt-1'>
+                          + {ed.lineItems.length - 10} more items
+                        </p>
+                      )}
                     </div>
-                  )}
+                  </div>
+                )}
               </div>
+
+              {/* Raw Text Debug Section */}
+              {result.rawText && (
+                <div className='border border-gray-200 rounded-lg'>
+                  <button
+                    onClick={() => setShowRawText(!showRawText)}
+                    className='flex items-center justify-between w-full px-4 py-2 text-sm text-gray-600 hover:bg-gray-50'
+                  >
+                    <span>Raw OCR Text (Debug)</span>
+                    {showRawText ? (
+                      <ChevronUp className='w-4 h-4' />
+                    ) : (
+                      <ChevronDown className='w-4 h-4' />
+                    )}
+                  </button>
+                  {showRawText && (
+                    <pre className='px-4 pb-3 text-xs text-gray-600 whitespace-pre-wrap max-h-48 overflow-y-auto bg-gray-50'>
+                      {result.rawText}
+                    </pre>
+                  )}
+                </div>
+              )}
             </div>
           )}
 
           {/* Error State */}
           {result && !result.success && (
-            <div className='mt-4 flex items-center p-4 bg-red-50 border border-red-200 rounded-lg'>
-              <AlertCircle className='w-5 h-5 text-red-600 mr-3' />
-              <p className='text-sm text-red-800'>
-                {result.errorMessage || 'Failed to process image'}
-              </p>
+            <div className='mt-4 space-y-3'>
+              <div className='flex items-center p-4 bg-red-50 border border-red-200 rounded-lg'>
+                <AlertCircle className='w-5 h-5 text-red-600 mr-3 flex-shrink-0' />
+                <p className='text-sm text-red-800'>
+                  {result.errorMessage || 'Failed to process image'}
+                </p>
+              </div>
+              <button
+                onClick={handleRetry}
+                className='flex items-center text-sm text-blue-600 hover:text-blue-800'
+              >
+                <RotateCcw className='w-4 h-4 mr-1' />
+                Retry with same file
+              </button>
             </div>
           )}
         </div>
@@ -391,18 +466,27 @@ const OcrUploadModal: React.FC<OcrUploadModalProps> = ({
             Cancel
           </button>
           {showResult ? (
-            <button
-              onClick={() => {
-                if (result?.extractedData) {
-                  onApplyData(result.extractedData);
-                  handleClose();
-                }
-              }}
-              className='px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors'
-            >
-              <CheckCircle className='w-4 h-4 inline mr-2' />
-              Apply to Form
-            </button>
+            <>
+              <button
+                onClick={handleRetry}
+                className='px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors'
+              >
+                <RotateCcw className='w-4 h-4 inline mr-2' />
+                Re-scan
+              </button>
+              <button
+                onClick={() => {
+                  if (result?.extractedData) {
+                    onApplyData(result.extractedData);
+                    handleClose();
+                  }
+                }}
+                className='px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors'
+              >
+                <CheckCircle className='w-4 h-4 inline mr-2' />
+                Apply to Form
+              </button>
+            </>
           ) : (
             <button
               onClick={handleProcess}

@@ -70,6 +70,7 @@ export const processOcrImage = async (file: File): Promise<OcrResultDto> => {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
+      timeout: 300000, // 5 minutes — LLM extraction can be slow on local GPU
     }
   );
   return response.data;
@@ -117,6 +118,47 @@ export const validateOcrFile = async (
   return response.data;
 };
 
+// ========== VENDOR MATCHING ==========
+
+export interface VendorMatch {
+  id: number;
+  name: string;
+  code?: string;
+  gst?: string;
+}
+
+/**
+ * Search for vendors matching the OCR-extracted supplier name
+ */
+export const matchVendor = async (name: string): Promise<VendorMatch[]> => {
+  const response = await apiClient.get<VendorMatch[]>('/ocr/match-vendor', {
+    params: { name },
+  });
+  return Array.isArray(response.data) ? response.data : [];
+};
+
+// ========== DUPLICATE DETECTION ==========
+
+export interface DuplicateCheckResult {
+  exists: boolean;
+  existingInvoiceId?: number;
+}
+
+/**
+ * Check if an invoice number already exists
+ */
+export const checkDuplicate = async (
+  invoiceNumber: string
+): Promise<DuplicateCheckResult> => {
+  const response = await apiClient.get<DuplicateCheckResult>(
+    '/ocr/check-duplicate',
+    {
+      params: { invoiceNumber },
+    }
+  );
+  return response.data;
+};
+
 // ========== EXPORT ALL AS OBJECT ==========
 
 export const ocrApi = {
@@ -124,4 +166,6 @@ export const ocrApi = {
   extractOcrText,
   getOcrStatus,
   validateOcrFile,
+  matchVendor,
+  checkDuplicate,
 };
