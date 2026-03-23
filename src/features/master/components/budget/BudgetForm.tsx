@@ -25,7 +25,7 @@ const budgetSchema = z.object({
   remarks: z.string().optional(),
 });
 
-type BudgetFormData = z.infer<typeof budgetSchema>;
+type BudgetFormData = z.output<typeof budgetSchema>;
 
 interface BudgetFormProps {
   budget?: Budget;
