@@ -2,9 +2,9 @@ import React, { useState, useRef, useEffect } from 'react';
 import {
   useChatbot,
   ChatbotQuestion,
-  ChatbotResponse,
+  AIChatResponse,
 } from './hooks/useChatbot';
-import { MessageCircle, X, Send, Bot, User } from 'lucide-react';
+import { X, Send, Bot, User, Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface Message {
@@ -28,13 +28,29 @@ export const ChatbotWidget: React.FC<ChatbotWidgetProps> = ({
       id: 'welcome',
       type: 'bot',
       content:
-        'Hello! I am ProcLeo Assistant. How can I help you today? Select a question below to get started.',
+        "Hello! I'm ProcLeo Assistant. I can help you with procurement processes, answer questions about your data, or guide you through the system. Type your question below or pick a suggestion.",
       timestamp: new Date(),
     },
   ]);
+  const [inputValue, setInputValue] = useState('');
+  const [showSuggestions, setShowSuggestions] = useState(true);
+  // Track conversation history for AI context
+  const conversationHistory = useRef<Array<{ role: string; content: string }>>(
+    []
+  );
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
-  const { questions, isLoadingQuestions, askQuestion, isAsking } = useChatbot();
+  const {
+    questions,
+    isLoadingQuestions,
+    askQuestion,
+    isAsking,
+    sendMessage,
+    isSending,
+  } = useChatbot();
+
+  const isLoading = isAsking || isSending;
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -44,7 +60,130 @@ export const ChatbotWidget: React.FC<ChatbotWidgetProps> = ({
     scrollToBottom();
   }, [messages, isOpen]);
 
+  useEffect(() => {
+    if (isOpen && inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [isOpen]);
+
+  // Render data table/value from AI chat response
+  const renderData = (response: AIChatResponse) => {
+    if (!response.hasData || !response.data || response.data.length === 0)
+      return null;
+
+    if (response.dataType === 'single_value' && response.data.length > 0) {
+      const key = Object.keys(response.data[0])[0];
+      const value = response.data[0][key];
+      return (
+        <div className='text-sm mt-2 p-2 bg-gray-50 rounded border inline-block'>
+          <span className='font-semibold'>{key}:</span>{' '}
+          <span className='text-violet-700 font-bold'>{value}</span>
+        </div>
+      );
+    }
+
+    if (response.data.length > 0) {
+      const headers = Object.keys(response.data[0]);
+      return (
+        <div className='overflow-x-auto mt-3 bg-white rounded border border-gray-200 shadow-sm max-h-60'>
+          <table className='min-w-full text-xs'>
+            <thead className='bg-gray-50 text-gray-700 sticky top-0'>
+              <tr>
+                {headers.map(h => (
+                  <th
+                    key={h}
+                    className='px-2 py-1 border-b text-left font-semibold uppercase tracking-wider'
+                  >
+                    {h}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody className='divide-y divide-gray-100'>
+              {response.data.map((row, idx) => (
+                <tr key={idx} className='hover:bg-gray-50'>
+                  {headers.map(h => (
+                    <td
+                      key={h}
+                      className='px-2 py-1 text-gray-600 whitespace-nowrap'
+                    >
+                      {String(row[h] ?? '')}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      );
+    }
+
+    return null;
+  };
+
+  // Handle free-text message
+  const handleSendMessage = async () => {
+    const text = inputValue.trim();
+    if (!text || isLoading) return;
+
+    setInputValue('');
+    setShowSuggestions(false);
+
+    const userMsg: Message = {
+      id: Date.now().toString(),
+      type: 'user',
+      content: text,
+      timestamp: new Date(),
+    };
+    setMessages(prev => [...prev, userMsg]);
+
+    // Add to conversation history
+    conversationHistory.current.push({ role: 'User', content: text });
+
+    try {
+      const response = await sendMessage({
+        message: text,
+        history: conversationHistory.current,
+      });
+
+      // Add AI response to history
+      conversationHistory.current.push({
+        role: 'Assistant',
+        content: response.reply,
+      });
+
+      const botContent = (
+        <div className='space-y-2'>
+          <div className='text-sm leading-relaxed whitespace-pre-wrap'>
+            {response.reply}
+          </div>
+          {renderData(response)}
+        </div>
+      );
+
+      const botMsg: Message = {
+        id: (Date.now() + 1).toString(),
+        type: 'bot',
+        content: botContent,
+        timestamp: new Date(),
+      };
+      setMessages(prev => [...prev, botMsg]);
+    } catch (error) {
+      console.error('AI Chat Error:', error);
+      const errorMsg: Message = {
+        id: (Date.now() + 1).toString(),
+        type: 'bot',
+        content: 'Sorry, I encountered an error. Please try again.',
+        timestamp: new Date(),
+      };
+      setMessages(prev => [...prev, errorMsg]);
+    }
+  };
+
+  // Handle predefined question click (uses old endpoint with AI summary)
   const handleQuestionSelect = async (question: ChatbotQuestion) => {
+    setShowSuggestions(false);
+
     const userMsg: Message = {
       id: Date.now().toString(),
       type: 'user',
@@ -55,7 +194,6 @@ export const ChatbotWidget: React.FC<ChatbotWidgetProps> = ({
 
     try {
       const response = await askQuestion(question.id);
-      console.log('Chatbot Answer Response:', response);
 
       if (!response || !response.type) {
         throw new Error('Invalid response from server');
@@ -66,15 +204,19 @@ export const ChatbotWidget: React.FC<ChatbotWidgetProps> = ({
       if (response.type === 'empty') {
         botContent = 'I found no records matching your query.';
       } else {
-        // Default Content (Data View)
         let dataView: React.ReactNode = null;
 
-        if (response.type === 'single_value' && response.data && response.data.length > 0) {
+        if (
+          response.type === 'single_value' &&
+          response.data &&
+          response.data.length > 0
+        ) {
           const key = Object.keys(response.data[0])[0];
           const value = response.data[0][key];
           dataView = (
             <div className='text-sm mt-2 p-2 bg-gray-50 rounded border inline-block'>
-              <span className='font-semibold'>{key}:</span> <span className='text-violet-700 font-bold'>{value}</span>
+              <span className='font-semibold'>{key}:</span>{' '}
+              <span className='text-violet-700 font-bold'>{value}</span>
             </div>
           );
         } else if (response.data && response.data.length > 0) {
@@ -85,7 +227,10 @@ export const ChatbotWidget: React.FC<ChatbotWidgetProps> = ({
                 <thead className='bg-gray-50 text-gray-700 sticky top-0'>
                   <tr>
                     {headers.map(h => (
-                      <th key={h} className='px-2 py-1 border-b text-left font-semibold uppercase tracking-wider'>
+                      <th
+                        key={h}
+                        className='px-2 py-1 border-b text-left font-semibold uppercase tracking-wider'
+                      >
                         {h}
                       </th>
                     ))}
@@ -95,7 +240,10 @@ export const ChatbotWidget: React.FC<ChatbotWidgetProps> = ({
                   {response.data.map((row, idx) => (
                     <tr key={idx} className='hover:bg-gray-50'>
                       {headers.map(h => (
-                        <td key={h} className='px-2 py-1 text-gray-600 whitespace-nowrap'>
+                        <td
+                          key={h}
+                          className='px-2 py-1 text-gray-600 whitespace-nowrap'
+                        >
                           {String(row[h] ?? '')}
                         </td>
                       ))}
@@ -107,23 +255,17 @@ export const ChatbotWidget: React.FC<ChatbotWidgetProps> = ({
           );
         }
 
-        // Final Content Assembly
         botContent = (
           <div className='space-y-2'>
-            {/* AI Summary */}
             {response.aiSummary && (
               <div className='text-sm text-gray-800 leading-relaxed font-medium bg-violet-50 p-3 rounded-lg border border-violet-100'>
-                <Bot className="w-4 h-4 inline-block mr-1 text-violet-600 mb-0.5" />
+                <Bot className='w-4 h-4 inline-block mr-1 text-violet-600 mb-0.5' />
                 {response.aiSummary}
               </div>
             )}
-
-            {/* Fallback text if no AI summary but we have data */}
             {!response.aiSummary && (
               <p className='text-sm'>Here is the data I found:</p>
             )}
-
-            {/* Raw Data View (Table or Value) */}
             {dataView}
           </div>
         );
@@ -137,7 +279,7 @@ export const ChatbotWidget: React.FC<ChatbotWidgetProps> = ({
       };
       setMessages(prev => [...prev, botMsg]);
     } catch (error) {
-      console.error('Chatbot Error Details:', error);
+      console.error('Chatbot Error:', error);
       const errorMsg: Message = {
         id: (Date.now() + 1).toString(),
         type: 'bot',
@@ -149,21 +291,29 @@ export const ChatbotWidget: React.FC<ChatbotWidgetProps> = ({
     }
   };
 
-  if (!isOpen) {
-    return null;
-  }
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSendMessage();
+    }
+  };
+
+  if (!isOpen) return null;
 
   return (
     <div
       className='fixed bottom-6 right-6 flex flex-col items-end'
       style={{ zIndex: 100 }}
     >
-      <div className='w-[400px] h-[600px] bg-white rounded-xl shadow-2xl border border-gray-200 flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-5 duration-200'>
+      <div className='w-[420px] h-[640px] bg-white rounded-xl shadow-2xl border border-gray-200 flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-5 duration-200'>
         {/* Header */}
         <div className='bg-primary p-4 flex justify-between items-center text-primary-foreground shadow-sm'>
           <div className='flex items-center gap-2'>
             <Bot className='h-5 w-5' />
             <span className='font-semibold'>ProcLeo Assistant</span>
+            <span className='text-xs bg-white/20 px-1.5 py-0.5 rounded-full flex items-center gap-1'>
+              <Sparkles className='w-3 h-3' /> AI
+            </span>
           </div>
           <button
             onClick={onClose}
@@ -224,7 +374,7 @@ export const ChatbotWidget: React.FC<ChatbotWidgetProps> = ({
             </div>
           ))}
 
-          {isAsking && (
+          {isLoading && (
             <div className='flex w-full mr-auto gap-2'>
               <div className='flex-shrink-0 h-8 w-8 rounded-full bg-emerald-600 text-white flex items-center justify-center'>
                 <Bot className='h-5 w-5' />
@@ -237,29 +387,67 @@ export const ChatbotWidget: React.FC<ChatbotWidgetProps> = ({
           <div ref={messagesEndRef} />
         </div>
 
-        {/* Input/Selection Area */}
-        <div className='p-4 bg-white border-t border-gray-100'>
-          <p className='text-xs font-semibold text-gray-500 mb-2 uppercase tracking-wider'>
-            Suggested Questions
-          </p>
-          {isLoadingQuestions ? (
-            <div className='text-sm text-center py-2 text-gray-500'>
-              Loading questions...
-            </div>
-          ) : (
-            <div className='flex flex-wrap gap-2 max-h-[120px] overflow-y-auto custom-scrollbar'>
-              {questions?.map(q => (
+        {/* Suggested Questions (collapsible) */}
+        {showSuggestions &&
+          !isLoadingQuestions &&
+          questions &&
+          questions.length > 0 && (
+            <div className='px-4 py-2 bg-white border-t border-gray-100'>
+              <div className='flex items-center justify-between mb-1.5'>
+                <p className='text-xs font-semibold text-gray-500 uppercase tracking-wider'>
+                  Quick Questions
+                </p>
                 <button
-                  key={q.id}
-                  onClick={() => handleQuestionSelect(q)}
-                  disabled={isAsking}
-                  className='text-xs border border-gray-200 bg-gray-50 hover:bg-primary/5 hover:border-primary/20 hover:text-primary text-gray-700 px-3 py-1.5 rounded-full transition-all text-left truncate max-w-full disabled:opacity-50 disabled:cursor-not-allowed'
+                  onClick={() => setShowSuggestions(false)}
+                  className='text-xs text-gray-400 hover:text-gray-600'
                 >
-                  {q.text}
+                  Hide
                 </button>
-              ))}
+              </div>
+              <div className='flex flex-wrap gap-1.5 max-h-[100px] overflow-y-auto custom-scrollbar'>
+                {questions.map(q => (
+                  <button
+                    key={q.id}
+                    onClick={() => handleQuestionSelect(q)}
+                    disabled={isLoading}
+                    className='text-xs border border-gray-200 bg-gray-50 hover:bg-primary/5 hover:border-primary/20 hover:text-primary text-gray-700 px-2.5 py-1 rounded-full transition-all text-left truncate max-w-full disabled:opacity-50 disabled:cursor-not-allowed'
+                  >
+                    {q.text}
+                  </button>
+                ))}
+              </div>
             </div>
           )}
+
+        {/* Text Input */}
+        <div className='p-3 bg-white border-t border-gray-200'>
+          {!showSuggestions && (
+            <button
+              onClick={() => setShowSuggestions(true)}
+              className='text-xs text-violet-600 hover:text-violet-700 mb-2 flex items-center gap-1'
+            >
+              Show suggestions
+            </button>
+          )}
+          <div className='flex items-center gap-2'>
+            <input
+              ref={inputRef}
+              type='text'
+              value={inputValue}
+              onChange={e => setInputValue(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder='Ask me anything about procurement...'
+              disabled={isLoading}
+              className='flex-1 px-4 py-2.5 border border-gray-300 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 disabled:opacity-50 disabled:bg-gray-50'
+            />
+            <button
+              onClick={handleSendMessage}
+              disabled={isLoading || !inputValue.trim()}
+              className='p-2.5 bg-violet-600 text-white rounded-full hover:bg-violet-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0'
+            >
+              <Send className='h-4 w-4' />
+            </button>
+          </div>
         </div>
       </div>
     </div>

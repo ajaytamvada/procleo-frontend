@@ -14,6 +14,13 @@ export interface ChatbotResponse {
   aiSummary?: string;
 }
 
+export interface AIChatResponse {
+  reply: string;
+  hasData: boolean;
+  data?: any[];
+  dataType?: 'empty' | 'single_value' | 'table';
+}
+
 export const useChatbot = () => {
   const { data: questions, isLoading: isLoadingQuestions } = useQuery({
     queryKey: ['chatbot-questions'],
@@ -61,7 +68,11 @@ export const useChatbot = () => {
       // ---------------------------------------------------------
       // AI ENHANCEMENT: Generate Natural Language Summary
       // ---------------------------------------------------------
-      if (parsedResponse && parsedResponse.data && parsedResponse.data.length > 0) {
+      if (
+        parsedResponse &&
+        parsedResponse.data &&
+        parsedResponse.data.length > 0
+      ) {
         try {
           const prompt = `
              The user asked a question about procurement data.
@@ -80,7 +91,11 @@ export const useChatbot = () => {
              `;
 
           console.log('[Chatbot] Asking AI to summarize...');
-          const aiResponse = await apiClient.post('/ocr/generate', { prompt, max_tokens: 256 }, { timeout: 45000 });
+          const aiResponse = await apiClient.post(
+            '/ocr/generate',
+            { prompt, max_tokens: 256 },
+            { timeout: 45000 }
+          );
 
           if (aiResponse.data && aiResponse.data.success) {
             parsedResponse.aiSummary = aiResponse.data.text;
@@ -95,10 +110,36 @@ export const useChatbot = () => {
     },
   });
 
+  const { mutateAsync: sendMessage, isPending: isSending } = useMutation({
+    mutationFn: async ({
+      message,
+      history,
+    }: {
+      message: string;
+      history: Array<{ role: string; content: string }>;
+    }): Promise<AIChatResponse> => {
+      const response = await apiClient.post<any>(
+        '/chatbot/chat',
+        { message, history },
+        { timeout: 60000 }
+      );
+      const body = response.data;
+      // Handle wrapped responses
+      if (body && body.reply !== undefined) {
+        return body as AIChatResponse;
+      } else if (body && body.data && body.data.reply !== undefined) {
+        return body.data as AIChatResponse;
+      }
+      return body as AIChatResponse;
+    },
+  });
+
   return {
     questions,
     isLoadingQuestions,
     askQuestion,
     isAsking,
+    sendMessage,
+    isSending,
   };
 };
