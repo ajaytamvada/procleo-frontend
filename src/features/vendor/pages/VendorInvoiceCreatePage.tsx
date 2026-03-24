@@ -1,19 +1,12 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, {
+  useState,
+  useEffect,
+  useMemo,
+  useRef,
+  useCallback,
+} from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import {
-  ArrowLeft,
-  FileText,
-  Package,
-  DollarSign,
-  Send,
-  AlertCircle,
-  Loader2,
-  CheckCircle,
-  Upload,
-  Eye,
-  Scan,
-  X,
-} from 'lucide-react';
+import { ArrowLeft, ArrowRight, Loader2, AlertCircle } from 'lucide-react';
 import {
   useVendorOrder,
   useVendorPOItemsForInvoicing,
@@ -22,19 +15,38 @@ import {
 } from '../hooks/useVendorPortal';
 import toast from 'react-hot-toast';
 import { apiClient, ApiResponse } from '@/lib/api';
+import { Stepper } from '@/components/common/Stepper';
+import StepUpload from '../components/invoice-wizard/StepUpload';
+import StepInvoiceDetails from '../components/invoice-wizard/StepInvoiceDetails';
+import StepLineItems from '../components/invoice-wizard/StepLineItems';
+import StepReview from '../components/invoice-wizard/StepReview';
+import FloatingPdfPanel, {
+  PdfPanelMode,
+} from '../components/invoice-wizard/FloatingPdfPanel';
 
-// Define the shape of relevant OCR data
+// OCR data shape from backend
 interface ExtractedOcrData {
   invoiceNumber?: string;
   invoiceDate?: string;
   supplierName?: string;
   grandTotal?: number;
   currency?: string;
+  dueDate?: string;
+  paymentTerms?: string;
+  gstNumber?: string;
+  panNumber?: string;
+  billingAddress?: string;
+  shippingAddress?: string;
+  supplierAddress?: string;
   lineItems?: Array<{
     description: string;
     quantity?: number;
     unitPrice?: number;
     amount?: number;
+    hsnCode?: string;
+    unit?: string;
+    taxRate?: number;
+    taxAmount?: number;
   }>;
   rawText?: string;
   confidence: number;
@@ -59,6 +71,13 @@ interface InvoiceItemForm {
   remarks: string;
 }
 
+const WIZARD_STEPS = [
+  { number: 1, label: 'Upload Invoice' },
+  { number: 2, label: 'Invoice Details' },
+  { number: 3, label: 'Line Items & Tax' },
+  { number: 4, label: 'Review & Submit' },
+];
+
 const VendorInvoiceCreatePage: React.FC = () => {
   const { poId: _poId } = useParams<{ poId: string }>();
   const navigate = useNavigate();
@@ -80,14 +99,20 @@ const VendorInvoiceCreatePage: React.FC = () => {
   } = useVendorPOItemsForInvoicing(poIdNum);
   const createInvoiceMutation = useCreateVendorInvoice();
 
-  // UI State
-  const [activeTab, setActiveTab] = useState<'manual' | 'upload'>('manual');
-  const [splitView, setSplitView] = useState(false);
+  // Wizard State
+  const [currentStep, setCurrentStep] = useState(1);
+
+  // PDF Panel State
+  const [pdfPanelMode, setPdfPanelMode] = useState<PdfPanelMode>('hidden');
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [uploadedFileName, setUploadedFileName] = useState<string>('');
 
   // OCR State
   const [isUploading, setIsUploading] = useState(false);
   const [ocrData, setOcrData] = useState<ExtractedOcrData | null>(null);
+  const [ocrFilledFields, setOcrFilledFields] = useState<Set<string>>(
+    new Set()
+  );
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Form State
@@ -105,15 +130,9 @@ const VendorInvoiceCreatePage: React.FC = () => {
   const [remarks, setRemarks] = useState('');
   const [items, setItems] = useState<InvoiceItemForm[]>([]);
 
-  // Debug PO items loading
+  // Initialize items from PO
   useEffect(() => {
-    console.log('DEBUG: poItems changed:', poItems);
     if (poItems && poItems.length > 0) {
-      console.log(
-        'DEBUG: Initializing items state with',
-        poItems.length,
-        'entries'
-      );
       const initialItems: InvoiceItemForm[] = poItems.map(
         (item: VendorInvoiceItem) => ({
           poItemId: item.poItemId,
@@ -121,7 +140,7 @@ const VendorInvoiceCreatePage: React.FC = () => {
           itemCode: item.itemCode,
           poQuantity: item.poQuantity,
           remainingQuantity: item.remainingQuantity,
-          invoiceQuantity: item.remainingQuantity, // Default to full remaining
+          invoiceQuantity: item.remainingQuantity,
           unitPrice: item.unitPrice,
           uom: item.unitOfMeasurement,
           cgstRate: item.cgstRate || 0,
@@ -134,8 +153,6 @@ const VendorInvoiceCreatePage: React.FC = () => {
         })
       );
       setItems(initialItems);
-    } else {
-      console.warn('DEBUG: poItems is empty or undefined');
     }
   }, [poItems]);
 
@@ -144,179 +161,155 @@ const VendorInvoiceCreatePage: React.FC = () => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Create preview URL
+    // Create preview URL and show floating panel
     const objectUrl = URL.createObjectURL(file);
     setPreviewUrl(objectUrl);
-    setSplitView(true);
+    setUploadedFileName(file.name);
+    setPdfPanelMode('floating');
     setIsUploading(true);
 
     const formData = new FormData();
     formData.append('file', file);
 
-    console.log('DEBUG: Starting OCR upload. Current items state:', items);
-    console.log('DEBUG: PO ID:', poIdNum);
-
-    console.log('DEBUG: Starting OCR for PO:', poIdNum);
-    console.log('DEBUG: Current PO Items:', items);
-
     try {
-      // Call Backend OCR Endpoint
-      // Note: apiClient adds the Authorization header automatically
       const response = await apiClient.post<ApiResponse<ExtractedOcrData>>(
         '/ocr/process',
         formData,
         {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          },
-          timeout: 300000, // 5 minutes — allows for local GPU LLM processing
+          headers: { 'Content-Type': 'multipart/form-data' },
+          timeout: 300000,
         }
       );
 
       if (response.data && response.data.success) {
-        // According to OcrResultDto from backend: { success: true, extractedData: {...} }
-        // Depending on apiClient response wrapping, check if we need response.data.data
-        // The backend returns OcrResultDto directly.
-        const result = response.data as any; // Cast to avoid strict type issues for now or define interface
+        const result = response.data as any;
         const extracted = result.extractedData;
+        const filledFields = new Set<string>();
 
-        // Auto-fill header fields
-        if (extracted.invoiceNumber) setInvoiceNumber(extracted.invoiceNumber);
+        // Auto-fill header fields and track which ones were filled
+        if (extracted.invoiceNumber) {
+          setInvoiceNumber(extracted.invoiceNumber);
+          filledFields.add('invoiceNumber');
+        }
 
-        // Date parsing: Try standard format first, then fallback to DD-MM-YYYY
         if (extracted.invoiceDate) {
           if (/^\d{4}-\d{2}-\d{2}$/.test(extracted.invoiceDate)) {
             setInvoiceDate(extracted.invoiceDate);
+            filledFields.add('invoiceDate');
           }
         } else if (extracted.rawText) {
           const dateMatch = extracted.rawText.match(/(\d{2})-(\d{2})-(\d{4})/);
           if (dateMatch) {
             const [, dd, mm, yyyy] = dateMatch;
             setInvoiceDate(`${yyyy}-${mm}-${dd}`);
+            filledFields.add('invoiceDate');
           }
         }
 
-        // Fill new fields from OCR
-        if (extracted.dueDate) setDueDate(extracted.dueDate);
-        if (extracted.currency) setCurrency(extracted.currency);
-        if (extracted.paymentTerms) setPaymentTerms(extracted.paymentTerms);
-        if (extracted.gstNumber) setSupplierGstin(extracted.gstNumber);
-        if (extracted.panNumber) setSupplierPan(extracted.panNumber);
-        if (extracted.billingAddress)
+        if (extracted.dueDate) {
+          setDueDate(extracted.dueDate);
+          filledFields.add('dueDate');
+        }
+        if (extracted.currency) {
+          setCurrency(extracted.currency);
+          filledFields.add('currency');
+        }
+        if (extracted.paymentTerms) {
+          setPaymentTerms(extracted.paymentTerms);
+          filledFields.add('paymentTerms');
+        }
+        if (extracted.gstNumber) {
+          setSupplierGstin(extracted.gstNumber);
+          filledFields.add('supplierGstin');
+        }
+        if (extracted.panNumber) {
+          setSupplierPan(extracted.panNumber);
+          filledFields.add('supplierPan');
+        }
+        if (extracted.billingAddress) {
           setBillingAddress(extracted.billingAddress);
-        if (extracted.shippingAddress)
+          filledFields.add('billingAddress');
+        }
+        if (extracted.shippingAddress) {
           setShippingAddress(extracted.shippingAddress);
-        if (extracted.supplierAddress && !billingAddress)
+          filledFields.add('shippingAddress');
+        }
+        if (extracted.supplierAddress && !extracted.billingAddress) {
           setBillingAddress(extracted.supplierAddress);
+          filledFields.add('billingAddress');
+        }
 
+        setOcrFilledFields(filledFields);
         setOcrData(extracted);
 
-        // --- ITEM MAPPING LOGIC ---
         if (extracted.lineItems && extracted.lineItems.length > 0) {
-          setItems(prevItems => {
-            const newItems = [...prevItems];
-            const usedIndices = new Set<number>(); // Track mapped PO items
-
-            extracted.lineItems?.forEach(ocrItem => {
-              const ocrDesc = ocrItem.description?.toLowerCase() || '';
-              const _ocrAmount = ocrItem.amount || 0;
-              const ocrPrice = ocrItem.unitPrice || 0;
-
-              // Find best match in PO items
-              // Strategy:
-              // 1. Exact amount match (Unit Price)
-              // 2. Description contains fuzzy match
-
-              let bestMatchIndex = -1;
-
-              // Try to find by Unit Price (most reliable for numbers)
-              bestMatchIndex = newItems.findIndex((poItem, idx) => {
-                if (usedIndices.has(idx)) return false;
-                return Math.abs(poItem.unitPrice - ocrPrice) < 1.0; // Within 1 rupee diff
-              });
-
-              // If not found, try description
-              if (bestMatchIndex === -1 && ocrDesc) {
-                bestMatchIndex = newItems.findIndex((poItem, idx) => {
-                  if (usedIndices.has(idx)) return false;
-                  const poDesc = poItem.itemName.toLowerCase();
-                  return poDesc.includes(ocrDesc) || ocrDesc.includes(poDesc);
-                });
-              }
-
-              // If match found, update the item
-              if (bestMatchIndex !== -1) {
-                usedIndices.add(bestMatchIndex);
-                const targetItem = newItems[bestMatchIndex];
-
-                // Update quantity based on OCR, but cap at remaining
-                const scannedQty = ocrItem.quantity || 1;
-                const validQty = Math.min(
-                  scannedQty,
-                  targetItem.remainingQuantity
-                );
-
-                newItems[bestMatchIndex] = {
-                  ...targetItem,
-                  invoiceQuantity: validQty,
-                  // Optional: Update unit price if allowed? usually PO price is fixed.
-                  // For now keeping PO unit price but filling quantity.
-                };
-              }
-            });
-
-            return newItems;
-          });
-          toast.success(`Mapped OCR items to PO items automatically.`);
+          toast.success(
+            `Scanned ${extracted.lineItems.length} line items. Review in Step 3.`
+          );
         }
+
+        // Auto-advance to step 2
+        setCurrentStep(2);
       }
     } catch (error) {
       console.error('OCR Error:', error);
       toast.error('Failed to extract data. Please enter details manually.');
+      setCurrentStep(2);
     } finally {
       setIsUploading(false);
     }
   };
 
-  const handleClearUpload = () => {
-    setPreviewUrl(null);
-    setSplitView(false);
-    setOcrData(null);
-    if (fileInputRef.current) fileInputRef.current.value = '';
-    setActiveTab('manual'); // Reset to manual view logic internally even if staying on upload tab intent
-  };
-
-  // Calculate totals whenever inputs change
+  // Calculate totals
   const totals = useMemo(() => {
     let subtotal = 0;
+    let totalCgst = 0;
+    let totalSgst = 0;
+    let totalIgst = 0;
     let totalTax = 0;
 
     const calculatedItems = items.map(item => {
-      const baseTotal = item.invoiceQuantity * item.unitPrice;
-      const totalTaxRate =
-        item.cgstRate + item.sgstRate + item.igstRate + item.otherTaxRate;
-      const itemTax = (baseTotal * totalTaxRate) / 100;
-      const itemTotal = baseTotal + itemTax;
+      const taxableValue = item.invoiceQuantity * item.unitPrice;
+      const cgstAmt = (taxableValue * item.cgstRate) / 100;
+      const sgstAmt = (taxableValue * item.sgstRate) / 100;
+      const igstAmt = (taxableValue * item.igstRate) / 100;
+      const otherTaxAmt = (taxableValue * item.otherTaxRate) / 100;
+      const itemTax = cgstAmt + sgstAmt + igstAmt + otherTaxAmt;
+      const itemTotal = taxableValue + itemTax;
 
-      subtotal += baseTotal;
+      subtotal += taxableValue;
+      totalCgst += cgstAmt;
+      totalSgst += sgstAmt;
+      totalIgst += igstAmt;
       totalTax += itemTax;
 
-      return { ...item, taxAmount: itemTax, totalAmount: itemTotal };
+      return {
+        ...item,
+        taxableValue,
+        cgstAmount: cgstAmt,
+        sgstAmount: sgstAmt,
+        igstAmount: igstAmt,
+        taxAmount: itemTax,
+        totalAmount: itemTotal,
+      };
     });
 
     return {
       subtotal,
+      totalCgst,
+      totalSgst,
+      totalIgst,
       taxAmount: totalTax,
       grandTotal: subtotal + totalTax,
       calculatedItems,
     };
   }, [items]);
 
+  // Handlers
   const handleQuantityChange = (index: number, value: string) => {
     const qty = parseFloat(value) || 0;
     setItems(prev => {
       const updated = [...prev];
-      // Ensure strictly positive and not more than remaining
       const validQty = Math.min(
         Math.max(0, qty),
         updated[index].remainingQuantity
@@ -326,25 +319,43 @@ const VendorInvoiceCreatePage: React.FC = () => {
     });
   };
 
-  const _handleRemarksChange = (index: number, value: string) => {
+  const handleItemFieldChange = (
+    index: number,
+    field: string,
+    value: string | number
+  ) => {
     setItems(prev => {
       const updated = [...prev];
-      updated[index] = { ...updated[index], remarks: value };
+      updated[index] = { ...updated[index], [field]: value };
       return updated;
     });
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleFieldChange = useCallback((field: string, value: string) => {
+    const setters: Record<string, (v: string) => void> = {
+      invoiceNumber: setInvoiceNumber,
+      invoiceDate: setInvoiceDate,
+      dueDate: setDueDate,
+      currency: setCurrency,
+      paymentTerms: setPaymentTerms,
+      remarks: setRemarks,
+      supplierGstin: setSupplierGstin,
+      supplierPan: setSupplierPan,
+      billingAddress: setBillingAddress,
+      shippingAddress: setShippingAddress,
+    };
+    setters[field]?.(value);
+  }, []);
 
+  const handleSubmit = () => {
     if (!poIdNum || !order) return;
 
     if (!invoiceNumber.trim()) {
       toast.error('Please enter an invoice number');
+      setCurrentStep(2);
       return;
     }
 
-    // Filter items with quantity > 0
     const itemsToSubmit = items
       .filter(item => item.invoiceQuantity > 0)
       .map(item => ({
@@ -362,6 +373,7 @@ const VendorInvoiceCreatePage: React.FC = () => {
       toast.error(
         'Please include at least one item with quantity greater than 0'
       );
+      setCurrentStep(3);
       return;
     }
 
@@ -370,7 +382,7 @@ const VendorInvoiceCreatePage: React.FC = () => {
         poId: poIdNum,
         invoiceNumber,
         invoiceDate,
-        supplierId: order.supplierId || 0, // Backend will validate/override
+        supplierId: order.supplierId || 0,
         remarks,
         items: itemsToSubmit,
       },
@@ -383,6 +395,39 @@ const VendorInvoiceCreatePage: React.FC = () => {
     );
   };
 
+  // Step validation
+  const canAdvance = () => {
+    if (currentStep === 2) {
+      if (!invoiceNumber.trim()) {
+        toast.error('Invoice number is required');
+        return false;
+      }
+      if (!invoiceDate) {
+        toast.error('Invoice date is required');
+        return false;
+      }
+    }
+    if (currentStep === 3) {
+      const hasItems = items.some(i => i.invoiceQuantity > 0);
+      if (!hasItems) {
+        toast.error('At least one item must have quantity > 0');
+        return false;
+      }
+    }
+    return true;
+  };
+
+  const handleNext = () => {
+    if (canAdvance()) {
+      setCurrentStep(prev => Math.min(prev + 1, 4));
+    }
+  };
+
+  const handleBack = () => {
+    setCurrentStep(prev => Math.max(prev - 1, 1));
+  };
+
+  // Loading state
   if (orderLoading || itemsLoading) {
     return (
       <div className='flex items-center justify-center min-h-[400px]'>
@@ -391,6 +436,7 @@ const VendorInvoiceCreatePage: React.FC = () => {
     );
   }
 
+  // Error state
   if (orderError || itemsError || !order) {
     return (
       <div className='p-6'>
@@ -413,456 +459,14 @@ const VendorInvoiceCreatePage: React.FC = () => {
     );
   }
 
-  // --- Render Components ---
-
-  const renderTabs = () => (
-    <div className='flex space-x-1 bg-gray-100 p-1 rounded-lg mb-6 w-fit'>
-      <button
-        onClick={() => {
-          setActiveTab('manual');
-          setSplitView(false);
-        }}
-        className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-          activeTab === 'manual'
-            ? 'bg-white text-violet-700 shadow-sm'
-            : 'text-gray-500 hover:text-gray-700'
-        }`}
-      >
-        <span className='flex items-center gap-2'>
-          <FileText className='w-4 h-4' />
-          Manual Entry
-        </span>
-      </button>
-      <button
-        onClick={() => setActiveTab('upload')}
-        className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-          activeTab === 'upload'
-            ? 'bg-white text-violet-700 shadow-sm'
-            : 'text-gray-500 hover:text-gray-700'
-        }`}
-      >
-        <span className='flex items-center gap-2'>
-          <Scan className='w-4 h-4' />
-          Upload & Auto-Fill
-        </span>
-      </button>
-    </div>
-  );
-
-  const renderUploadArea = () => (
-    <div className='bg-white border-2 border-dashed border-gray-300 rounded-lg p-12 mb-6 text-center hover:border-violet-500 transition-colors'>
-      <div className='flex flex-col items-center'>
-        <div className='w-16 h-16 bg-violet-50 rounded-full flex items-center justify-center mb-4'>
-          <Upload className='w-8 h-8 text-violet-600' />
-        </div>
-        <h3 className='text-lg font-medium text-gray-900 mb-2'>
-          Upload Invoice
-        </h3>
-        <p className='text-gray-500 mb-6 max-w-md'>
-          Drag and drop your PDF or image invoice here, or click to browse.
-          We'll extract the details for you.
-        </p>
-        <input
-          type='file'
-          ref={fileInputRef}
-          onChange={handleFileUpload}
-          accept='.pdf,.jpg,.jpeg,.png'
-          className='hidden'
-        />
-        <button
-          onClick={() => fileInputRef.current?.click()}
-          className='px-6 py-2 bg-violet-600 text-white rounded-lg hover:bg-violet-700 transition-colors'
-        >
-          Select File
-        </button>
-      </div>
-    </div>
-  );
-
-  const renderFormContent = () => (
-    <div className='space-y-6'>
-      {/* Invoice Details Card */}
-      <div className='bg-white border rounded-lg overflow-hidden shadow-sm'>
-        <div className='p-4 border-b bg-gray-50 flex items-center justify-between'>
-          <div className='flex items-center gap-2'>
-            <FileText className='w-5 h-5 text-violet-600' />
-            <h2 className='text-lg font-semibold text-gray-900'>
-              Invoice Details
-            </h2>
-          </div>
-          {ocrData && (
-            <div className='flex items-center gap-1.5 text-xs bg-green-50 text-green-700 px-2.5 py-1 rounded-full border border-green-200'>
-              <CheckCircle className='w-3 h-3' />
-              Data Extracted
-            </div>
-          )}
-        </div>
-        <div className='p-6 grid grid-cols-1 md:grid-cols-3 gap-6'>
-          <div>
-            <label className='block text-sm font-medium text-gray-700 mb-2'>
-              Invoice Number <span className='text-red-500'>*</span>
-            </label>
-            <input
-              type='text'
-              value={invoiceNumber}
-              onChange={e => setInvoiceNumber(e.target.value)}
-              className='w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-violet-500'
-              placeholder='Enter invoice number'
-              required
-            />
-          </div>
-          <div>
-            <label className='block text-sm font-medium text-gray-700 mb-2'>
-              Invoice Date <span className='text-red-500'>*</span>
-            </label>
-            <input
-              type='date'
-              value={invoiceDate}
-              onChange={e => setInvoiceDate(e.target.value)}
-              min={
-                order.poDate
-                  ? new Date(order.poDate).toISOString().split('T')[0]
-                  : undefined
-              }
-              className='w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-violet-500'
-              required
-            />
-          </div>
-          <div>
-            <label className='block text-sm font-medium text-gray-700 mb-2'>
-              Due Date
-            </label>
-            <input
-              type='date'
-              value={dueDate}
-              onChange={e => setDueDate(e.target.value)}
-              className='w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-violet-500'
-            />
-          </div>
-          <div>
-            <label className='block text-sm font-medium text-gray-700 mb-2'>
-              Currency
-            </label>
-            <select
-              value={currency}
-              onChange={e => setCurrency(e.target.value)}
-              className='w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-violet-500'
-            >
-              <option value='INR'>INR - Indian Rupee</option>
-              <option value='USD'>USD - US Dollar</option>
-              <option value='EUR'>EUR - Euro</option>
-              <option value='GBP'>GBP - British Pound</option>
-            </select>
-          </div>
-          <div>
-            <label className='block text-sm font-medium text-gray-700 mb-2'>
-              Payment Terms
-            </label>
-            <input
-              type='text'
-              value={paymentTerms}
-              onChange={e => setPaymentTerms(e.target.value)}
-              className='w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-violet-500'
-              placeholder='e.g., Net 30'
-            />
-          </div>
-          <div>
-            <label className='block text-sm font-medium text-gray-700 mb-2'>
-              Remarks
-            </label>
-            <input
-              type='text'
-              value={remarks}
-              onChange={e => setRemarks(e.target.value)}
-              className='w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-violet-500'
-              placeholder='Optional remarks'
-            />
-          </div>
-        </div>
-      </div>
-
-      {/* Supplier & Address Details */}
-      <div className='bg-white border rounded-lg overflow-hidden shadow-sm'>
-        <div className='p-4 border-b bg-gray-50 flex items-center gap-2'>
-          <DollarSign className='w-5 h-5 text-violet-600' />
-          <h2 className='text-lg font-semibold text-gray-900'>
-            Supplier & Address Details
-          </h2>
-        </div>
-        <div className='p-6 grid grid-cols-1 md:grid-cols-2 gap-6'>
-          <div>
-            <label className='block text-sm font-medium text-gray-700 mb-2'>
-              Supplier GSTIN
-            </label>
-            <input
-              type='text'
-              value={supplierGstin}
-              onChange={e => setSupplierGstin(e.target.value)}
-              className='w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-violet-500'
-              placeholder='e.g., 27AABCU9603R1ZM'
-              maxLength={15}
-            />
-          </div>
-          <div>
-            <label className='block text-sm font-medium text-gray-700 mb-2'>
-              Supplier PAN
-            </label>
-            <input
-              type='text'
-              value={supplierPan}
-              onChange={e => setSupplierPan(e.target.value)}
-              className='w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-violet-500'
-              placeholder='e.g., AABCU9603R'
-              maxLength={10}
-            />
-          </div>
-          <div>
-            <label className='block text-sm font-medium text-gray-700 mb-2'>
-              Billing Address
-            </label>
-            <textarea
-              value={billingAddress}
-              onChange={e => setBillingAddress(e.target.value)}
-              rows={2}
-              className='w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-violet-500 resize-none'
-              placeholder='Billing address'
-            />
-          </div>
-          <div>
-            <label className='block text-sm font-medium text-gray-700 mb-2'>
-              Shipping Address
-            </label>
-            <textarea
-              value={shippingAddress}
-              onChange={e => setShippingAddress(e.target.value)}
-              rows={2}
-              className='w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-violet-500 resize-none'
-              placeholder='Shipping address'
-            />
-          </div>
-        </div>
-      </div>
-
-      {/* Items Table */}
-      <div className='bg-white border rounded-lg overflow-hidden shadow-sm'>
-        <div className='p-4 border-b bg-gray-50 flex items-center justify-between'>
-          <div className='flex items-center gap-2'>
-            <Package className='w-5 h-5 text-violet-600' />
-            <h2 className='text-lg font-semibold text-gray-900'>Line Items</h2>
-          </div>
-          <div className='text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded'>
-            Matches PO items
-          </div>
-        </div>
-        <div className='overflow-x-auto'>
-          <table className='w-full'>
-            <thead className='bg-gray-50 border-b'>
-              <tr>
-                <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase'>
-                  Item
-                </th>
-                <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase'>
-                  HSN/SAC
-                </th>
-                <th className='px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase'>
-                  Rem
-                </th>
-                <th className='px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase'>
-                  Price
-                </th>
-                <th className='px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase w-24'>
-                  Qty
-                </th>
-                <th className='px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase'>
-                  CGST%
-                </th>
-                <th className='px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase'>
-                  SGST%
-                </th>
-                <th className='px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase'>
-                  Total
-                </th>
-              </tr>
-            </thead>
-            <tbody className='divide-y divide-gray-200'>
-              {totals.calculatedItems.map((item, index) => (
-                <tr
-                  key={item.poItemId}
-                  className={
-                    item.remainingQuantity === 0
-                      ? 'bg-gray-50 opacity-60'
-                      : 'hover:bg-gray-50'
-                  }
-                >
-                  <td className='px-4 py-3'>
-                    <div className='font-medium text-gray-900 text-sm'>
-                      {item.itemName}
-                    </div>
-                    <div className='text-xs text-gray-500'>{item.itemCode}</div>
-                  </td>
-                  <td className='px-4 py-3'>
-                    <input
-                      type='text'
-                      value={item.hsnSacCode || ''}
-                      onChange={e => {
-                        setItems(prev => {
-                          const updated = [...prev];
-                          updated[index] = {
-                            ...updated[index],
-                            hsnSacCode: e.target.value,
-                          };
-                          return updated;
-                        });
-                      }}
-                      className='w-20 px-2 py-1 border rounded text-sm focus:ring-1 focus:ring-violet-500'
-                      placeholder='HSN'
-                    />
-                  </td>
-                  <td className='px-4 py-3 text-center text-sm font-medium text-violet-600'>
-                    {item.remainingQuantity}
-                  </td>
-                  <td className='px-4 py-3 text-right text-sm text-gray-900'>
-                    {item.unitPrice.toLocaleString('en-IN', {
-                      minimumFractionDigits: 2,
-                    })}
-                  </td>
-                  <td className='px-4 py-3'>
-                    <input
-                      type='number'
-                      value={item.invoiceQuantity}
-                      onChange={e =>
-                        handleQuantityChange(index, e.target.value)
-                      }
-                      className='w-full px-2 py-1 border rounded text-center text-sm focus:ring-1 focus:ring-violet-500'
-                      min='0'
-                      max={item.remainingQuantity}
-                      disabled={item.remainingQuantity <= 0}
-                    />
-                  </td>
-                  <td className='px-4 py-3 text-right text-xs text-gray-500'>
-                    {item.cgstRate}%
-                  </td>
-                  <td className='px-4 py-3 text-right text-xs text-gray-500'>
-                    {item.sgstRate}%
-                  </td>
-                  <td className='px-4 py-3 text-right text-sm font-medium text-gray-900'>
-                    {item.totalAmount.toLocaleString('en-IN', {
-                      minimumFractionDigits: 2,
-                    })}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {ocrData?.lineItems && ocrData.lineItems.length > 0 && (
-        <div className='bg-white border rounded-lg overflow-hidden shadow-sm mt-6 border-orange-200'>
-          <div className='p-4 border-b bg-orange-50 flex items-center justify-between'>
-            <div className='flex items-center gap-2'>
-              <AlertCircle className='w-5 h-5 text-orange-600' />
-              <h2 className='text-lg font-semibold text-gray-900'>
-                Scanned Items (Raw Data)
-              </h2>
-            </div>
-            <div className='text-xs text-orange-800 bg-orange-100 px-2 py-1 rounded'>
-              Verify & Match Manually if needed
-            </div>
-          </div>
-          <div className='overflow-x-auto'>
-            <table className='w-full'>
-              <thead className='bg-gray-50 border-b'>
-                <tr>
-                  <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase'>
-                    Description
-                  </th>
-                  <th className='px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase'>
-                    Qty
-                  </th>
-                  <th className='px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase'>
-                    Price
-                  </th>
-                  <th className='px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase'>
-                    Total
-                  </th>
-                </tr>
-              </thead>
-              <tbody className='divide-y divide-gray-200'>
-                {ocrData.lineItems.map((item, idx) => (
-                  <tr key={idx} className='hover:bg-gray-50'>
-                    <td className='px-4 py-3 text-sm text-gray-900'>
-                      {item.description}
-                    </td>
-                    <td className='px-4 py-3 text-right text-sm text-gray-900'>
-                      {item.quantity}
-                    </td>
-                    <td className='px-4 py-3 text-right text-sm text-gray-900'>
-                      {item.unitPrice}
-                    </td>
-                    <td className='px-4 py-3 text-right text-sm text-gray-900'>
-                      {item.amount}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
-
-      {/* Summary Card */}
-      <div className='flex justify-end'>
-        <div className='w-full md:w-2/3 bg-white border rounded-lg p-6 space-y-3 shadow-sm'>
-          <div className='flex justify-between text-gray-600'>
-            <span>Subtotal</span>
-            <span>
-              ₹{' '}
-              {totals.subtotal.toLocaleString('en-IN', {
-                minimumFractionDigits: 2,
-              })}
-            </span>
-          </div>
-          <div className='flex justify-between text-gray-600'>
-            <span>Total Tax</span>
-            <span>
-              ₹{' '}
-              {totals.taxAmount.toLocaleString('en-IN', {
-                minimumFractionDigits: 2,
-              })}
-            </span>
-          </div>
-          <div className='pt-3 border-t flex justify-between font-bold text-lg text-gray-900'>
-            <span>Grand Total</span>
-            <span className='text-violet-600'>
-              ₹{' '}
-              {totals.grandTotal.toLocaleString('en-IN', {
-                minimumFractionDigits: 2,
-              })}
-            </span>
-          </div>
-
-          <button
-            type='submit'
-            disabled={createInvoiceMutation.isPending || totals.grandTotal <= 0}
-            className='w-full mt-4 bg-violet-600 text-white py-3 rounded-lg hover:bg-violet-700 transition-colors flex items-center justify-center gap-2 disabled:opacity-50'
-          >
-            {createInvoiceMutation.isPending ? (
-              <Loader2 className='w-5 h-5 animate-spin' />
-            ) : (
-              <Send className='w-5 h-5' />
-            )}
-            Submit Invoice
-          </button>
-        </div>
-      </div>
-    </div>
-  );
+  const minInvoiceDate = order.poDate
+    ? new Date(order.poDate).toISOString().split('T')[0]
+    : undefined;
 
   return (
-    <div className='p-6 max-w-[1600px] mx-auto space-y-6 h-screen flex flex-col'>
-      {/* Header (Always Visible) */}
-      <div className='flex items-center justify-between mb-4 flex-shrink-0'>
+    <div className='p-6 max-w-[1400px] mx-auto'>
+      {/* Header */}
+      <div className='flex items-center justify-between mb-6'>
         <div className='flex items-center gap-4'>
           <Link
             to={`/vendor/orders/${poIdNum}`}
@@ -877,64 +481,115 @@ const VendorInvoiceCreatePage: React.FC = () => {
         </div>
       </div>
 
-      {/* Tabs */}
-      <div className='flex-shrink-0'>{renderTabs()}</div>
+      {/* Stepper */}
+      <Stepper steps={WIZARD_STEPS} currentStep={currentStep} />
 
-      {/* Content Area */}
-      <div className='flex-1 min-h-0'>
-        {activeTab === 'upload' && !splitView && renderUploadArea()}
+      {/* Step Content */}
+      <div className='min-h-[400px]'>
+        {currentStep === 1 && (
+          <StepUpload
+            fileInputRef={fileInputRef}
+            onFileUpload={handleFileUpload}
+            onSkip={() => setCurrentStep(2)}
+            isUploading={isUploading}
+          />
+        )}
 
-        {/* Split View Container */}
-        {splitView ? (
-          <div className='flex h-full gap-6'>
-            {/* Left Pane: PDF Viewer */}
-            <div className='w-1/2 bg-gray-800 rounded-lg overflow-hidden flex flex-col shadow-lg'>
-              <div className='p-3 bg-gray-900 text-white flex justify-between items-center'>
-                <span className='flex items-center gap-2 text-sm font-medium'>
-                  <Eye className='w-4 h-4' />
-                  Document Preview
-                </span>
-                <button
-                  onClick={handleClearUpload}
-                  className='text-gray-400 hover:text-white'
-                >
-                  <X className='w-4 h-4' />
-                </button>
-              </div>
-              <div className='flex-1 bg-gray-700 items-center justify-center flex relative'>
-                {isUploading ? (
-                  <div className='text-center text-white'>
-                    <Loader2 className='w-10 h-10 animate-spin mx-auto mb-3 text-violet-400' />
-                    <p>Analyzing document...</p>
-                    <p className='text-xs text-gray-400 mt-1'>
-                      This may take a few seconds
-                    </p>
-                  </div>
-                ) : previewUrl ? (
-                  <iframe
-                    src={previewUrl}
-                    className='w-full h-full object-contain bg-gray-500'
-                    title='Invoice Preview'
-                  />
-                ) : (
-                  <div className='text-gray-400'>No preview available</div>
-                )}
-              </div>
-            </div>
+        {currentStep === 2 && (
+          <StepInvoiceDetails
+            invoiceNumber={invoiceNumber}
+            invoiceDate={invoiceDate}
+            dueDate={dueDate}
+            currency={currency}
+            paymentTerms={paymentTerms}
+            remarks={remarks}
+            supplierGstin={supplierGstin}
+            supplierPan={supplierPan}
+            billingAddress={billingAddress}
+            shippingAddress={shippingAddress}
+            ocrFilledFields={ocrFilledFields}
+            minInvoiceDate={minInvoiceDate}
+            onFieldChange={handleFieldChange}
+          />
+        )}
 
-            {/* Right Pane: Form */}
-            <div className='w-1/2 overflow-y-auto pr-2 pb-6'>
-              <form onSubmit={handleSubmit}>{renderFormContent()}</form>
-            </div>
-          </div>
-        ) : (
-          activeTab === 'manual' && (
-            <div className='max-w-7xl mx-auto'>
-              <form onSubmit={handleSubmit}>{renderFormContent()}</form>
-            </div>
-          )
+        {currentStep === 3 && (
+          <StepLineItems
+            totals={totals}
+            ocrLineItems={ocrData?.lineItems}
+            onQuantityChange={handleQuantityChange}
+            onItemFieldChange={handleItemFieldChange}
+          />
+        )}
+
+        {currentStep === 4 && (
+          <StepReview
+            data={{
+              invoiceNumber,
+              invoiceDate,
+              dueDate,
+              currency,
+              paymentTerms,
+              remarks,
+              supplierGstin,
+              supplierPan,
+              billingAddress,
+              shippingAddress,
+            }}
+            totals={totals}
+            ocrFilledFields={ocrFilledFields}
+            isPending={createInvoiceMutation.isPending}
+            onSubmit={handleSubmit}
+            onEditStep={setCurrentStep}
+          />
         )}
       </div>
+
+      {/* Navigation Buttons */}
+      {currentStep < 4 && (
+        <div className='flex justify-between mt-8 pt-6 border-t'>
+          <button
+            type='button'
+            onClick={handleBack}
+            disabled={currentStep === 1}
+            className='px-6 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-2'
+          >
+            <ArrowLeft className='w-4 h-4' />
+            Back
+          </button>
+          <button
+            type='button'
+            onClick={handleNext}
+            className='px-6 py-2.5 bg-violet-600 text-white rounded-lg hover:bg-violet-700 transition-colors flex items-center gap-2'
+          >
+            Next
+            <ArrowRight className='w-4 h-4' />
+          </button>
+        </div>
+      )}
+
+      {/* Back button on review step */}
+      {currentStep === 4 && (
+        <div className='flex justify-start mt-8 pt-6 border-t'>
+          <button
+            type='button'
+            onClick={handleBack}
+            className='px-6 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-2'
+          >
+            <ArrowLeft className='w-4 h-4' />
+            Back
+          </button>
+        </div>
+      )}
+
+      {/* Floating PDF Panel */}
+      <FloatingPdfPanel
+        mode={pdfPanelMode}
+        onModeChange={setPdfPanelMode}
+        previewUrl={previewUrl}
+        isUploading={isUploading}
+        fileName={uploadedFileName}
+      />
     </div>
   );
 };
