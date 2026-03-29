@@ -47,7 +47,7 @@ const SettingsLayout: React.FC = () => {
             maxWidth: '100%',
           }}
         >
-          <Settings />
+          {location.pathname === '/settings' && <Settings />}
           <ErrorBoundary
             level='component'
             resetOnPropsChange={true}

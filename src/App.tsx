@@ -148,6 +148,7 @@ import CatalogBrowsePage from '@/features/catalog/pages/CatalogBrowsePage';
 import CatalogManagePage from '@/features/catalog/pages/CatalogManagePage';
 import CatalogCartPage from '@/features/catalog/pages/CatalogCartPage';
 import '@/styles/globals.css';
+import { EmailSettingsPage } from '@/features/email-integration';
 
 // Placeholder components for remaining routes
 import Settings from './pages/Settings';
@@ -185,7 +186,9 @@ const App: React.FC = () => {
                   />
                 </Route>
                 <Route path='/profile' element={<MyProfileLayout />}></Route>
-                <Route path='/settings' element={<SettingsLayout />} />
+                <Route path='/settings' element={<SettingsLayout />}>
+                  <Route path='email' element={<EmailSettingsPage />} />
+                </Route>
 
                 {/* Legacy auth routes for backward compatibility */}
                 <Route path='/login' element={<LoginPage />} />

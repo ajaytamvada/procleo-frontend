@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Plus,
@@ -14,58 +14,49 @@ import {
   ChevronRight,
   ChevronDown,
 } from 'lucide-react';
-import type { Invoice } from '../types';
 import { InvoiceStatus, InvoiceType } from '../types';
 import { format } from 'date-fns';
-import { useAllInvoices } from '../hooks/useInvoice';
+import { useInvoiceList } from '../hooks/useInvoice';
+
+const ITEMS_PER_PAGE = 15;
 
 const InvoiceListPage: React.FC = () => {
   const navigate = useNavigate();
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedStatus, setSelectedStatus] = useState<InvoiceStatus | ''>('');
-  const [selectedType, setSelectedType] = useState<InvoiceType | ''>('');
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
+  const [searchInput, setSearchInput] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const [selectedStatus, setSelectedStatus] = useState<string>('');
+  const [selectedType, setSelectedType] = useState<string>('');
+  const [currentPage, setCurrentPage] = useState(0); // 0-based for Spring
 
-  const { data: allInvoices, isLoading: loading, refetch } = useAllInvoices();
-
-  // Filter invoices
-  const filteredInvoices = useMemo(() => {
-    if (!allInvoices) return [];
-
-    let filtered = [...allInvoices];
-
-    if (selectedStatus) {
-      filtered = filtered.filter(inv => inv.status === selectedStatus);
-    }
-
-    if (selectedType) {
-      filtered = filtered.filter(inv => inv.invoiceType === selectedType);
-    }
-
-    if (searchTerm) {
-      const lowerTerm = searchTerm.toLowerCase();
-      filtered = filtered.filter(
-        inv =>
-          inv.invoiceNumber.toLowerCase().includes(lowerTerm) ||
-          inv.supplierName.toLowerCase().includes(lowerTerm) ||
-          (inv.poNumber && inv.poNumber.toLowerCase().includes(lowerTerm))
-      );
-    }
-
-    return filtered;
-  }, [allInvoices, selectedStatus, selectedType, searchTerm]);
-
-  // Pagination calculations
-  const totalPages = Math.ceil(filteredInvoices.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const paginatedInvoices = filteredInvoices.slice(startIndex, endIndex);
+  // Debounce search input (300ms)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchInput);
+      setCurrentPage(0);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchInput]);
 
   // Reset page on filter change
   useEffect(() => {
-    setCurrentPage(1);
-  }, [searchTerm, selectedStatus, selectedType]);
+    setCurrentPage(0);
+  }, [selectedStatus, selectedType]);
+
+  const {
+    data: pageData,
+    isLoading: loading,
+    refetch,
+  } = useInvoiceList({
+    page: currentPage,
+    size: ITEMS_PER_PAGE,
+    status: selectedStatus || undefined,
+    invoiceType: selectedType || undefined,
+    search: debouncedSearch || undefined,
+  });
+
+  const invoices = pageData?.content ?? [];
+  const totalElements = pageData?.totalElements ?? 0;
+  const totalPages = pageData?.totalPages ?? 0;
 
   // Generate page numbers with ellipsis
   const getPageNumbers = () => {
@@ -73,18 +64,18 @@ const InvoiceListPage: React.FC = () => {
     const maxVisiblePages = 5;
 
     if (totalPages <= maxVisiblePages + 2) {
-      for (let i = 1; i <= totalPages; i++) {
+      for (let i = 0; i < totalPages; i++) {
         pages.push(i);
       }
     } else {
-      pages.push(1);
+      pages.push(0);
 
-      if (currentPage > 3) {
+      if (currentPage > 2) {
         pages.push('...');
       }
 
-      const start = Math.max(2, currentPage - 1);
-      const end = Math.min(totalPages - 1, currentPage + 1);
+      const start = Math.max(1, currentPage - 1);
+      const end = Math.min(totalPages - 2, currentPage + 1);
 
       for (let i = start; i <= end; i++) {
         if (!pages.includes(i)) {
@@ -92,12 +83,12 @@ const InvoiceListPage: React.FC = () => {
         }
       }
 
-      if (currentPage < totalPages - 2) {
+      if (currentPage < totalPages - 3) {
         pages.push('...');
       }
 
-      if (!pages.includes(totalPages)) {
-        pages.push(totalPages);
+      if (!pages.includes(totalPages - 1)) {
+        pages.push(totalPages - 1);
       }
     }
 
@@ -150,6 +141,8 @@ const InvoiceListPage: React.FC = () => {
     return new Date(dueDate) < new Date();
   };
 
+  const startIndex = currentPage * ITEMS_PER_PAGE;
+
   return (
     <div className='min-h-screen bg-[#f8f9fc] p-2'>
       {/* Page Header */}
@@ -175,9 +168,9 @@ const InvoiceListPage: React.FC = () => {
           <Search className='absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400' />
           <input
             type='text'
-            placeholder='Search invoice...'
-            value={searchTerm}
-            onChange={e => setSearchTerm(e.target.value)}
+            placeholder='Search invoice, PO, or supplier...'
+            value={searchInput}
+            onChange={e => setSearchInput(e.target.value)}
             className='w-full pl-10 pr-4 py-2.5 text-sm border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500'
           />
         </div>
@@ -185,9 +178,7 @@ const InvoiceListPage: React.FC = () => {
         <div className='relative'>
           <select
             value={selectedStatus}
-            onChange={e =>
-              setSelectedStatus(e.target.value as InvoiceStatus | '')
-            }
+            onChange={e => setSelectedStatus(e.target.value)}
             className='w-48 px-4 py-2.5 text-sm border border-gray-200 rounded-lg bg-white appearance-none focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500'
           >
             <option value=''>All Status</option>
@@ -203,7 +194,7 @@ const InvoiceListPage: React.FC = () => {
         <div className='relative'>
           <select
             value={selectedType}
-            onChange={e => setSelectedType(e.target.value as InvoiceType | '')}
+            onChange={e => setSelectedType(e.target.value)}
             className='w-44 px-4 py-2.5 text-sm border border-gray-200 rounded-lg bg-white appearance-none focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500'
           >
             <option value=''>All Types</option>
@@ -269,7 +260,7 @@ const InvoiceListPage: React.FC = () => {
                     </div>
                   </td>
                 </tr>
-              ) : paginatedInvoices.length === 0 ? (
+              ) : invoices.length === 0 ? (
                 <tr>
                   <td colSpan={8} className='px-6 py-12 text-center'>
                     <div className='flex flex-col items-center justify-center'>
@@ -286,7 +277,7 @@ const InvoiceListPage: React.FC = () => {
                   </td>
                 </tr>
               ) : (
-                paginatedInvoices.map(invoice => (
+                invoices.map(invoice => (
                   <tr
                     key={invoice.id}
                     className='hover:bg-gray-50 transition-colors'
@@ -353,7 +344,7 @@ const InvoiceListPage: React.FC = () => {
                     </td>
                     <td className='px-6 py-4 text-right text-sm font-semibold text-gray-900'>
                       ₹
-                      {invoice.grandTotal.toLocaleString('en-IN', {
+                      {invoice.grandTotal?.toLocaleString('en-IN', {
                         minimumFractionDigits: 2,
                         maximumFractionDigits: 2,
                       })}
@@ -367,15 +358,16 @@ const InvoiceListPage: React.FC = () => {
                             maximumFractionDigits: 2,
                           }) || '0.00'}
                         </p>
-                        {invoice.paidAmount && invoice.paidAmount > 0 && (
-                          <p className='text-xs text-green-600 mt-0.5'>
-                            Paid: ₹
-                            {invoice.paidAmount.toLocaleString('en-IN', {
-                              minimumFractionDigits: 2,
-                              maximumFractionDigits: 2,
-                            })}
-                          </p>
-                        )}
+                        {invoice.paidAmount != null &&
+                          invoice.paidAmount > 0 && (
+                            <p className='text-xs text-green-600 mt-0.5'>
+                              Paid: ₹
+                              {invoice.paidAmount.toLocaleString('en-IN', {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2,
+                              })}
+                            </p>
+                          )}
                       </div>
                     </td>
                     <td className='px-6 py-4'>
@@ -446,16 +438,15 @@ const InvoiceListPage: React.FC = () => {
             <p className='text-sm text-gray-600'>
               Showing <span className='font-medium'>{startIndex + 1}</span> to{' '}
               <span className='font-medium'>
-                {Math.min(endIndex, filteredInvoices.length)}
+                {Math.min(startIndex + ITEMS_PER_PAGE, totalElements)}
               </span>{' '}
-              of <span className='font-medium'>{filteredInvoices.length}</span>{' '}
-              results
+              of <span className='font-medium'>{totalElements}</span> results
             </p>
 
             <div className='flex items-center gap-1'>
               <button
-                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                disabled={currentPage === 1}
+                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 0))}
+                disabled={currentPage === 0}
                 className='p-2 rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50 hover:border-gray-300 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-white disabled:hover:border-gray-200 transition-colors'
               >
                 <ChevronLeft className='w-4 h-4' />
@@ -474,7 +465,7 @@ const InvoiceListPage: React.FC = () => {
                           : 'text-gray-600 border border-gray-200 hover:bg-gray-50 hover:border-gray-300'
                       }`}
                     >
-                      {page}
+                      {(page as number) + 1}
                     </button>
                   )}
                 </React.Fragment>
@@ -482,9 +473,9 @@ const InvoiceListPage: React.FC = () => {
 
               <button
                 onClick={() =>
-                  setCurrentPage(prev => Math.min(prev + 1, totalPages))
+                  setCurrentPage(prev => Math.min(prev + 1, totalPages - 1))
                 }
-                disabled={currentPage === totalPages}
+                disabled={currentPage === totalPages - 1}
                 className='p-2 rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50 hover:border-gray-300 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-white disabled:hover:border-gray-200 transition-colors'
               >
                 <ChevronRight className='w-4 h-4' />

@@ -9,6 +9,8 @@ export interface ExtractedLineItem {
   unitPrice?: number;
   amount?: number;
   hsnCode?: string;
+  taxAmount?: number;
+  taxRate?: number;
 }
 
 export interface ExtractedInvoiceData {

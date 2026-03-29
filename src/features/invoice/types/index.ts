@@ -235,6 +235,42 @@ export interface UpdateDirectInvoiceItemRequest {
   remarks?: string;
 }
 
+// Lightweight type for list views (no items, no OCR data)
+export interface InvoiceListItem {
+  id: number;
+  invoiceNumber: string;
+  invoiceDate: string;
+  poId?: number;
+  poNumber?: string;
+  supplierId: number;
+  supplierName: string;
+  supplierCode?: string;
+  supplierInvoiceNumber?: string;
+  invoiceType: string;
+  status: InvoiceStatus;
+  dueDate?: string;
+  currency?: string;
+  grandTotal: number;
+  paidAmount?: number;
+  balanceAmount?: number;
+  createdBy?: string;
+  createdDate?: string;
+  source?: string;
+  grnNumber?: string;
+}
+
+// Spring Page response shape
+export interface PageResponse<T> {
+  content: T[];
+  totalElements: number;
+  totalPages: number;
+  size: number;
+  number: number; // current page (0-based)
+  first: boolean;
+  last: boolean;
+  empty: boolean;
+}
+
 export enum InvoiceStatus {
   DRAFT = 'DRAFT',
   SUBMITTED = 'SUBMITTED',

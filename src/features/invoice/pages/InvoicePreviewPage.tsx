@@ -8,7 +8,8 @@ import {
   Calendar,
   AlertCircle,
 } from 'lucide-react';
-import { Invoice, InvoiceStatus, InvoiceType } from '../../purchaseorder/types';
+import { Invoice } from '../../purchaseorder/types';
+import { getInvoiceById } from '../api/invoiceApi';
 import { format } from 'date-fns';
 
 export const InvoicePreviewPage: React.FC = () => {
@@ -18,87 +19,15 @@ export const InvoicePreviewPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Simulate fetching Invoice details
     const fetchInvoice = async () => {
+      if (!id) return;
       setLoading(true);
       try {
-        // Mock data similar to InvoiceListPage
-        const mockInvoice: Invoice = {
-          id: id ? parseInt(id) : 1,
-          invoiceNumber: 'INV/2024/005',
-          invoiceDate: '2024-09-20',
-          poId: 1,
-          poNumber: 'PO/2024-2025/001',
-          grnId: 1,
-          grnNumber: 'GRN/2024-2025/001',
-          supplierId: 1,
-          supplierName: 'NILANG ASPHALT EQUIPMENTS PRIVATE LIMITED',
-          supplierInvoiceNumber: 'NAL/INV/24-25/108',
-          supplierInvoiceDate: '2024-09-18',
-          invoiceType: InvoiceType.STANDARD,
-          status: InvoiceStatus.APPROVED,
-          dueDate: '2024-10-20',
-          currency: 'INR',
-
-          // Money fields
-          subTotal: 496000,
-          taxAmount: 89280,
-          discountAmount: 0,
-          freightCharges: 5000,
-          grandTotal: 590280,
-          paidAmount: 0,
-          balanceAmount: 590280,
-
-          billToAddress:
-            'Autovitica Construction Ltd, HQ, Bengaluru, Karnataka, 560001',
-          shipToAddress:
-            'Main Warehouse - Section A, Mysore Road, Bengaluru, Karnataka, 560039',
-
-          items: [
-            {
-              id: 1,
-              itemName: 'Bitumen Sprayer',
-              itemCode: 'EQ-BS-001',
-              itemDescription:
-                'High capacity bitumen sprayer with automated control',
-              invoiceQuantity: 1,
-              unitOfMeasurement: 'NOS',
-              unitPrice: 450000,
-              baseAmount: 450000,
-              taxableAmount: 450000,
-              cgstRate: 9,
-              cgstAmount: 40500,
-              sgstRate: 9,
-              sgstAmount: 40500,
-              totalTaxAmount: 81000,
-              totalAmount: 531000,
-            },
-            {
-              id: 2,
-              itemName: 'Spray Nozzle Set',
-              itemCode: 'SP-NZ-005',
-              itemDescription: 'Spare nozzle set for sprayer',
-              invoiceQuantity: 5,
-              unitOfMeasurement: 'SET',
-              unitPrice: 9200,
-              baseAmount: 46000,
-              taxableAmount: 46000,
-              cgstRate: 9,
-              cgstAmount: 4140,
-              sgstRate: 9,
-              sgstAmount: 4140,
-              totalTaxAmount: 8280,
-              totalAmount: 54280,
-            },
-          ],
-        };
-
-        setTimeout(() => {
-          setInvoice(mockInvoice);
-          setLoading(false);
-        }, 500);
+        const data = await getInvoiceById(parseInt(id));
+        setInvoice(data);
       } catch (error) {
         console.error('Error fetching Invoice:', error);
+      } finally {
         setLoading(false);
       }
     };

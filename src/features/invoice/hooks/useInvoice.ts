@@ -2,7 +2,12 @@
  * React Query hooks for Invoice management
  */
 
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import {
+  useQuery,
+  useMutation,
+  useQueryClient,
+  keepPreviousData,
+} from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import {
   createInvoice,
@@ -10,6 +15,7 @@ import {
   getInvoiceById,
   getInvoiceByNumber,
   getAllInvoices,
+  getInvoiceList,
   getInvoicesByPoId,
   getInvoicesBySupplierId,
   getInvoicesByStatus,
@@ -73,6 +79,26 @@ export const useAllInvoices = () => {
     queryKey: ['invoices'],
     queryFn: () => getAllInvoices(),
     staleTime: 30000, // 30 seconds
+  });
+};
+
+/**
+ * Hook to fetch paginated invoice list with server-side filtering.
+ * Uses lightweight DTO — no items, no N+1 queries.
+ */
+export const useInvoiceList = (params: {
+  page?: number;
+  size?: number;
+  status?: string;
+  invoiceType?: string;
+  search?: string;
+  sort?: string;
+}) => {
+  return useQuery({
+    queryKey: ['invoices', 'list', params],
+    queryFn: () => getInvoiceList(params),
+    staleTime: 120000, // 2 minutes
+    placeholderData: keepPreviousData, // keep showing old page while loading next
   });
 };
 

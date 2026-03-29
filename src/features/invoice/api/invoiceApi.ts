@@ -1,6 +1,8 @@
 import { apiClient } from '@/lib/api';
 import type {
   Invoice,
+  InvoiceListItem,
+  PageResponse,
   CreateInvoiceRequest,
   UpdateInvoiceRequest,
   CreateDirectInvoiceRequest,
@@ -59,6 +61,31 @@ export const getInvoicesPaginated = async (
   const response = await apiClient.get('/invoice', {
     params: { paginated: true, page, size },
   });
+  return response.data;
+};
+
+// Lightweight paginated list with server-side filtering
+export const getInvoiceList = async (params: {
+  page?: number;
+  size?: number;
+  status?: string;
+  invoiceType?: string;
+  search?: string;
+  sort?: string;
+}): Promise<PageResponse<InvoiceListItem>> => {
+  const response = await apiClient.get<PageResponse<InvoiceListItem>>(
+    '/invoice/list',
+    {
+      params: {
+        page: params.page ?? 0,
+        size: params.size ?? 15,
+        status: params.status || undefined,
+        invoiceType: params.invoiceType || undefined,
+        search: params.search || undefined,
+        sort: params.sort || 'createdDate,desc',
+      },
+    }
+  );
   return response.data;
 };
 
@@ -250,6 +277,7 @@ export const invoiceApi = {
   getInvoiceByNumber,
   getAllInvoices,
   getInvoicesPaginated,
+  getInvoiceList,
   getInvoicesByPoId,
   getInvoicesBySupplierId,
   getInvoicesByStatus,

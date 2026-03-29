@@ -63,6 +63,10 @@ const settingsCategories: SettingsCategory[] = [
       { name: 'Login Provision', href: '/master/login-provision' },
     ],
   },
+  {
+    title: 'Integrations',
+    items: [{ name: 'Email Integration', href: '/settings/email' }],
+  },
 ];
 
 const Settings: React.FC = () => {
