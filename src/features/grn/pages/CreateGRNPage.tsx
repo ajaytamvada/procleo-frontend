@@ -31,9 +31,7 @@ const CreateGRNPage: React.FC = () => {
   const [selectedInvoiceId, setSelectedInvoiceId] = useState<number | null>(
     null
   );
-  const [receivedDate, setReceivedDate] = useState(
-    new Date().toISOString().split('T')[0]
-  );
+  const receivedDate = new Date().toISOString().split('T')[0];
   const [warehouseLocation, setWarehouseLocation] = useState('');
   const [deliveryChallanNumber, setDeliveryChallanNumber] = useState('');
   const [deliveryChallanDate, setDeliveryChallanDate] = useState('');
@@ -101,11 +99,6 @@ const CreateGRNPage: React.FC = () => {
   const validateForm = (): boolean => {
     if (!selectedInvoiceId) {
       toast.error('Please select an invoice');
-      return false;
-    }
-
-    if (!receivedDate) {
-      toast.error('Please enter received date');
       return false;
     }
 
@@ -232,51 +225,36 @@ const CreateGRNPage: React.FC = () => {
           </h2>
         </div>
         <div className='p-6'>
-          <div className='grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-5'>
-            <div>
-              <label className='block text-sm font-medium text-gray-700 mb-2'>
-                <span className='text-red-500'>*</span> Invoice Number
-              </label>
-              {isLoadingInvoices ? (
-                <div className='flex items-center gap-2 px-4 py-3 bg-gray-50 rounded-lg border border-gray-200'>
-                  <div className='animate-spin rounded-full h-4 w-4 border-2 border-violet-600 border-t-transparent'></div>
-                  <span className='text-sm text-gray-500'>
-                    Loading invoices...
-                  </span>
-                </div>
-              ) : (
-                <div className='relative'>
-                  <select
-                    value={selectedInvoiceId || ''}
-                    onChange={e => setSelectedInvoiceId(Number(e.target.value))}
-                    className='w-full px-4 py-3 text-sm border border-gray-200 rounded-lg bg-white appearance-none focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500'
-                    required
-                  >
-                    <option value=''>Select Invoice</option>
-                    {availableInvoices?.map(invoice => (
-                      <option key={invoice.invoiceId} value={invoice.invoiceId}>
-                        {invoice.invoiceNumber} - {invoice.supplierName} (
-                        {invoice.invoiceDate})
-                      </option>
-                    ))}
-                  </select>
-                  <ChevronDown className='absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none' />
-                </div>
-              )}
-            </div>
-
-            <div>
-              <label className='block text-sm font-medium text-gray-700 mb-2'>
-                <span className='text-red-500'>*</span> Received Date
-              </label>
-              <input
-                type='date'
-                value={receivedDate}
-                onChange={e => setReceivedDate(e.target.value)}
-                className='w-full px-4 py-3 text-sm border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500'
-                required
-              />
-            </div>
+          <div>
+            <label className='block text-sm font-medium text-gray-700 mb-2'>
+              <span className='text-red-500'>*</span> Invoice Number
+            </label>
+            {isLoadingInvoices ? (
+              <div className='flex items-center gap-2 px-4 py-3 bg-gray-50 rounded-lg border border-gray-200'>
+                <div className='animate-spin rounded-full h-4 w-4 border-2 border-violet-600 border-t-transparent'></div>
+                <span className='text-sm text-gray-500'>
+                  Loading invoices...
+                </span>
+              </div>
+            ) : (
+              <div className='relative max-w-md'>
+                <select
+                  value={selectedInvoiceId || ''}
+                  onChange={e => setSelectedInvoiceId(Number(e.target.value))}
+                  className='w-full px-4 py-3 text-sm border border-gray-200 rounded-lg bg-white appearance-none focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500'
+                  required
+                >
+                  <option value=''>Select Invoice</option>
+                  {availableInvoices?.map(invoice => (
+                    <option key={invoice.invoiceId} value={invoice.invoiceId}>
+                      {invoice.invoiceNumber} - {invoice.supplierName} (
+                      {invoice.invoiceDate})
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown className='absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none' />
+              </div>
+            )}
           </div>
 
           {invoiceDetails && (

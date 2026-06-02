@@ -31,16 +31,29 @@ async function selectDropdownByPlaceholder(
   }
 }
 
-/** Fill the PR header fields (location, purchase type, project, justification) */
+/** Fill the PR header fields (location, department, purchase type, project, description).
+ *  The header renders exactly three <select>s in DOM order: Location, Department,
+ *  Purchase Type — all populated from master data. */
 async function fillPRHeader(
   page: Page,
   projectName: string,
   justification: string
 ) {
-  await selectDropdownByPlaceholder(page, 'Select Location');
-  await selectDropdownByPlaceholder(page, 'Select Purchase Type');
+  const selects = page.locator('form select');
+  // Wait for the Location dropdown to populate (cities load async).
+  await expect
+    .poll(async () => selects.nth(0).locator('option').count(), {
+      timeout: 15000,
+    })
+    .toBeGreaterThan(1);
+
+  await selects.nth(0).selectOption({ index: 1 }); // Location (first city)
+  await selects.nth(1).selectOption({ index: 1 }); // Department (first department)
+  await selects.nth(2).selectOption('PURCHASE_ORDER'); // Purchase Type (standard PR, not Catalog)
+
   await page.getByPlaceholder('Enter project name').fill(projectName);
-  await page.getByPlaceholder('Enter justification...').fill(justification);
+  // Description is optional; the field placeholder is "Enter description...".
+  await page.getByPlaceholder('Enter description...').fill(justification);
 }
 
 /**
@@ -104,11 +117,9 @@ async function approveAllItemsForPR(
   await page.waitForTimeout(3000);
 
   // Find the PR in the approval queue
-  const prButton = page
-    .locator('table tbody button, table tbody a')
-    .filter({
-      hasText: new RegExp(prNumber.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')),
-    });
+  const prButton = page.locator('table tbody button, table tbody a').filter({
+    hasText: new RegExp(prNumber.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')),
+  });
 
   if (
     !(await prButton
@@ -167,11 +178,9 @@ async function rejectAllItemsForPR(
   await page.goto(approvalPath);
   await page.waitForTimeout(3000);
 
-  const prButton = page
-    .locator('table tbody button, table tbody a')
-    .filter({
-      hasText: new RegExp(prNumber.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')),
-    });
+  const prButton = page.locator('table tbody button, table tbody a').filter({
+    hasText: new RegExp(prNumber.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')),
+  });
 
   if (
     !(await prButton

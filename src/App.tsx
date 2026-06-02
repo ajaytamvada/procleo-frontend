@@ -84,6 +84,12 @@ import InvoiceEntryPage from '@/features/invoice/pages/InvoiceEntryPage';
 import DirectInvoicePage from '@/features/invoice/pages/DirectInvoicePage';
 import DownloadInvoicePage from '@/features/invoice/pages/DownloadInvoicePage';
 import InvoicePreviewPage from '@/features/invoice/pages/InvoicePreviewPage';
+import UnmatchedInvoicesPage from '@/features/invoice/pages/UnmatchedInvoicesPage';
+import EditEmailInvoicePage from '@/features/invoice/pages/EditEmailInvoicePage';
+import CreatePaymentPage from '@/features/payment/pages/CreatePaymentPage';
+import PaymentListPage from '@/features/payment/pages/PaymentListPage';
+import PendingPaymentsPage from '@/features/payment/pages/PendingPaymentsPage';
+import PaymentPreviewPage from '@/features/payment/pages/PaymentPreviewPage';
 // Import Report Pages
 import PRReportPage from '@/features/reports/pages/PRReportPage';
 import InvoiceReportPage from '@/features/reports/pages/InvoiceReportPage';
@@ -579,6 +585,29 @@ const App: React.FC = () => {
                   <Route
                     path='invoice/preview/:id'
                     element={<InvoicePreviewPage />}
+                  />
+                  <Route
+                    path='invoice/unmatched'
+                    element={<UnmatchedInvoicesPage />}
+                  />
+                  <Route
+                    path='invoice/edit/:id'
+                    element={<EditEmailInvoicePage />}
+                  />
+
+                  {/* Payment Routes */}
+                  <Route
+                    path='payment/create/:invoiceId'
+                    element={<CreatePaymentPage />}
+                  />
+                  <Route path='payment/list' element={<PaymentListPage />} />
+                  <Route
+                    path='payment/pending'
+                    element={<PendingPaymentsPage />}
+                  />
+                  <Route
+                    path='payment/preview/:id'
+                    element={<PaymentPreviewPage />}
                   />
 
                   {/* Master Configuration Routes */}

@@ -11,6 +11,12 @@ import {
   ClipboardList,
   Cog,
   Building2,
+  LayoutDashboard,
+  FileSearch,
+  PackageCheck,
+  Receipt,
+  Database,
+  CreditCard,
 } from 'lucide-react';
 import { usePermissions } from '@/hooks/usePermissions';
 import { getModuleCode } from '@/config/moduleMapping';
@@ -20,6 +26,16 @@ interface SidebarProps {
   isOpen: boolean;
   onClose: () => void;
 }
+
+// Submenu items hidden from the sidebar (pages not ready / under repair).
+// Matched by module code so they stay hidden regardless of DB label.
+const HIDDEN_SUBMENU_CODES = [
+  'RFP_EVALUATE',
+  'RFP_QUOTATION_PREVIEW',
+  'MASTER_LOCATION',
+  'MASTER_BUILDING',
+  'MASTER_FLOOR',
+];
 
 interface NavigationItem {
   name: string;
@@ -33,11 +49,17 @@ interface NavigationItem {
 // Icon mapping for dynamic modules
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   Home,
+  LayoutDashboard,
   ShoppingCart,
   Package,
+  PackageCheck,
   Settings,
   BarChart3,
   FileText,
+  FileSearch,
+  Receipt,
+  Database,
+  CreditCard,
   ClipboardList,
   Cog,
 };
@@ -77,6 +99,7 @@ const DynamicSidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
       .map(parent => {
         let children = childModules
           .filter(child => child.parentModuleCode === parent.moduleCode)
+          .filter(child => !HIDDEN_SUBMENU_CODES.includes(child.moduleCode))
           .sort((a, b) => a.sortOrder - b.sortOrder)
           .map(child => ({
             name: child.moduleName,
@@ -168,7 +191,6 @@ const DynamicSidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
         { name: 'Submit Quotation', href: '/rfp/submit-quotation' },
         { name: 'Re-submit Quotation', href: '/rfp/resubmit-quotation' },
         { name: 'Negotiate Quotation', href: '/rfp/negotiate' },
-        { name: 'Preview Quotations', href: '/rfp/quotation-preview' },
         { name: 'Send for Approval', href: '/rfp/send-for-approval' },
         { name: 'Approve/Reject RFP', href: '/rfp/approval' },
         { name: 'RFP Summary', href: '/rfp/summary' },

@@ -26,6 +26,10 @@ export interface Invoice {
   balanceAmount?: number;
   remarks?: string;
   attachmentPath?: string;
+  poMatchStatus?: string;
+  poMatchCandidates?: string;
+  source?: string;
+  ocrConfidenceScore?: number;
   createdBy?: string;
   createdByName?: string;
   createdDate?: string;
@@ -256,7 +260,47 @@ export interface InvoiceListItem {
   createdBy?: string;
   createdDate?: string;
   source?: string;
+  poMatchStatus?: string;
+  ocrConfidenceScore?: number;
   grnNumber?: string;
+}
+
+// PO Matching types
+export interface POCandidate {
+  poId: number;
+  poNumber: string;
+  poDate?: string;
+  supplierName: string;
+  grandTotal: number;
+  status: string;
+  matchReason: string;
+}
+
+// Three-Way Match types
+export interface ThreeWayMatchResult {
+  invoiceId: number;
+  invoiceNumber: string;
+  overallStatus: string;
+  itemDetails: ItemMatchDetail[];
+  remarks: string;
+  matchedAt: string;
+}
+
+export interface ItemMatchDetail {
+  invoiceItemId: number;
+  itemName: string;
+  poQuantity: number;
+  invoiceQuantity: number;
+  grnAcceptedQuantity: number;
+  quantityStatus: string;
+  poUnitPrice: number;
+  invoiceUnitPrice: number;
+  priceStatus: string;
+  poAmount: number;
+  invoiceAmount: number;
+  grnAmount: number;
+  amountStatus: string;
+  overallItemStatus: string;
 }
 
 // Spring Page response shape

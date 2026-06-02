@@ -22,6 +22,7 @@ import {
   usePODetails,
   usePOItemsForInvoicing,
   useCreateInvoice,
+  useSubmitInvoice,
   useGenerateInvoiceNumber,
 } from '../hooks/useInvoice';
 import type { CreateInvoiceRequest, InvoiceItemRequest } from '../types';
@@ -88,6 +89,7 @@ const InvoiceEntryPage: React.FC = () => {
 
   // ===== Mutations =====
   const createMutation = useCreateInvoice();
+  const submitMutation = useSubmitInvoice();
   const processOcrMutation = useProcessOcrImage();
   const { data: ocrStatus } = useOcrStatus();
 
@@ -315,7 +317,7 @@ const InvoiceEntryPage: React.FC = () => {
   };
 
   // ===== Submit =====
-  const handleSubmit = async (_isDraft: boolean) => {
+  const handleSubmit = async (isDraft: boolean) => {
     if (!selectedPoId) return toast.error('Please select a Purchase Order');
     if (!poDetails) return toast.error('PO details not loaded');
     if (items.length === 0) return toast.error('Please add at least one item');
@@ -348,7 +350,12 @@ const InvoiceEntryPage: React.FC = () => {
     };
 
     try {
-      await createMutation.mutateAsync(request);
+      const created = await createMutation.mutateAsync(request);
+      // "Create Invoice" must move the invoice out of DRAFT, otherwise it
+      // won't be eligible for GRN (GRN excludes DRAFT/CANCELLED invoices).
+      if (!isDraft && created?.id) {
+        await submitMutation.mutateAsync(created.id);
+      }
       navigate('/invoice/list');
     } catch {
       /* error shown by hook */
@@ -390,14 +397,14 @@ const InvoiceEntryPage: React.FC = () => {
           </button>
           <button
             onClick={() => handleSubmit(true)}
-            disabled={createMutation.isPending}
+            disabled={createMutation.isPending || submitMutation.isPending}
             className='inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50'
           >
             <Save size={15} /> Save Draft
           </button>
           <button
             onClick={() => handleSubmit(false)}
-            disabled={createMutation.isPending}
+            disabled={createMutation.isPending || submitMutation.isPending}
             className='inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-violet-600 rounded-md hover:bg-violet-700 disabled:opacity-50'
           >
             <FileText size={15} /> Create Invoice

@@ -11,7 +11,6 @@ import {
   Ruler,
   Receipt,
   Briefcase,
-  Building,
   Globe,
 } from 'lucide-react';
 
@@ -116,13 +115,6 @@ const masterSections: MasterSection[] = [
         icon: <MapPin size={24} />,
         color: 'blue',
         path: '/master/cities',
-      },
-      {
-        title: 'Buildings',
-        count: 12,
-        icon: <Building size={24} />,
-        color: 'teal',
-        path: '/master/buildings',
       },
     ],
   },

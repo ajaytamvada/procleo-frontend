@@ -10,6 +10,8 @@ import type {
   POItemForInvoice,
   PODetailsForInvoice,
   POForInvoicing,
+  POCandidate,
+  ThreeWayMatchResult,
 } from '../types';
 
 // ========== INVOICE ENTRY (PO-based) ENDPOINTS ==========
@@ -267,6 +269,55 @@ export const downloadInvoiceAttachment = async (id: number): Promise<Blob> => {
   return response.data;
 };
 
+// ========== PO MATCHING ENDPOINTS ==========
+
+export const getUnmatchedInvoices = async (): Promise<Invoice[]> => {
+  const response = await apiClient.get<Invoice[]>('/invoice/unmatched');
+  return Array.isArray(response.data) ? response.data : [];
+};
+
+export const getPOCandidates = async (
+  invoiceId: number
+): Promise<POCandidate[]> => {
+  const response = await apiClient.get<POCandidate[]>(
+    `/invoice/${invoiceId}/po-candidates`
+  );
+  return Array.isArray(response.data) ? response.data : [];
+};
+
+export const linkInvoiceToPO = async (
+  invoiceId: number,
+  poId: number
+): Promise<Invoice> => {
+  const response = await apiClient.post<Invoice>(
+    `/invoice/${invoiceId}/link-po`,
+    { poId }
+  );
+  return response.data;
+};
+
+export const updateEmailInvoice = async (
+  id: number,
+  request: UpdateDirectInvoiceRequest
+): Promise<Invoice> => {
+  const response = await apiClient.put<Invoice>(
+    `/invoice/email/${id}`,
+    request
+  );
+  return response.data;
+};
+
+// ========== THREE-WAY MATCH ENDPOINTS ==========
+
+export const getThreeWayMatchResult = async (
+  invoiceId: number
+): Promise<ThreeWayMatchResult> => {
+  const response = await apiClient.get<ThreeWayMatchResult>(
+    `/invoice/${invoiceId}/three-way-match`
+  );
+  return response.data;
+};
+
 // ========== EXPORT ALL AS OBJECT ==========
 
 export const invoiceApi = {
@@ -310,4 +361,13 @@ export const invoiceApi = {
 
   // File Download
   downloadInvoiceAttachment,
+
+  // PO Matching
+  getUnmatchedInvoices,
+  getPOCandidates,
+  linkInvoiceToPO,
+  updateEmailInvoice,
+
+  // Three-Way Match
+  getThreeWayMatchResult,
 };

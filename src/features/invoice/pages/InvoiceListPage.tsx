@@ -102,7 +102,7 @@ const InvoiceListPage: React.FC = () => {
   };
 
   const handleRecordPayment = (id: number) => {
-    navigate(`/invoices/${id}/payment`);
+    navigate(`/payment/create/${id}`);
   };
 
   const handleThreeWayMatch = (id: number) => {
@@ -154,7 +154,7 @@ const InvoiceListPage: React.FC = () => {
           </p>
         </div>
         <button
-          onClick={() => navigate('/invoices/create')}
+          onClick={() => navigate('/invoice/entry')}
           className='inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-violet-600 rounded-md hover:bg-violet-700 transition-colors'
         >
           <Plus size={15} />
@@ -384,7 +384,7 @@ const InvoiceListPage: React.FC = () => {
                         {invoice.status === InvoiceStatus.DRAFT && (
                           <button
                             onClick={() =>
-                              navigate(`/invoices/${invoice.id}/edit`)
+                              navigate(`/invoice/edit/${invoice.id}`)
                             }
                             className='p-2 text-gray-400 hover:text-violet-600 hover:bg-violet-50 rounded-lg transition-colors'
                             title='Edit'
