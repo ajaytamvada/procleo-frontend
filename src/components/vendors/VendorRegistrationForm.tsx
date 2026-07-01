@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -8,7 +8,6 @@ import {
   Building2,
   FileText,
   Hash,
-  Briefcase,
   User,
   Mail,
   Phone,
@@ -18,12 +17,10 @@ import {
   Map,
   Flag,
   MapPinned,
-  Landmark,
-  CreditCard,
   Shield,
-  FileCheck,
+  Briefcase,
+  IdCard,
 } from 'lucide-react';
-import { Button } from '@/components/ui/Button';
 import { Alert } from '@/components/ui/Alert';
 import toast from 'react-hot-toast';
 import { apiClient } from '@/lib/api';
@@ -31,58 +28,57 @@ import { PrimaryButton } from '../common/Buttons/PrimaryButton';
 import FormInput from '../common/Form/FormInput';
 import FormSelect from '../common/Form/FormSelect';
 import FormSection from '../common/Form/FormSection';
-import Stepper from '../common/Stepper';
 import FormTextarea from '../common/Form/FormTextArea';
 
-// Validation schema for vendor registration
+// Validation schema for vendor registration.
+// Only the fields the backend genuinely requires are mandatory; the rest are
+// optional here and can be completed later from the supplier portal screen.
 const vendorRegistrationSchema = z.object({
   // Company Information
   companyName: z.string().min(2, 'Company name must be at least 2 characters'),
-  registrationNumber: z.string().min(1, 'Registration number is required'),
-  taxId: z.string().min(1, 'Tax ID is required'),
+  companyEmail: z.string().email('Invalid company email address'),
+  companyCode: z.string().optional(),
+  gst: z.string().optional(),
+  pan: z.string().optional(),
   vendorType: z.enum([
     'supplier',
     'service_provider',
     'contractor',
     'consultant',
   ]),
-
-  // Contact Information
-  contactPerson: z.string().min(2, 'Contact person name is required'),
-  email: z.string().email('Invalid email address'),
-  phone: z.string().regex(/^[0-9+\-\s()]+$/, 'Invalid phone number'),
-  alternatePhone: z.string().optional(),
   website: z.string().url('Invalid URL').optional().or(z.literal('')),
+  phone: z
+    .string()
+    .regex(/^[0-9+\-\s()]*$/, 'Invalid phone number')
+    .optional()
+    .or(z.literal('')),
 
-  // Address Information
-  address: z.string().min(5, 'Address is required'),
-  city: z.string().min(2, 'City is required'),
-  state: z.string().min(2, 'State is required'),
-  country: z.string().min(2, 'Country is required'),
-  postalCode: z.string().min(3, 'Postal code is required'),
+  // Primary Contact (used to create the vendor login)
+  contactFirstName: z.string().min(2, 'Contact first name is required'),
+  contactLastName: z.string().optional(),
+  contactDesignation: z.string().optional(),
+  contactEmail: z.string().email('Invalid contact email address'),
+  contactPhone: z
+    .string()
+    .regex(/^[0-9+\-\s()]*$/, 'Invalid phone number')
+    .optional()
+    .or(z.literal('')),
 
-  // Banking Information
-  bankName: z.string().min(2, 'Bank name is required'),
-  accountNumber: z.string().min(5, 'Account number is required'),
-  routingNumber: z.string().min(5, 'Routing number is required'),
+  // Address Information (optional at registration)
+  address: z.string().optional(),
+  city: z.string().optional(),
+  state: z.string().optional(),
+  country: z.string().optional(),
+  postalCode: z.string().optional(),
 
   // Additional Information
   description: z.string().optional(),
-  certifications: z.string().optional(),
-  productCategories: z.array(z.string()).optional(),
 });
 
 type VendorRegistrationData = z.infer<typeof vendorRegistrationSchema>;
 
-const STEPS = [
-  { number: 1, label: 'Company Info' },
-  { number: 2, label: 'Contact & Address' },
-  { number: 3, label: 'Review Your Information' },
-];
-
 export function VendorRegistrationForm() {
   const navigate = useNavigate();
-  const [currentStep, setCurrentStep] = useState(1);
   const [registrationComplete, setRegistrationComplete] = useState(false);
   const [registrationData, setRegistrationData] = useState<any>(null);
 
@@ -90,40 +86,36 @@ export function VendorRegistrationForm() {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
-    watch,
-    trigger,
   } = useForm<VendorRegistrationData>({
     resolver: zodResolver(vendorRegistrationSchema),
     defaultValues: {
       vendorType: 'supplier',
-      productCategories: [],
     },
   });
 
   const onSubmit = async (data: VendorRegistrationData) => {
     try {
-      // Map form data to API DTO
+      // Map form data to the backend VendorRegistrationDto.
       const registrationDto = {
         companyName: data.companyName,
-        companyCode: data.registrationNumber,
-        companyEmail: data.email,
-        phone: data.phone,
-        mobile: data.alternatePhone,
-        website: data.website,
-        address1: data.address,
-        city: data.city,
-        state: data.state,
-        country: data.country,
-        pinCode: data.postalCode,
-        gst: data.taxId,
-        contactFirstName:
-          data.contactPerson?.split(' ')[0] || data.contactPerson,
-        contactLastName:
-          data.contactPerson?.split(' ').slice(1).join(' ') || '',
-        contactEmail: data.email,
-        contactPhone: data.phone,
+        companyCode: data.companyCode || undefined,
+        companyEmail: data.companyEmail,
+        phone: data.phone || undefined,
+        website: data.website || undefined,
+        address1: data.address || undefined,
+        city: data.city || undefined,
+        state: data.state || undefined,
+        country: data.country || undefined,
+        pinCode: data.postalCode || undefined,
+        gst: data.gst || undefined,
+        pan: data.pan || undefined,
+        contactFirstName: data.contactFirstName,
+        contactLastName: data.contactLastName || undefined,
+        contactDesignation: data.contactDesignation || undefined,
+        contactEmail: data.contactEmail,
+        contactPhone: data.contactPhone || undefined,
         industry: data.vendorType,
-        businessDescription: data.description,
+        businessDescription: data.description || undefined,
       };
 
       const response = await apiClient.post(
@@ -148,43 +140,9 @@ export function VendorRegistrationForm() {
     }
   };
 
-  const nextStep = async () => {
-    let fieldsToValidate: (keyof VendorRegistrationData)[] = [];
-
-    switch (currentStep) {
-      case 1:
-        fieldsToValidate = [
-          'companyName',
-          'registrationNumber',
-          'taxId',
-          'vendorType',
-        ];
-        break;
-      case 2:
-        fieldsToValidate = [
-          'contactPerson',
-          'email',
-          'phone',
-          'address',
-          'city',
-          'state',
-          'country',
-          'postalCode',
-        ];
-        break;
-      case 3:
-        fieldsToValidate = ['bankName', 'accountNumber', 'routingNumber'];
-        break;
-    }
-
-    const isValid = await trigger(fieldsToValidate);
-    if (isValid) {
-      setCurrentStep(prev => Math.min(prev + 1, 3));
-    }
-  };
-
-  const prevStep = () => {
-    setCurrentStep(prev => Math.max(prev - 1, 1));
+  // Surface validation problems so the submit button never silently no-ops.
+  const onInvalid = () => {
+    toast.error('Please fill in all required fields highlighted in red.');
   };
 
   // Success Screen
@@ -253,365 +211,221 @@ export function VendorRegistrationForm() {
 
   return (
     <div className='w-full'>
-      {/* Stepper */}
-      <Stepper steps={STEPS} currentStep={currentStep} />
+      <form onSubmit={handleSubmit(onSubmit, onInvalid)} className='space-y-10'>
+        {/* Company Information */}
+        <FormSection
+          title='Company Information'
+          subtitle='Tell us about your organization'
+        >
+          <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
+            <FormInput
+              label='Company Name'
+              required
+              placeholder='Acme Corporation'
+              icon={<Building2 className='h-5 w-5' />}
+              error={errors.companyName?.message}
+              {...register('companyName')}
+            />
 
-      <form onSubmit={handleSubmit(onSubmit)} className='space-y-6'>
-        {/* Step 1: Company Information */}
-        {currentStep === 1 && (
-          <FormSection
-            title='Company Information'
-            subtitle='Tell us about your organization'
-          >
-            <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
-              <FormInput
-                label='Company Name'
-                placeholder='Acme Corporation'
-                icon={<Building2 className='h-5 w-5' />}
-                error={errors.companyName?.message}
-                {...register('companyName')}
-              />
+            <FormInput
+              label='Company Email'
+              required
+              type='email'
+              placeholder='info@company.com'
+              icon={<Mail className='h-5 w-5' />}
+              error={errors.companyEmail?.message}
+              {...register('companyEmail')}
+            />
 
-              <FormInput
-                label='Registration Number'
-                placeholder='REG-123456'
-                icon={<FileText className='h-5 w-5' />}
-                error={errors.registrationNumber?.message}
-                {...register('registrationNumber')}
-              />
+            <FormInput
+              label='Registration / Company Code'
+              placeholder='REG-123456'
+              icon={<FileText className='h-5 w-5' />}
+              error={errors.companyCode?.message}
+              {...register('companyCode')}
+            />
 
-              <FormInput
-                label='Tax ID / VAT Number'
-                placeholder='TAX-789012'
-                icon={<Hash className='h-5 w-5' />}
-                error={errors.taxId?.message}
-                {...register('taxId')}
-              />
-
-              <FormSelect
-                label='Vendor Type'
-                error={errors.vendorType?.message}
-                {...register('vendorType')}
-              >
-                <option value='supplier'>Supplier</option>
-                <option value='service_provider'>Service Provider</option>
-                <option value='contractor'>Contractor</option>
-                <option value='consultant'>Consultant</option>
-              </FormSelect>
-            </div>
-          </FormSection>
-        )}
-
-        {/* Step 2: Contact & Address */}
-        {currentStep === 2 && (
-          <FormSection
-            title='Contact & Address Information'
-            subtitle='How can we reach you?'
-          >
-            <div className='space-y-6'>
-              {/* Contact Details */}
-              <div>
-                <h4 className='text-sm font-bold text-gray-700 mb-4 flex items-center gap-2'>
-                  <User className='h-4 w-4 text-indigo-600' />
-                  Contact Details
-                </h4>
-                <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
-                  <FormInput
-                    label='Contact Person'
-                    placeholder='John Doe'
-                    icon={<User className='h-5 w-5' />}
-                    error={errors.contactPerson?.message}
-                    {...register('contactPerson')}
-                  />
-
-                  <FormInput
-                    label='Email Address'
-                    type='email'
-                    placeholder='john@company.com'
-                    icon={<Mail className='h-5 w-5' />}
-                    error={errors.email?.message}
-                    {...register('email')}
-                  />
-
-                  <FormInput
-                    label='Phone Number'
-                    placeholder='+1 (555) 123-4567'
-                    icon={<Phone className='h-5 w-5' />}
-                    error={errors.phone?.message}
-                    {...register('phone')}
-                  />
-
-                  <FormInput
-                    label='Website (Optional)'
-                    placeholder='https://www.company.com'
-                    icon={<Globe className='h-5 w-5' />}
-                    error={errors.website?.message}
-                    {...register('website')}
-                  />
-                </div>
-              </div>
-
-              {/* Address Details */}
-              <div>
-                <h4 className='text-sm font-bold text-gray-700 mb-4 flex items-center gap-2'>
-                  <MapPin className='h-4 w-4 text-indigo-600' />
-                  Business Address
-                </h4>
-                <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
-                  <div className='md:col-span-2'>
-                    <FormTextarea
-                      label='Street Address'
-                      placeholder='123 Business Street, Suite 100'
-                      rows={3}
-                      error={errors.address?.message}
-                      {...register('address')}
-                    />
-                  </div>
-
-                  <FormInput
-                    label='City'
-                    placeholder='New York'
-                    icon={<Home className='h-5 w-5' />}
-                    error={errors.city?.message}
-                    {...register('city')}
-                  />
-
-                  <FormInput
-                    label='State/Province'
-                    placeholder='NY'
-                    icon={<Map className='h-5 w-5' />}
-                    error={errors.state?.message}
-                    {...register('state')}
-                  />
-
-                  <FormInput
-                    label='Country'
-                    placeholder='United States'
-                    icon={<Flag className='h-5 w-5' />}
-                    error={errors.country?.message}
-                    {...register('country')}
-                  />
-
-                  <FormInput
-                    label='Postal Code'
-                    placeholder='10001'
-                    icon={<MapPinned className='h-5 w-5' />}
-                    error={errors.postalCode?.message}
-                    {...register('postalCode')}
-                  />
-                </div>
-              </div>
-            </div>
-          </FormSection>
-        )}
-
-        {/* Step 3: Banking & Review */}
-        {currentStep === 3 && (
-          <div className='space-y-8'>
-            {/* <FormSection 
-              title='Banking Information'
-              subtitle='Secure payment details'
+            <FormSelect
+              label='Vendor Type'
+              required
+              error={errors.vendorType?.message}
+              {...register('vendorType')}
             >
-              <Alert variant='info' className='text-sm py-3 mb-6 bg-indigo-50 border-indigo-200 text-indigo-800 flex items-start gap-2'>
-                <Shield className='h-5 w-5 flex-shrink-0 mt-0.5' />
-                <span>Your banking information is encrypted and will be kept strictly confidential for payment processing only.</span>
-              </Alert>
+              <option value='supplier'>Supplier</option>
+              <option value='service_provider'>Service Provider</option>
+              <option value='contractor'>Contractor</option>
+              <option value='consultant'>Consultant</option>
+            </FormSelect>
 
-              <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
-                <div className='md:col-span-2'>
-                  <FormInput
-                    label='Bank Name'
-                    placeholder='Chase Bank'
-                    icon={<Landmark className='h-5 w-5' />}
-                    error={errors.bankName?.message}
-                    {...register('bankName')}
-                  />
-                </div>
+            <FormInput
+              label='GST Number'
+              placeholder='22AAAAA0000A1Z5'
+              icon={<Hash className='h-5 w-5' />}
+              error={errors.gst?.message}
+              {...register('gst')}
+            />
 
-                <FormInput
-                  label='Account Number'
-                  type='password'
-                  placeholder='Enter account number'
-                  icon={<CreditCard className='h-5 w-5' />}
-                  error={errors.accountNumber?.message}
-                  {...register('accountNumber')}
-                />
+            <FormInput
+              label='PAN Number'
+              placeholder='AAAAA0000A'
+              icon={<IdCard className='h-5 w-5' />}
+              error={errors.pan?.message}
+              {...register('pan')}
+            />
 
-                <FormInput
-                  label='Routing Number / SWIFT Code'
-                  placeholder='Enter routing number'
-                  icon={<Hash className='h-5 w-5' />}
-                  error={errors.routingNumber?.message}
-                  {...register('routingNumber')}
-                />
-              </div>
+            <FormInput
+              label='Phone Number'
+              placeholder='+91 98765 43210'
+              icon={<Phone className='h-5 w-5' />}
+              error={errors.phone?.message}
+              {...register('phone')}
+            />
 
-              <div className='space-y-6 mt-6 pt-6 border-t border-gray-200'>
-                <h4 className='text-sm font-bold text-gray-700 flex items-center gap-2'>
-                  <FileCheck className='h-4 w-4 text-indigo-600' />
-                  Additional Information (Optional)
-                </h4>
-                
-                <FormTextarea
-                  label='Business Description'
-                  placeholder='Tell us about your business, products, and services...'
-                  rows={4}
-                  {...register('description')}
-                />
-
-                <FormTextarea
-                  label='Certifications'
-                  placeholder='ISO 9001:2015, Quality Management, etc.'
-                  rows={3}
-                  {...register('certifications')}
-                />
-              </div>
-            </FormSection> */}
-
-            {/* Review Section */}
-            <FormSection
-              title='Review Your Information'
-              subtitle='Please verify all details before submitting'
-            >
-              <div className='space-y-4'>
-                {/* Company Info Card */}
-                <div className='bg-white border-2 border-gray-100 rounded-xl p-5 hover:border-indigo-100 transition-colors'>
-                  <div className='flex items-center gap-2 mb-4'>
-                    <Building2 className='h-5 w-5 text-indigo-600' />
-                    <h4 className='font-bold text-gray-900'>
-                      Company Information
-                    </h4>
-                  </div>
-                  <dl className='grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm'>
-                    <div>
-                      <dt className='text-gray-500 mb-1'>Company Name</dt>
-                      <dd className='font-semibold text-gray-900'>
-                        {watch('companyName')}
-                      </dd>
-                    </div>
-                    <div>
-                      <dt className='text-gray-500 mb-1'>
-                        Registration Number
-                      </dt>
-                      <dd className='font-semibold text-gray-900'>
-                        {watch('registrationNumber')}
-                      </dd>
-                    </div>
-                    <div>
-                      <dt className='text-gray-500 mb-1'>Tax ID</dt>
-                      <dd className='font-semibold text-gray-900'>
-                        {watch('taxId')}
-                      </dd>
-                    </div>
-                    <div>
-                      <dt className='text-gray-500 mb-1'>Vendor Type</dt>
-                      <dd className='font-semibold text-gray-900 capitalize'>
-                        {watch('vendorType')?.replace('_', ' ')}
-                      </dd>
-                    </div>
-                  </dl>
-                </div>
-
-                {/* Contact Info Card */}
-                <div className='bg-white border-2 border-gray-100 rounded-xl p-5 hover:border-indigo-100 transition-colors'>
-                  <div className='flex items-center gap-2 mb-4'>
-                    <User className='h-5 w-5 text-indigo-600' />
-                    <h4 className='font-bold text-gray-900'>
-                      Contact Information
-                    </h4>
-                  </div>
-                  <dl className='grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm'>
-                    <div>
-                      <dt className='text-gray-500 mb-1'>Contact Person</dt>
-                      <dd className='font-semibold text-gray-900'>
-                        {watch('contactPerson')}
-                      </dd>
-                    </div>
-                    <div>
-                      <dt className='text-gray-500 mb-1'>Email</dt>
-                      <dd className='font-semibold text-gray-900'>
-                        {watch('email')}
-                      </dd>
-                    </div>
-                    <div>
-                      <dt className='text-gray-500 mb-1'>Phone</dt>
-                      <dd className='font-semibold text-gray-900'>
-                        {watch('phone')}
-                      </dd>
-                    </div>
-                    <div className='sm:col-span-2'>
-                      <dt className='text-gray-500 mb-1'>Address</dt>
-                      <dd className='font-semibold text-gray-900'>
-                        {watch('address')}, {watch('city')}, {watch('state')}{' '}
-                        {watch('postalCode')}, {watch('country')}
-                      </dd>
-                    </div>
-                  </dl>
-                </div>
-
-                {/* Banking Info Card */}
-                <div className='bg-white border-2 border-gray-100 rounded-xl p-5 hover:border-indigo-100 transition-colors'>
-                  <div className='flex items-center gap-2 mb-4'>
-                    <Landmark className='h-5 w-5 text-indigo-600' />
-                    <h4 className='font-bold text-gray-900'>
-                      Banking Information
-                    </h4>
-                  </div>
-                  <dl className='grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm'>
-                    <div>
-                      <dt className='text-gray-500 mb-1'>Bank Name</dt>
-                      <dd className='font-semibold text-gray-900'>
-                        {watch('bankName')}
-                      </dd>
-                    </div>
-                    <div>
-                      <dt className='text-gray-500 mb-1'>Account Number</dt>
-                      <dd className='font-semibold text-gray-900 font-mono'>
-                        ••••{watch('accountNumber')?.slice(-4)}
-                      </dd>
-                    </div>
-                  </dl>
-                </div>
-              </div>
-
-              <Alert className='text-sm py-3 mt-6 bg-amber-50 border-amber-200 text-amber-900 flex items-start gap-2'>
-                <FileCheck className='h-5 w-5 flex-shrink-0 mt-0.5' />
-                <span>
-                  By submitting this form, you agree to our{' '}
-                  <strong>terms and conditions</strong> and authorize Procleo to
-                  verify the provided information.
-                </span>
-              </Alert>
-            </FormSection>
+            <FormInput
+              label='Website'
+              placeholder='https://www.company.com'
+              icon={<Globe className='h-5 w-5' />}
+              error={errors.website?.message}
+              {...register('website')}
+            />
           </div>
-        )}
+        </FormSection>
 
-        {/* Navigation Buttons */}
-        <div className='flex justify-between items-center pt-8 border-t border-gray-100'>
-          <Button
-            type='button'
-            variant='outline'
-            onClick={prevStep}
-            disabled={currentStep === 1}
-            className='h-12 px-8 text-sm font-semibold border-2 border-gray-200 hover:border-gray-300 hover:bg-gray-50 rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed'
+        {/* Primary Contact */}
+        <FormSection
+          title='Primary Contact'
+          subtitle='This person will receive the vendor portal login'
+        >
+          <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
+            <FormInput
+              label='First Name'
+              required
+              placeholder='John'
+              icon={<User className='h-5 w-5' />}
+              error={errors.contactFirstName?.message}
+              {...register('contactFirstName')}
+            />
+
+            <FormInput
+              label='Last Name'
+              placeholder='Doe'
+              icon={<User className='h-5 w-5' />}
+              error={errors.contactLastName?.message}
+              {...register('contactLastName')}
+            />
+
+            <FormInput
+              label='Designation'
+              placeholder='Procurement Manager'
+              icon={<Briefcase className='h-5 w-5' />}
+              error={errors.contactDesignation?.message}
+              {...register('contactDesignation')}
+            />
+
+            <FormInput
+              label='Contact Email (Login)'
+              required
+              type='email'
+              placeholder='john@company.com'
+              icon={<Mail className='h-5 w-5' />}
+              error={errors.contactEmail?.message}
+              {...register('contactEmail')}
+            />
+
+            <FormInput
+              label='Contact Phone'
+              placeholder='+91 98765 43210'
+              icon={<Phone className='h-5 w-5' />}
+              error={errors.contactPhone?.message}
+              {...register('contactPhone')}
+            />
+          </div>
+        </FormSection>
+
+        {/* Business Address */}
+        <FormSection
+          title='Business Address'
+          subtitle='Optional — you can complete this later from your portal'
+        >
+          <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
+            <div className='md:col-span-2'>
+              <FormTextarea
+                label='Street Address'
+                placeholder='123 Business Street, Suite 100'
+                rows={2}
+                error={errors.address?.message}
+                {...register('address')}
+              />
+            </div>
+
+            <FormInput
+              label='City'
+              placeholder='Mumbai'
+              icon={<Home className='h-5 w-5' />}
+              error={errors.city?.message}
+              {...register('city')}
+            />
+
+            <FormInput
+              label='State / Province'
+              placeholder='Maharashtra'
+              icon={<Map className='h-5 w-5' />}
+              error={errors.state?.message}
+              {...register('state')}
+            />
+
+            <FormInput
+              label='Country'
+              placeholder='India'
+              icon={<Flag className='h-5 w-5' />}
+              error={errors.country?.message}
+              {...register('country')}
+            />
+
+            <FormInput
+              label='Postal Code'
+              placeholder='400001'
+              icon={<MapPinned className='h-5 w-5' />}
+              error={errors.postalCode?.message}
+              {...register('postalCode')}
+            />
+          </div>
+        </FormSection>
+
+        {/* Additional Information */}
+        <FormSection
+          title='Additional Information'
+          subtitle='Help us understand your business'
+        >
+          <FormTextarea
+            label='Business Description'
+            placeholder='Tell us about your business, products, and services...'
+            rows={4}
+            error={errors.description?.message}
+            {...register('description')}
+          />
+        </FormSection>
+
+        <Alert className='text-sm py-3 bg-amber-50 border-amber-200 text-amber-900 flex items-start gap-2'>
+          <MapPin className='h-5 w-5 flex-shrink-0 mt-0.5' />
+          <span>
+            By submitting this form, you agree to our{' '}
+            <strong>terms and conditions</strong> and authorize Procleo to
+            verify the provided information.
+          </span>
+        </Alert>
+
+        {/* Submit */}
+        <div className='flex justify-end items-center pt-6 border-t border-gray-100'>
+          <PrimaryButton
+            type='submit'
+            isLoading={isSubmitting}
+            loadingText='Submitting...'
+            variant='gradient'
+            className='px-12'
           >
-            Previous
-          </Button>
-
-          {currentStep < 3 ? (
-            <PrimaryButton type='button' onClick={nextStep}>
-              Continue
-            </PrimaryButton>
-          ) : (
-            <PrimaryButton
-              type='submit'
-              isLoading={isSubmitting}
-              loadingText='Submitting...'
-              variant='gradient'
-            >
-              Submit Registration
-            </PrimaryButton>
-          )}
+            Submit Registration
+          </PrimaryButton>
         </div>
       </form>
     </div>

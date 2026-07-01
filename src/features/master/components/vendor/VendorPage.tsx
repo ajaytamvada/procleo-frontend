@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { toast } from 'react-hot-toast';
+import { useQueryClient } from '@tanstack/react-query';
 import VendorList from './VendorList';
 import VendorForm from './VendorForm';
+import ExcelImportDialog from '@/components/ExcelImportDialog';
 import {
   useVendorsPaged,
   useCreateVendor,
@@ -16,6 +18,8 @@ const VendorPage: React.FC = () => {
   const [selectedVendor, setSelectedVendor] = useState<Vendor | undefined>();
   const [page, setPage] = useState(0);
   const [filters, setFilters] = useState<VendorFilters>({});
+  const [showImport, setShowImport] = useState(false);
+  const queryClient = useQueryClient();
 
   const { data, isLoading, error } = useVendorsPaged(page, 15, filters);
   const vendors = data?.content || [];
@@ -98,18 +102,31 @@ const VendorPage: React.FC = () => {
   }
 
   return (
-    <VendorList
-      vendors={vendors}
-      onEdit={handleEdit}
-      onCreate={handleCreate}
-      onDelete={handleDelete}
-      isLoading={isLoading}
-      page={page}
-      totalPages={totalPages}
-      totalElements={totalElements}
-      onPageChange={setPage}
-      onFiltersChange={setFilters}
-    />
+    <>
+      <VendorList
+        vendors={vendors}
+        onEdit={handleEdit}
+        onCreate={handleCreate}
+        onDelete={handleDelete}
+        onImport={() => setShowImport(true)}
+        isLoading={isLoading}
+        page={page}
+        totalPages={totalPages}
+        totalElements={totalElements}
+        onPageChange={setPage}
+        onFiltersChange={setFilters}
+      />
+      <ExcelImportDialog
+        isOpen={showImport}
+        onClose={() => setShowImport(false)}
+        entityName='Supplier'
+        importEndpoint='/master/suppliers/import'
+        templateEndpoint='/master/suppliers/template'
+        onImportSuccess={() => {
+          queryClient.invalidateQueries({ queryKey: ['vendors'] });
+        }}
+      />
+    </>
   );
 };
 

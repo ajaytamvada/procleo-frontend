@@ -41,6 +41,7 @@ export interface Vendor {
   // Category IDs (comma-separated)
   categoryIds?: string;
   subCategoryIds?: string;
+  supplierCategoryIds?: string;
 
   // Certificate file paths
   gstFilePath?: string;

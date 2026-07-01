@@ -29,8 +29,8 @@ export function VendorRegistrationPage() {
         </header>
 
         {/* Main Content */}
-        <main className='flex-1 flex flex-col items-center justify-center px-6 sm:px-10 lg:px-12 py-8'>
-          <div className='w-full max-w-[600px]'>
+        <main className='flex-1 flex flex-col items-center justify-start px-6 sm:px-10 lg:px-12 py-8'>
+          <div className='w-full max-w-3xl'>
             <h1 className='text-3xl font-semibold text-gray-800 text-center mb-2'>
               Vendor Registration
             </h1>

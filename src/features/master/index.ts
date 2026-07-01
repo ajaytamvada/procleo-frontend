@@ -65,3 +65,4 @@ export { default as SubCategoryPage } from './components/subcategory/SubCategory
 export { default as ItemPage } from './components/item/ItemPage';
 export { default as EmployeePage } from './components/employee/EmployeePage';
 export { default as AssignmentGroupPage } from './components/group/AssignmentGroupPage';
+export { default as SupplierCategoryPage } from './components/supplier-category/SupplierCategoryPage';

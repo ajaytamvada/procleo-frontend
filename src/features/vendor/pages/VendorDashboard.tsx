@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useVendorDashboard } from '../hooks/useVendorPortal';
+import OnboardingBanner from '../components/OnboardingBanner';
 
 interface StatCardProps {
   title: string;
@@ -83,6 +84,7 @@ const VendorDashboard: React.FC = () => {
 
   return (
     <div className='space-y-6'>
+      <OnboardingBanner />
       {/* Header */}
       <div className='flex items-center justify-between'>
         <div>

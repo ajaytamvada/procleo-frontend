@@ -15,6 +15,11 @@ import type { Vendor } from '../../hooks/useVendorAPI';
 import { FileUpload } from '@/components/ui/FileUpload';
 import { useCategories } from '../../../master/hooks/useCategoryAPI';
 import { useSubCategories } from '../../../master/hooks/useSubCategoryAPI';
+import {
+  useSupplierCategories,
+  useCreateSupplierCategory,
+} from '../../../master/hooks/useSupplierCategoryAPI';
+import SupplierCategorySelect from './SupplierCategorySelect';
 import { useCountries } from '../../../master/hooks/useCountryAPI';
 import {
   useStatesByCountry,
@@ -52,6 +57,7 @@ const vendorSchema = z.object({
   password: z.string().max(500).optional().or(z.literal('')),
   categoryIds: z.string().optional().or(z.literal('')),
   subCategoryIds: z.string().optional().or(z.literal('')),
+  supplierCategoryIds: z.string().optional().or(z.literal('')),
   gstFilePath: z.string().optional().or(z.literal('')),
   panFilePath: z.string().optional().or(z.literal('')),
   tdsFilePath: z.string().optional().or(z.literal('')),
@@ -91,11 +97,16 @@ const VendorForm: React.FC<VendorFormProps> = ({
   const [selectedSubCategories, setSelectedSubCategories] = useState<number[]>(
     []
   );
+  const [selectedSupplierCategories, setSelectedSupplierCategories] = useState<
+    number[]
+  >([]);
   const [selectedCountry, setSelectedCountry] = useState<number | null>(null);
   const [selectedState, setSelectedState] = useState<number | null>(null);
 
   const { data: categories = [] } = useCategories();
   const { data: allSubCategories = [] } = useSubCategories();
+  const { data: supplierCategories = [] } = useSupplierCategories();
+  const createSupplierCategory = useCreateSupplierCategory();
   const { data: countries = [] } = useCountries();
   const { data: states = [] } = useStatesByCountry(selectedCountry || 0);
   const { data: cities = [] } = useCitiesByState(selectedState || 0);
@@ -139,6 +150,7 @@ const VendorForm: React.FC<VendorFormProps> = ({
       password: '',
       categoryIds: '',
       subCategoryIds: '',
+      supplierCategoryIds: '',
       gstFilePath: '',
       panFilePath: '',
       tdsFilePath: '',
@@ -166,6 +178,13 @@ const VendorForm: React.FC<VendorFormProps> = ({
             .map(Number)
             .filter(Boolean);
           setSelectedSubCategories(subCatIds);
+        }
+        if (vendor.supplierCategoryIds) {
+          const supplierCatIds = vendor.supplierCategoryIds
+            .split(',')
+            .map(Number)
+            .filter(Boolean);
+          setSelectedSupplierCategories(supplierCatIds);
         }
         if (vendor.stateIds) {
           const stateId = Number(vendor.stateIds.split(',')[0]);
@@ -207,6 +226,14 @@ const VendorForm: React.FC<VendorFormProps> = ({
     setSelectedSubCategories(newSelected);
     setValue('subCategoryIds', newSelected.join(','));
   };
+
+  const handleSupplierCategoriesChange = (ids: number[]) => {
+    setSelectedSupplierCategories(ids);
+    setValue('supplierCategoryIds', ids.join(','));
+  };
+
+  const handleCreateSupplierCategory = (name: string) =>
+    createSupplierCategory.mutateAsync({ name });
 
   const handleCountryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const countryId = Number(e.target.value);
@@ -682,10 +709,29 @@ const VendorForm: React.FC<VendorFormProps> = ({
             {/* Tab 2: Category */}
             {activeTab === 2 && (
               <div className='space-y-4'>
+                {/* Supplier categories — what this supplier provides. */}
+                <div className='rounded-lg border border-gray-200 p-4'>
+                  <h3 className='text-base font-semibold text-gray-800'>
+                    Supplier Categories
+                  </h3>
+                  <p className='mb-4 mt-1 text-sm text-gray-500'>
+                    Classify what this supplier provides. Search to reuse an
+                    existing category, or type a new name to add one.
+                  </p>
+                  <SupplierCategorySelect
+                    categories={supplierCategories}
+                    value={selectedSupplierCategories}
+                    onChange={handleSupplierCategoriesChange}
+                    onCreate={handleCreateSupplierCategory}
+                    isCreating={createSupplierCategory.isPending}
+                    disabled={isSubmitting}
+                  />
+                </div>
+
                 <div className='flex items-center justify-between mb-4'>
                   <div>
                     <h3 className='text-base font-semibold text-gray-800'>
-                      Select Categories and Sub-Categories
+                      Select Product Categories and Sub-Categories
                     </h3>
                     <p className='text-sm text-gray-500 mt-1'>
                       {selectedCategories.length}{' '}

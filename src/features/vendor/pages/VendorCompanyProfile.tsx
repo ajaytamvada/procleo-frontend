@@ -1,8 +1,32 @@
 import React, { useState } from 'react';
-import { Building, Mail, Phone, MapPin, Globe, CreditCard } from 'lucide-react';
+import {
+  Building,
+  Mail,
+  Phone,
+  MapPin,
+  Globe,
+  CreditCard,
+  Briefcase,
+  FileText,
+  Download,
+  Upload,
+  Loader2,
+} from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api';
 import toast from 'react-hot-toast';
+import OnboardingBanner from '../components/OnboardingBanner';
+import CompleteRequestedInfo from '../components/CompleteRequestedInfo';
+
+/** Documents stored on the vendor; key matches the M_Vendor *FilePath columns. */
+const DOCUMENTS: { key: string; label: string }[] = [
+  { key: 'gstFilePath', label: 'GST Certificate' },
+  { key: 'panFilePath', label: 'PAN Card' },
+  { key: 'tdsFilePath', label: 'TDS Declaration' },
+  { key: 'msmeFilePath', label: 'MSME Declaration' },
+  { key: 'isoFilePath', label: 'ISO Certificate' },
+  { key: 'incorporationFilePath', label: 'Incorporation Certificate' },
+];
 
 const useVendorProfile = () => {
   return useQuery({
@@ -37,12 +61,14 @@ const VendorCompanyProfile: React.FC = () => {
   const updateMutation = useUpdateProfile();
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState<any>({});
+  const [uploadingDoc, setUploadingDoc] = useState<string | null>(null);
 
   React.useEffect(() => {
-    if (profile) {
+    // Don't overwrite in-progress edits if the profile query refetches.
+    if (profile && !isEditing) {
       setFormData(profile);
     }
-  }, [profile]);
+  }, [profile, isEditing]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -61,9 +87,62 @@ const VendorCompanyProfile: React.FC = () => {
       contactPhone: formData.contactPhone,
       gst: formData.gst,
       pan: formData.pan,
+      cin: formData.cin,
+      dunsNo: formData.dunsNo,
+      industry: formData.industry,
+      businessDescription: formData.businessDescription,
+      // Document filenames
+      gstFilePath: formData.gstFilePath,
+      panFilePath: formData.panFilePath,
+      tdsFilePath: formData.tdsFilePath,
+      msmeFilePath: formData.msmeFilePath,
+      isoFilePath: formData.isoFilePath,
+      incorporationFilePath: formData.incorporationFilePath,
     };
     updateMutation.mutate(dto);
     setIsEditing(false);
+  };
+
+  // Authenticated download (a plain link wouldn't carry the JWT header).
+  const handleDownloadDoc = async (filename: string) => {
+    try {
+      const res = await apiClient.get(`/files/download/${filename}`, {
+        responseType: 'blob',
+      });
+      const url = window.URL.createObjectURL(res.data);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch {
+      toast.error('Could not download the file');
+    }
+  };
+
+  const handleUploadDoc = async (key: string, file: File | undefined) => {
+    if (!file) return;
+    setUploadingDoc(key);
+    try {
+      const form = new FormData();
+      form.append('file', file);
+      const res = await apiClient.post('/files/upload', form, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      const filename = res.data?.upload_inv;
+      if (res.data?.data === 1 && filename && filename !== '-') {
+        setFormData((prev: any) => ({ ...prev, [key]: filename }));
+        toast.success('File uploaded — remember to Save Changes');
+      } else {
+        toast.error(res.data?.message || 'Upload failed');
+      }
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message || 'Upload failed');
+    } finally {
+      setUploadingDoc(null);
+    }
   };
 
   if (isLoading) {
@@ -78,6 +157,8 @@ const VendorCompanyProfile: React.FC = () => {
 
   return (
     <div className='max-w-7xl mx-auto space-y-6'>
+      <OnboardingBanner />
+      <CompleteRequestedInfo />
       <div className='flex items-center justify-between'>
         <div>
           <h1 className='text-2xl font-bold text-gray-900'>Company Profile</h1>
@@ -152,6 +233,50 @@ const VendorCompanyProfile: React.FC = () => {
                   <div className='flex items-center gap-2 text-gray-900'>
                     <Globe className='w-4 h-4 text-gray-400' />
                     {profile.webLink || '-'}
+                  </div>
+                )}
+              </div>
+
+              <div>
+                <label className='block text-sm font-medium text-gray-700 mb-2'>
+                  Industry
+                </label>
+                {isEditing ? (
+                  <input
+                    type='text'
+                    value={formData.industry || ''}
+                    onChange={e =>
+                      setFormData({ ...formData, industry: e.target.value })
+                    }
+                    className='w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500'
+                  />
+                ) : (
+                  <div className='flex items-center gap-2 text-gray-900'>
+                    <Briefcase className='w-4 h-4 text-gray-400' />
+                    {profile.industry || '-'}
+                  </div>
+                )}
+              </div>
+
+              <div className='md:col-span-2'>
+                <label className='block text-sm font-medium text-gray-700 mb-2'>
+                  Business Description
+                </label>
+                {isEditing ? (
+                  <textarea
+                    rows={3}
+                    value={formData.businessDescription || ''}
+                    onChange={e =>
+                      setFormData({
+                        ...formData,
+                        businessDescription: e.target.value,
+                      })
+                    }
+                    className='w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500 resize-none'
+                  />
+                ) : (
+                  <div className='text-gray-900'>
+                    {profile.businessDescription || '-'}
                   </div>
                 )}
               </div>
@@ -382,6 +507,44 @@ const VendorCompanyProfile: React.FC = () => {
                   </div>
                 )}
               </div>
+              <div>
+                <label className='block text-sm font-medium text-gray-700 mb-1'>
+                  CIN
+                </label>
+                {isEditing ? (
+                  <input
+                    type='text'
+                    value={formData.cin || ''}
+                    onChange={e =>
+                      setFormData({ ...formData, cin: e.target.value })
+                    }
+                    className='w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500'
+                  />
+                ) : (
+                  <div className='text-sm text-gray-900 font-medium font-mono'>
+                    {profile.cin || '-'}
+                  </div>
+                )}
+              </div>
+              <div>
+                <label className='block text-sm font-medium text-gray-700 mb-1'>
+                  DUNS Number
+                </label>
+                {isEditing ? (
+                  <input
+                    type='text'
+                    value={formData.dunsNo || ''}
+                    onChange={e =>
+                      setFormData({ ...formData, dunsNo: e.target.value })
+                    }
+                    className='w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500'
+                  />
+                ) : (
+                  <div className='text-sm text-gray-900 font-medium font-mono'>
+                    {profile.dunsNo || '-'}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
@@ -443,6 +606,63 @@ const VendorCompanyProfile: React.FC = () => {
                 )}
               </div>
             </div>
+          </div>
+        </div>
+
+        {/* Documents */}
+        <div className='lg:col-span-3 bg-white rounded-lg border border-gray-200 overflow-hidden'>
+          <div className='px-6 py-4 border-b border-gray-100 bg-[#fafbfc] flex items-center gap-2'>
+            <FileText className='w-5 h-5 text-gray-400' />
+            <h2 className='text-base font-semibold text-gray-900'>Documents</h2>
+          </div>
+          <div className='p-6 grid grid-cols-1 md:grid-cols-2 gap-4'>
+            {DOCUMENTS.map(doc => {
+              const filename = formData[doc.key];
+              return (
+                <div
+                  key={doc.key}
+                  className='flex items-center justify-between gap-3 border border-gray-100 rounded-lg px-4 py-3'
+                >
+                  <div className='min-w-0'>
+                    <p className='text-sm font-medium text-gray-700'>
+                      {doc.label}
+                    </p>
+                    <p className='text-xs text-gray-500 truncate'>
+                      {filename || 'Not provided'}
+                    </p>
+                  </div>
+                  <div className='flex items-center gap-2 shrink-0'>
+                    {filename && (
+                      <button
+                        type='button'
+                        onClick={() => handleDownloadDoc(filename)}
+                        className='inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-violet-700 bg-violet-50 border border-violet-200 rounded-lg hover:bg-violet-100'
+                      >
+                        <Download className='w-3.5 h-3.5' /> Download
+                      </button>
+                    )}
+                    {isEditing && (
+                      <label className='inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-gray-700 bg-white border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50'>
+                        {uploadingDoc === doc.key ? (
+                          <Loader2 className='w-3.5 h-3.5 animate-spin' />
+                        ) : (
+                          <Upload className='w-3.5 h-3.5' />
+                        )}
+                        {filename ? 'Replace' : 'Upload'}
+                        <input
+                          type='file'
+                          className='hidden'
+                          disabled={uploadingDoc === doc.key}
+                          onChange={e =>
+                            handleUploadDoc(doc.key, e.target.files?.[0])
+                          }
+                        />
+                      </label>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
 

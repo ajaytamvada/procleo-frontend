@@ -32,6 +32,7 @@ export interface Vendor {
   contactEmail?: string;
   categoryIds?: string;
   subCategoryIds?: string;
+  supplierCategoryIds?: string;
   approvalLevel1?: number;
   approvalRemarks?: string;
 }

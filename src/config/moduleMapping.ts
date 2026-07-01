@@ -60,6 +60,7 @@ export const routeToModuleMap: Record<string, string> = {
   '/master/company': 'MASTER_COMPANY',
   '/master/currency': 'MASTER_CURRENCY',
   '/master/suppliers': 'MASTER_SUPPLIER',
+  '/master/vendor-onboarding': 'MASTER_VENDOR_ONBOARDING',
   '/master/uom': 'MASTER_UOM',
   '/master/countries': 'MASTER_COUNTRY',
   '/master/states': 'MASTER_STATE',

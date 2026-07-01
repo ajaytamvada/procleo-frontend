@@ -162,6 +162,12 @@ const masterConfigSections: MenuSection[] = [
         icon: <Users size={16} />,
       },
       {
+        id: 'supplier-grouping',
+        title: 'Supplier Grouping',
+        path: '/master/supplier-categories',
+        icon: <Tag size={16} />,
+      },
+      {
         id: 'tag-setup',
         title: 'Tag Setup',
         path: '/master/tags',

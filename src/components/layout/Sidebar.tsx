@@ -104,6 +104,7 @@ const navigation: NavigationItem[] = [
       { name: 'Company', href: '/master/company' },
       { name: 'Currency', href: '/master/currency' },
       { name: 'Suppliers', href: '/master/suppliers' },
+      { name: 'Vendor Onboarding', href: '/master/vendor-onboarding' },
       { name: 'Stock Rooms', href: '/master/stockrooms' },
       { name: '─ Geographical Area ─', href: '#', isHeader: true },
       { name: 'Countries', href: '/master/countries' },

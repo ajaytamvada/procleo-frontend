@@ -10,6 +10,9 @@ import {
   Trash2,
   Download,
   Upload,
+  Printer,
+  QrCode,
+  Barcode,
   X,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/Badge';
@@ -38,6 +41,10 @@ import {
   ASSET_STATUS_COLORS,
   ASSET_STATUS_LABELS,
 } from '../types';
+import { useWorkingEmployees } from '@/features/master/hooks/useEmployeeAPI';
+import { useDepartmentsList } from '@/features/master/hooks/useDepartmentAPI';
+import { useCities } from '@/features/master/hooks/useCityAPI';
+import { printAssetTags } from '../utils/printAssetTag';
 
 const formatCurrency = (amount?: number) => {
   if (amount == null) return '-';
@@ -61,6 +68,12 @@ const AssetDetailPage: React.FC = () => {
   const { data: maintenanceHistory = [] } = useMaintenanceByAsset(assetId);
   const { data: transferHistory = [] } = useTransfersByAsset(assetId);
 
+  const { data: employees = [], isLoading: employeesLoading } =
+    useWorkingEmployees();
+  const { data: departments = [], isLoading: departmentsLoading } =
+    useDepartmentsList();
+  const { data: locations = [], isLoading: locationsLoading } = useCities();
+
   const installMutation = useInstallAsset();
   const uninstallMutation = useUninstallAsset();
   const disposeMutation = useDisposeAsset();
@@ -72,6 +85,8 @@ const AssetDetailPage: React.FC = () => {
   const [showTransferDialog, setShowTransferDialog] = useState(false);
   const [showMaintenanceDialog, setShowMaintenanceDialog] = useState(false);
   const [showDisposeDialog, setShowDisposeDialog] = useState(false);
+  const [showTagDialog, setShowTagDialog] = useState(false);
+  const [isPrintingTag, setIsPrintingTag] = useState(false);
 
   // Install form
   const [installForm, setInstallForm] = useState<InstallAssetRequest>({
@@ -131,6 +146,21 @@ const AssetDetailPage: React.FC = () => {
       )
     ) {
       uninstallMutation.mutate(assetId);
+    }
+  };
+
+  const handlePrintTag = async (type: 'qrcode' | 'barcode') => {
+    if (!asset) return;
+    setIsPrintingTag(true);
+    try {
+      await printAssetTags([asset], type);
+      setShowTagDialog(false);
+    } catch (err) {
+      alert(
+        err instanceof Error ? err.message : 'Failed to print the asset tag.'
+      );
+    } finally {
+      setIsPrintingTag(false);
     }
   };
 
@@ -242,6 +272,13 @@ const AssetDetailPage: React.FC = () => {
             <p className='text-sm text-gray-500 mt-1'>{asset.itemName}</p>
           </div>
         </div>
+        <button
+          onClick={() => setShowTagDialog(true)}
+          className='inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-violet-600 rounded-lg hover:bg-violet-700 transition-colors'
+        >
+          <Printer className='h-4 w-4' />
+          Print Tag
+        </button>
       </div>
 
       {/* Two-column layout */}
@@ -509,6 +546,48 @@ const AssetDetailPage: React.FC = () => {
         </div>
       </div>
 
+      {/* Print Tag Dialog */}
+      {showTagDialog && (
+        <DialogOverlay onClose={() => setShowTagDialog(false)}>
+          <h3 className='text-lg font-semibold text-gray-900 mb-1'>
+            Print Asset Tag
+          </h3>
+          <p className='text-sm text-gray-500 mb-4'>
+            Choose a tag format for{' '}
+            <span className='font-medium'>{asset.assetTag}</span>. The tag opens
+            in a new window ready to print.
+          </p>
+          <div className='grid grid-cols-2 gap-3'>
+            <button
+              onClick={() => handlePrintTag('qrcode')}
+              disabled={isPrintingTag}
+              className='flex flex-col items-center gap-2 p-4 border border-gray-200 rounded-lg hover:border-violet-500 hover:bg-violet-50 disabled:opacity-50 transition-colors'
+            >
+              <QrCode className='h-8 w-8 text-violet-600' />
+              <span className='text-sm font-medium text-gray-900'>QR Code</span>
+            </button>
+            <button
+              onClick={() => handlePrintTag('barcode')}
+              disabled={isPrintingTag}
+              className='flex flex-col items-center gap-2 p-4 border border-gray-200 rounded-lg hover:border-violet-500 hover:bg-violet-50 disabled:opacity-50 transition-colors'
+            >
+              <Barcode className='h-8 w-8 text-violet-600' />
+              <span className='text-sm font-medium text-gray-900'>Barcode</span>
+            </button>
+          </div>
+          {isPrintingTag && (
+            <p className='text-sm text-gray-500 mt-3 text-center'>
+              Generating tag...
+            </p>
+          )}
+          <div className='flex justify-end pt-4'>
+            <Button variant='outline' onClick={() => setShowTagDialog(false)}>
+              Cancel
+            </Button>
+          </div>
+        </DialogOverlay>
+      )}
+
       {/* Install Dialog */}
       {showInstallDialog && (
         <DialogOverlay onClose={() => setShowInstallDialog(false)}>
@@ -518,10 +597,9 @@ const AssetDetailPage: React.FC = () => {
           <div className='space-y-4'>
             <div>
               <label className='block text-sm font-medium text-gray-700 mb-1'>
-                Employee ID
+                Assign To Employee
               </label>
-              <Input
-                type='number'
+              <select
                 value={installForm.employeeId || ''}
                 onChange={e =>
                   setInstallForm(prev => ({
@@ -529,8 +607,22 @@ const AssetDetailPage: React.FC = () => {
                     employeeId: parseInt(e.target.value) || 0,
                   }))
                 }
-                placeholder='Enter employee ID'
-              />
+                disabled={employeesLoading}
+                className='w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-violet-500 disabled:bg-gray-100'
+              >
+                <option value=''>
+                  {employeesLoading
+                    ? 'Loading employees...'
+                    : 'Select an employee'}
+                </option>
+                {employees.map(emp => (
+                  <option key={emp.id} value={emp.id}>
+                    {emp.name}
+                    {emp.code ? ` (${emp.code})` : ''}
+                    {emp.departmentName ? ` — ${emp.departmentName}` : ''}
+                  </option>
+                ))}
+              </select>
             </div>
             <div>
               <label className='block text-sm font-medium text-gray-700 mb-1'>
@@ -609,10 +701,9 @@ const AssetDetailPage: React.FC = () => {
             {transferForm.transferType === 'DEPARTMENT' && (
               <div>
                 <label className='block text-sm font-medium text-gray-700 mb-1'>
-                  To Department ID
+                  To Department
                 </label>
-                <Input
-                  type='number'
+                <select
                   value={transferForm.toDepartmentId || ''}
                   onChange={e =>
                     setTransferForm(prev => ({
@@ -620,17 +711,29 @@ const AssetDetailPage: React.FC = () => {
                       toDepartmentId: parseInt(e.target.value) || undefined,
                     }))
                   }
-                  placeholder='Enter department ID'
-                />
+                  disabled={departmentsLoading}
+                  className='w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-violet-500 disabled:bg-gray-100'
+                >
+                  <option value=''>
+                    {departmentsLoading
+                      ? 'Loading departments...'
+                      : 'Select a department'}
+                  </option>
+                  {departments.map(dept => (
+                    <option key={dept.id} value={dept.id}>
+                      {dept.name}
+                      {dept.code ? ` (${dept.code})` : ''}
+                    </option>
+                  ))}
+                </select>
               </div>
             )}
             {transferForm.transferType === 'LOCATION' && (
               <div>
                 <label className='block text-sm font-medium text-gray-700 mb-1'>
-                  To Location ID
+                  To Location
                 </label>
-                <Input
-                  type='number'
+                <select
                   value={transferForm.toLocationId || ''}
                   onChange={e =>
                     setTransferForm(prev => ({
@@ -638,17 +741,29 @@ const AssetDetailPage: React.FC = () => {
                       toLocationId: parseInt(e.target.value) || undefined,
                     }))
                   }
-                  placeholder='Enter location ID'
-                />
+                  disabled={locationsLoading}
+                  className='w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-violet-500 disabled:bg-gray-100'
+                >
+                  <option value=''>
+                    {locationsLoading
+                      ? 'Loading locations...'
+                      : 'Select a location'}
+                  </option>
+                  {locations.map(loc => (
+                    <option key={loc.id} value={loc.id}>
+                      {loc.name}
+                      {loc.stateName ? ` — ${loc.stateName}` : ''}
+                    </option>
+                  ))}
+                </select>
               </div>
             )}
             {transferForm.transferType === 'EMPLOYEE' && (
               <div>
                 <label className='block text-sm font-medium text-gray-700 mb-1'>
-                  To Employee ID
+                  To Employee
                 </label>
-                <Input
-                  type='number'
+                <select
                   value={transferForm.toEmployeeId || ''}
                   onChange={e =>
                     setTransferForm(prev => ({
@@ -656,8 +771,22 @@ const AssetDetailPage: React.FC = () => {
                       toEmployeeId: parseInt(e.target.value) || undefined,
                     }))
                   }
-                  placeholder='Enter employee ID'
-                />
+                  disabled={employeesLoading}
+                  className='w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-violet-500 disabled:bg-gray-100'
+                >
+                  <option value=''>
+                    {employeesLoading
+                      ? 'Loading employees...'
+                      : 'Select an employee'}
+                  </option>
+                  {employees.map(emp => (
+                    <option key={emp.id} value={emp.id}>
+                      {emp.name}
+                      {emp.code ? ` (${emp.code})` : ''}
+                      {emp.departmentName ? ` — ${emp.departmentName}` : ''}
+                    </option>
+                  ))}
+                </select>
               </div>
             )}
             <div>
@@ -685,7 +814,15 @@ const AssetDetailPage: React.FC = () => {
               </Button>
               <button
                 onClick={handleTransfer}
-                disabled={transferMutation.isPending}
+                disabled={
+                  transferMutation.isPending ||
+                  (transferForm.transferType === 'DEPARTMENT' &&
+                    !transferForm.toDepartmentId) ||
+                  (transferForm.transferType === 'LOCATION' &&
+                    !transferForm.toLocationId) ||
+                  (transferForm.transferType === 'EMPLOYEE' &&
+                    !transferForm.toEmployeeId)
+                }
                 className='px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors'
               >
                 {transferMutation.isPending

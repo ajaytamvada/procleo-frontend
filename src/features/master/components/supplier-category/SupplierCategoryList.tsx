@@ -3,36 +3,34 @@ import {
   Trash2,
   Plus,
   Search,
-  Download,
-  Upload,
   X,
-  Users,
+  Tags,
   ChevronLeft,
   ChevronRight,
 } from 'lucide-react';
-import type { Vendor, VendorFilters } from '../../hooks/useVendorAPI';
-import vendorAPI from '../../hooks/useVendorAPI';
+import type {
+  SupplierCategory,
+  SupplierCategoryFilters,
+} from '../../hooks/useSupplierCategoryAPI';
 
-interface VendorListProps {
-  vendors: Vendor[];
-  onEdit: (vendor: Vendor) => void;
+interface SupplierCategoryListProps {
+  categories: SupplierCategory[];
+  onEdit: (category: SupplierCategory) => void;
   onCreate: () => void;
   onDelete: (id: number) => void;
-  onImport: () => void;
   isLoading: boolean;
   page: number;
   totalPages: number;
   totalElements: number;
   onPageChange: (page: number) => void;
-  onFiltersChange: (filters: VendorFilters) => void;
+  onFiltersChange: (filters: SupplierCategoryFilters) => void;
 }
 
-const VendorList: React.FC<VendorListProps> = ({
-  vendors,
+const SupplierCategoryList: React.FC<SupplierCategoryListProps> = ({
+  categories,
   onEdit,
   onCreate,
   onDelete,
-  onImport,
   isLoading,
   page,
   totalPages,
@@ -40,8 +38,7 @@ const VendorList: React.FC<VendorListProps> = ({
   onPageChange,
   onFiltersChange,
 }) => {
-  const [filters, setFilters] = useState<VendorFilters>({});
-  const [isExporting, setIsExporting] = useState(false);
+  const [filters, setFilters] = useState<SupplierCategoryFilters>({});
   const pageSize = 15;
 
   const handleSearch = () => {
@@ -55,33 +52,16 @@ const VendorList: React.FC<VendorListProps> = ({
     onPageChange(0);
   };
 
-  const handleExport = async () => {
-    try {
-      setIsExporting(true);
-      const blob = await vendorAPI.exportToExcel(filters);
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `suppliers_${new Date().toISOString().split('T')[0]}.xlsx`;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
-    } catch (error) {
-      console.error('Export failed:', error);
-      alert('Failed to export suppliers. Please try again.');
-    } finally {
-      setIsExporting(false);
-    }
-  };
-
   const handleDelete = (id: number, name: string) => {
-    if (window.confirm(`Are you sure you want to delete supplier "${name}"?`)) {
+    if (
+      window.confirm(
+        `Are you sure you want to delete supplier group "${name}"?`
+      )
+    ) {
       onDelete(id);
     }
   };
 
-  // Generate page numbers with ellipsis
   const getPageNumbers = () => {
     const pages: (number | string)[] = [];
     if (totalPages <= 7) {
@@ -105,35 +85,26 @@ const VendorList: React.FC<VendorListProps> = ({
 
   return (
     <div className='min-h-screen bg-[#f8f9fc] p-2'>
-      {/* Page Header */}
       <div className='flex items-center justify-between mb-6'>
         <div>
-          <h1 className='text-xl font-semibold text-gray-900'>Vendor</h1>
+          <h1 className='text-xl font-semibold text-gray-900'>
+            Supplier Grouping
+          </h1>
           <p className='text-sm text-gray-500 mt-0.5'>
-            Manage vendor master records
+            Manage supplier group master records
           </p>
         </div>
-        <div className='flex items-center gap-2'>
-          <button
-            onClick={onImport}
-            className='inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-violet-700 bg-violet-50 border border-violet-200 rounded-md hover:bg-violet-100 transition-colors'
-          >
-            <Upload size={15} />
-            Import
-          </button>
-          <button
-            onClick={onCreate}
-            className='inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-violet-600 rounded-md hover:bg-violet-700 transition-colors'
-          >
-            <Plus size={15} />
-            New Vendor
-          </button>
-        </div>
+        <button
+          onClick={onCreate}
+          className='inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-violet-600 rounded-md hover:bg-violet-700 transition-colors'
+        >
+          <Plus size={15} />
+          New Supplier Group
+        </button>
       </div>
 
-      {/* Filters Card */}
       <div className='bg-white rounded-lg border border-gray-200 p-5 mb-6'>
-        <div className='grid grid-cols-1 md:grid-cols-3 gap-4 mb-4'>
+        <div className='grid grid-cols-1 md:grid-cols-4 gap-4'>
           <div className='relative'>
             <Search className='absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400' />
             <input
@@ -156,43 +127,6 @@ const VendorList: React.FC<VendorListProps> = ({
               className='w-full pl-10 pr-4 py-2.5 text-sm border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500'
             />
           </div>
-          <div className='relative'>
-            <Search className='absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400' />
-            <input
-              type='text'
-              placeholder='Search by GST...'
-              value={filters.gst || ''}
-              onChange={e => setFilters({ ...filters, gst: e.target.value })}
-              onKeyPress={e => e.key === 'Enter' && handleSearch()}
-              className='w-full pl-10 pr-4 py-2.5 text-sm border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500'
-            />
-          </div>
-        </div>
-        <div className='grid grid-cols-1 md:grid-cols-4 gap-4'>
-          <div className='relative'>
-            <Search className='absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400' />
-            <input
-              type='text'
-              placeholder='Search by email...'
-              value={filters.email || ''}
-              onChange={e => setFilters({ ...filters, email: e.target.value })}
-              onKeyPress={e => e.key === 'Enter' && handleSearch()}
-              className='w-full pl-10 pr-4 py-2.5 text-sm border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500'
-            />
-          </div>
-          <div className='relative'>
-            <Search className='absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400' />
-            <input
-              type='text'
-              placeholder='Search by industry...'
-              value={filters.industry || ''}
-              onChange={e =>
-                setFilters({ ...filters, industry: e.target.value })
-              }
-              onKeyPress={e => e.key === 'Enter' && handleSearch()}
-              className='w-full pl-10 pr-4 py-2.5 text-sm border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500'
-            />
-          </div>
           <div className='flex gap-2'>
             <button
               onClick={handleSearch}
@@ -208,33 +142,28 @@ const VendorList: React.FC<VendorListProps> = ({
               <X size={18} />
             </button>
           </div>
-          <button
-            onClick={handleExport}
-            disabled={isExporting}
-            className='inline-flex items-center justify-center gap-1.5 px-4 py-2.5 text-sm font-semibold text-white bg-green-600 rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed'
-          >
-            <Download size={15} />
-            {isExporting ? 'Exporting...' : 'Export to Excel'}
-          </button>
         </div>
       </div>
 
-      {/* Table */}
       <div className='bg-white rounded-lg border border-gray-200 overflow-hidden'>
         <div className='overflow-x-auto'>
           {isLoading ? (
             <div className='flex flex-col items-center justify-center py-16'>
               <div className='animate-spin rounded-full h-8 w-8 border-2 border-violet-600 border-t-transparent'></div>
-              <p className='text-sm text-gray-500 mt-3'>Loading vendors...</p>
+              <p className='text-sm text-gray-500 mt-3'>
+                Loading supplier groups...
+              </p>
             </div>
-          ) : vendors.length === 0 ? (
+          ) : categories.length === 0 ? (
             <div className='flex flex-col items-center justify-center py-16'>
               <div className='w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-3'>
-                <Users className='w-6 h-6 text-gray-400' />
+                <Tags className='w-6 h-6 text-gray-400' />
               </div>
-              <p className='text-gray-600 font-medium'>No vendors found</p>
+              <p className='text-gray-600 font-medium'>
+                No supplier groups found
+              </p>
               <p className='text-gray-400 text-sm mt-1'>
-                Click "New Vendor" to create one
+                Click "New Supplier Group" to create one
               </p>
             </div>
           ) : (
@@ -245,25 +174,13 @@ const VendorList: React.FC<VendorListProps> = ({
                     S.No
                   </th>
                   <th className='px-4 py-3.5 text-left text-xs font-semibold text-gray-600 tracking-wide whitespace-nowrap'>
-                    Vendor Name
+                    Group Name
                   </th>
                   <th className='px-4 py-3.5 text-left text-xs font-semibold text-gray-600 tracking-wide whitespace-nowrap'>
-                    Code
+                    Group Code
                   </th>
                   <th className='px-4 py-3.5 text-left text-xs font-semibold text-gray-600 tracking-wide whitespace-nowrap'>
-                    Email
-                  </th>
-                  <th className='px-4 py-3.5 text-left text-xs font-semibold text-gray-600 tracking-wide whitespace-nowrap'>
-                    GST
-                  </th>
-                  <th className='px-4 py-3.5 text-left text-xs font-semibold text-gray-600 tracking-wide whitespace-nowrap'>
-                    Industry
-                  </th>
-                  <th className='px-4 py-3.5 text-left text-xs font-semibold text-gray-600 tracking-wide whitespace-nowrap'>
-                    Phone
-                  </th>
-                  <th className='px-4 py-3.5 text-left text-xs font-semibold text-gray-600 tracking-wide whitespace-nowrap'>
-                    Contact Person
+                    Description
                   </th>
                   <th className='px-4 py-3.5 text-center text-xs font-semibold text-gray-600 tracking-wide whitespace-nowrap w-24'>
                     Actions
@@ -271,10 +188,10 @@ const VendorList: React.FC<VendorListProps> = ({
                 </tr>
               </thead>
               <tbody className='divide-y divide-gray-100'>
-                {vendors.map((vendor, index) => (
+                {categories.map((category, index) => (
                   <tr
-                    key={vendor.id}
-                    onClick={() => onEdit(vendor)}
+                    key={category.id}
+                    onClick={() => onEdit(category)}
                     className='hover:bg-gray-50 cursor-pointer transition-colors'
                   >
                     <td className='px-4 py-3.5 text-center text-sm text-gray-600'>
@@ -282,34 +199,20 @@ const VendorList: React.FC<VendorListProps> = ({
                     </td>
                     <td className='px-4 py-3.5'>
                       <span className='text-sm font-medium text-violet-600'>
-                        {vendor.name}
+                        {category.name}
                       </span>
                     </td>
                     <td className='px-4 py-3.5 text-sm text-gray-700'>
-                      {vendor.code || '-'}
+                      {category.code || '-'}
                     </td>
                     <td className='px-4 py-3.5 text-sm text-gray-700'>
-                      {vendor.email || '-'}
-                    </td>
-                    <td className='px-4 py-3.5 text-sm text-gray-700'>
-                      {vendor.gst || '-'}
-                    </td>
-                    <td className='px-4 py-3.5 text-sm text-gray-700'>
-                      {vendor.industry || '-'}
-                    </td>
-                    <td className='px-4 py-3.5 text-sm text-gray-700'>
-                      {vendor.phone || '-'}
-                    </td>
-                    <td className='px-4 py-3.5 text-sm text-gray-700'>
-                      {vendor.contactFirstName
-                        ? `${vendor.contactFirstName} ${vendor.contactLastName || ''}`.trim()
-                        : '-'}
+                      {category.description || '-'}
                     </td>
                     <td className='px-4 py-3.5 text-center'>
                       <button
                         onClick={e => {
                           e.stopPropagation();
-                          handleDelete(vendor.id, vendor.name);
+                          handleDelete(category.id, category.name);
                         }}
                         className='p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors'
                         title='Delete'
@@ -324,8 +227,7 @@ const VendorList: React.FC<VendorListProps> = ({
           )}
         </div>
 
-        {/* Pagination */}
-        {totalPages > 0 && !isLoading && vendors.length > 0 && (
+        {totalPages > 0 && !isLoading && categories.length > 0 && (
           <div className='px-6 py-4 border-t border-gray-200 flex items-center justify-between'>
             <p className='text-sm text-gray-600'>
               Showing <span className='font-medium'>{startRecord}</span> to{' '}
@@ -373,4 +275,4 @@ const VendorList: React.FC<VendorListProps> = ({
   );
 };
 
-export default VendorList;
+export default SupplierCategoryList;

@@ -121,6 +121,7 @@ import {
   ItemPage,
   EmployeePage,
   AssignmentGroupPage,
+  SupplierCategoryPage,
 } from '@/features/master';
 import FinancialYearPage from '@/features/master/components/financialyear/FinancialYearPage';
 import BudgetPage from '@/features/master/components/budget/BudgetPage';
@@ -130,6 +131,11 @@ import TermsAndConditionsPage from '@/features/master/components/termsandconditi
 import UserTypePage from '@/features/access/components/usertype/UserTypePage';
 import UserPermissionPage from '@/features/access/components/userpermission/UserPermissionPage';
 import LoginProvisionPage from '@/features/access/components/loginprovision/LoginProvisionPage';
+// Vendor Onboarding (admin)
+import {
+  VendorOnboardingQueuePage,
+  VendorOnboardingDetailPage,
+} from '@/features/vendor-onboarding';
 // Vendor Portal Pages
 import VendorDashboard from '@/features/vendor/pages/VendorDashboard';
 import VendorRFPList from '@/features/vendor/pages/VendorRFPList';
@@ -616,6 +622,18 @@ const App: React.FC = () => {
                     <Route path='company' element={<CompanyPage />} />
                     <Route path='departments' element={<DepartmentPage />} />
                     <Route path='suppliers' element={<SupplierPage />} />
+                    <Route
+                      path='supplier-categories'
+                      element={<SupplierCategoryPage />}
+                    />
+                    <Route
+                      path='vendor-onboarding'
+                      element={<VendorOnboardingQueuePage />}
+                    />
+                    <Route
+                      path='vendor-onboarding/:id'
+                      element={<VendorOnboardingDetailPage />}
+                    />
                     <Route path='uom' element={<UOMPage />} />
                     <Route path='locations' element={<LocationPage />} />
 
