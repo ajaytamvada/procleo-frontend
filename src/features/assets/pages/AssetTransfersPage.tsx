@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { ArrowRightLeft, Check, X, PackageCheck, Search } from 'lucide-react';
 import { Badge } from '@/components/ui/Badge';
 import { Input } from '@/components/ui/Input';
+import { useAuth } from '@/hooks/useAuth';
 import {
   usePendingTransfers,
   useApproveTransfer,
@@ -39,6 +40,14 @@ const AssetTransfersPage: React.FC = () => {
   const approveMutation = useApproveTransfer();
   const rejectMutation = useRejectTransfer();
   const receiveMutation = useReceiveTransfer();
+
+  const { user } = useAuth();
+
+  // requestedBy is the JWT principal, which is upper-cased; compare loosely.
+  const isOwnRequest = (transfer: AssetTransfer) =>
+    !!transfer.requestedBy &&
+    !!user?.loginName &&
+    transfer.requestedBy.toLowerCase() === user.loginName.toLowerCase();
 
   const tabs: { key: TabFilter; label: string }[] = [
     { key: 'ALL', label: 'All' },
@@ -232,26 +241,32 @@ const AssetTransfersPage: React.FC = () => {
                       <div className='flex items-center justify-center gap-2'>
                         {transfer.status === 'PENDING' && (
                           <>
-                            <button
-                              onClick={() =>
-                                setConfirmAction({
-                                  type: 'approve',
-                                  id: transfer.id,
-                                })
-                              }
-                              className='inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-green-700 bg-green-50 border border-green-200 rounded-md hover:bg-green-100 transition-colors'
-                              title='Approve'
-                            >
-                              <Check className='h-3.5 w-3.5' />
-                              Approve
-                            </button>
+                            {/* Segregation of duties: the backend rejects a
+                                transfer approved by its own requester. */}
+                            {!isOwnRequest(transfer) && (
+                              <button
+                                onClick={() =>
+                                  setConfirmAction({
+                                    type: 'approve',
+                                    id: transfer.id,
+                                  })
+                                }
+                                className='inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-green-700 bg-green-50 border border-green-200 rounded-md hover:bg-green-100 transition-colors'
+                                title='Approve'
+                              >
+                                <Check className='h-3.5 w-3.5' />
+                                Approve
+                              </button>
+                            )}
                             <button
                               onClick={() => setRejectDialogId(transfer.id)}
                               className='inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-red-700 bg-red-50 border border-red-200 rounded-md hover:bg-red-100 transition-colors'
-                              title='Reject'
+                              title={
+                                isOwnRequest(transfer) ? 'Cancel' : 'Reject'
+                              }
                             >
                               <X className='h-3.5 w-3.5' />
-                              Reject
+                              {isOwnRequest(transfer) ? 'Cancel' : 'Reject'}
                             </button>
                           </>
                         )}

@@ -78,6 +78,8 @@ import {
   AssetDashboardPage,
   AssetTransfersPage,
   AssetMaintenancePage,
+  AssetDamagePage,
+  AssetTrailPage,
 } from '@/features/assets';
 import InvoiceListPage from '@/features/invoice/pages/InvoiceListPage';
 import InvoiceEntryPage from '@/features/invoice/pages/InvoiceEntryPage';
@@ -571,6 +573,8 @@ const App: React.FC = () => {
                     path='assets/maintenance'
                     element={<AssetMaintenancePage />}
                   />
+                  <Route path='assets/damage' element={<AssetDamagePage />} />
+                  <Route path='assets/trail' element={<AssetTrailPage />} />
 
                   {/* Invoice Routes */}
                   <Route

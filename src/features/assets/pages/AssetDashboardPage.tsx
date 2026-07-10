@@ -47,7 +47,7 @@ const AssetDashboardPage: React.FC = () => {
   const recentAssets = recentAssetsData?.content || [];
 
   const inStoreCount = stats?.IN_STORE || 0;
-  const inUseCount = (stats?.IN_USE || 0) + (stats?.INSTALLED || 0);
+  const inUseCount = stats?.IN_USE || 0;
   const maintenanceCount = stats?.IN_MAINTENANCE || 0;
   const totalCount = Object.values(stats || {}).reduce(
     (sum: number, val) => sum + (val as number),

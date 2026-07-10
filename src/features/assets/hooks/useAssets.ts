@@ -1,12 +1,22 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import {
+  useQuery,
+  useMutation,
+  useQueryClient,
+  keepPreviousData,
+} from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import * as api from '../api/assetsApi';
 import type {
-  InstallAssetRequest,
+  AssetTrailFilters,
+  AllocateAssetRequest,
   CreateTransferRequest,
   CreateMaintenanceRequest,
   DisposeAssetRequest,
+  RequestDisposalRequest,
   UpdateAssetRequest,
+  ReportDamageRequest,
+  ResolveDamageRequest,
+  CompleteRepairRequest,
 } from '../types';
 
 // ======================== ASSET QUERIES ========================
@@ -62,6 +72,119 @@ export const useSearchAssets = (query: string, enabled = true) => {
   });
 };
 
+export const useAssetHistory = (assetId: number) => {
+  return useQuery({
+    // Keyed under ['assets', ...] so the existing invalidateQueries(['assets'])
+    // in every lifecycle mutation refreshes the timeline automatically.
+    queryKey: ['assets', assetId, 'history'],
+    queryFn: () => api.getAssetHistory(assetId),
+    enabled: assetId > 0,
+  });
+};
+
+export const useAssetTrail = (
+  filters: AssetTrailFilters,
+  page = 0,
+  size = 25
+) => {
+  return useQuery({
+    // Deliberately NOT keyed under ['assets'] — the trail is a report, and we
+    // don't want every lifecycle mutation refetching a possibly-large page.
+    queryKey: ['asset-trail', filters, page, size],
+    queryFn: () => api.getAssetTrail(filters, page, size),
+    staleTime: 30000,
+    // Keeps the current page on screen while the next one loads, instead of
+    // flashing the empty state on every page/filter change.
+    placeholderData: keepPreviousData,
+  });
+};
+
+export const useTrailEventTypes = () => {
+  return useQuery({
+    queryKey: ['asset-trail', 'event-types'],
+    queryFn: () => api.getTrailEventTypes(),
+    staleTime: Infinity, // enum values; they only change on deploy
+  });
+};
+
+export const useExpiringAssets = (days = 30, enabled = true) => {
+  return useQuery({
+    queryKey: ['assets', 'expiring', days],
+    queryFn: () => api.getExpiringAssets(days),
+    enabled,
+    staleTime: 60000,
+  });
+};
+
+export const useAuditReconciliation = (staleDays = 180, enabled = true) => {
+  return useQuery({
+    queryKey: ['assets', 'audit-reconciliation', staleDays],
+    queryFn: () => api.getAuditReconciliation(staleDays),
+    enabled,
+    staleTime: 60000,
+  });
+};
+
+export const useMaintenanceDue = (days = 7, enabled = true) => {
+  return useQuery({
+    queryKey: ['assets', 'maintenance-due', days],
+    queryFn: () => api.getMaintenanceDue(days),
+    enabled,
+    staleTime: 60000,
+  });
+};
+
+export const useReportMissing = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      id,
+      type,
+      remarks,
+    }: {
+      id: number;
+      type: 'LOST' | 'STOLEN';
+      remarks?: string;
+    }) => api.reportMissing(id, type, remarks),
+    onSuccess: () => {
+      toast.success('Asset reported missing');
+      queryClient.invalidateQueries({ queryKey: ['assets'] });
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.message || 'Failed to report missing');
+    },
+  });
+};
+
+export const useRecoverAsset = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: number) => api.recoverAsset(id),
+    onSuccess: () => {
+      toast.success('Asset recovered and returned to store');
+      queryClient.invalidateQueries({ queryKey: ['assets'] });
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.message || 'Failed to recover asset');
+    },
+  });
+};
+
+export const useRecordAudit = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, remarks }: { id: number; remarks?: string }) =>
+      api.recordAudit(id, remarks),
+    onSuccess: () => {
+      toast.success('Audit recorded — asset verified present');
+      queryClient.invalidateQueries({ queryKey: ['assets'] });
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.message || 'Failed to record audit');
+    },
+  });
+};
+
 // ======================== ASSET MUTATIONS ========================
 
 export const useUpdateAsset = () => {
@@ -79,31 +202,33 @@ export const useUpdateAsset = () => {
   });
 };
 
-export const useInstallAsset = () => {
+export const useAllocateAsset = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, data }: { id: number; data: InstallAssetRequest }) =>
-      api.installAsset(id, data),
+    mutationFn: ({ id, data }: { id: number; data: AllocateAssetRequest }) =>
+      api.allocateAsset(id, data),
     onSuccess: () => {
-      toast.success('Asset installed successfully');
+      toast.success('Asset allocated successfully');
       queryClient.invalidateQueries({ queryKey: ['assets'] });
     },
     onError: (error: any) => {
-      toast.error(error.response?.data?.message || 'Failed to install asset');
+      toast.error(error.response?.data?.message || 'Failed to allocate asset');
     },
   });
 };
 
-export const useUninstallAsset = () => {
+export const useDeallocateAsset = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (id: number) => api.uninstallAsset(id),
+    mutationFn: (id: number) => api.deallocateAsset(id),
     onSuccess: () => {
-      toast.success('Asset uninstalled, returned to store');
+      toast.success('Asset deallocated, returned to store');
       queryClient.invalidateQueries({ queryKey: ['assets'] });
     },
     onError: (error: any) => {
-      toast.error(error.response?.data?.message || 'Failed to uninstall asset');
+      toast.error(
+        error.response?.data?.message || 'Failed to deallocate asset'
+      );
     },
   });
 };
@@ -242,17 +367,150 @@ export const useCompleteMaintenance = () => {
 
 // ======================== DISPOSAL ========================
 
-export const useDisposeAsset = () => {
+export const useRequestDisposal = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }: { id: number; data: RequestDisposalRequest }) =>
+      api.requestDisposal(id, data),
+    onSuccess: () => {
+      toast.success('Disposal requested — awaiting approval');
+      queryClient.invalidateQueries({ queryKey: ['assets'] });
+    },
+    onError: (error: any) => {
+      toast.error(
+        error.response?.data?.message || 'Failed to request disposal'
+      );
+    },
+  });
+};
+
+export const useApproveDisposal = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({ id, data }: { id: number; data: DisposeAssetRequest }) =>
-      api.disposeAsset(id, data),
+      api.approveDisposal(id, data),
     onSuccess: () => {
       toast.success('Asset disposed successfully');
       queryClient.invalidateQueries({ queryKey: ['assets'] });
     },
     onError: (error: any) => {
-      toast.error(error.response?.data?.message || 'Failed to dispose asset');
+      toast.error(
+        error.response?.data?.message || 'Failed to approve disposal'
+      );
+    },
+  });
+};
+
+export const useRejectDisposal = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, reason }: { id: number; reason?: string }) =>
+      api.rejectDisposal(id, reason),
+    onSuccess: () => {
+      toast.success('Disposal request rejected — asset returned to store');
+      queryClient.invalidateQueries({ queryKey: ['assets'] });
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.message || 'Failed to reject disposal');
+    },
+  });
+};
+
+// ======================== DAMAGE & REPAIR ========================
+
+export const useDamageByAsset = (assetId: number) => {
+  return useQuery({
+    // Keyed under ['assets', ...] so lifecycle mutations refresh it automatically.
+    queryKey: ['assets', assetId, 'damage'],
+    queryFn: () => api.getDamageByAsset(assetId),
+    enabled: assetId > 0,
+  });
+};
+
+export const usePendingDamage = () => {
+  return useQuery({
+    queryKey: ['asset-damage', 'pending'],
+    queryFn: () => api.getPendingDamage(),
+    staleTime: 30000,
+  });
+};
+
+export const useUnderRepair = () => {
+  return useQuery({
+    queryKey: ['asset-damage', 'under-repair'],
+    queryFn: () => api.getUnderRepair(),
+    staleTime: 30000,
+  });
+};
+
+export const useAllDamage = () => {
+  return useQuery({
+    queryKey: ['asset-damage', 'all'],
+    queryFn: () => api.getAllDamage(),
+    staleTime: 30000,
+  });
+};
+
+export const useReportDamage = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }: { id: number; data: ReportDamageRequest }) =>
+      api.reportDamage(id, data),
+    onSuccess: () => {
+      toast.success('Damage reported');
+      queryClient.invalidateQueries({ queryKey: ['assets'] });
+      queryClient.invalidateQueries({ queryKey: ['asset-damage'] });
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.message || 'Failed to report damage');
+    },
+  });
+};
+
+export const useApproveDamage = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }: { id: number; data?: ResolveDamageRequest }) =>
+      api.approveDamage(id, data),
+    onSuccess: () => {
+      toast.success('Repair approved — asset under repair');
+      queryClient.invalidateQueries({ queryKey: ['assets'] });
+      queryClient.invalidateQueries({ queryKey: ['asset-damage'] });
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.message || 'Failed to approve repair');
+    },
+  });
+};
+
+export const useRejectDamage = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }: { id: number; data?: ResolveDamageRequest }) =>
+      api.rejectDamage(id, data),
+    onSuccess: () => {
+      toast.success('Repair rejected');
+      queryClient.invalidateQueries({ queryKey: ['assets'] });
+      queryClient.invalidateQueries({ queryKey: ['asset-damage'] });
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.message || 'Failed to reject repair');
+    },
+  });
+};
+
+export const useCompleteRepair = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }: { id: number; data: CompleteRepairRequest }) =>
+      api.completeRepair(id, data),
+    onSuccess: () => {
+      toast.success('Repair completed');
+      queryClient.invalidateQueries({ queryKey: ['assets'] });
+      queryClient.invalidateQueries({ queryKey: ['asset-damage'] });
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.message || 'Failed to complete repair');
     },
   });
 };

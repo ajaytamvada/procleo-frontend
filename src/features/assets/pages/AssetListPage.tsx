@@ -104,7 +104,7 @@ const AssetListPage: React.FC = () => {
   };
 
   const inStoreCount = stats?.IN_STORE || 0;
-  const inUseCount = (stats?.IN_USE || 0) + (stats?.INSTALLED || 0);
+  const inUseCount = stats?.IN_USE || 0;
   const maintenanceCount = stats?.IN_MAINTENANCE || 0;
   const totalCount = Object.values(stats || {}).reduce(
     (sum: number, val) => sum + (val as number),
@@ -218,9 +218,11 @@ const AssetListPage: React.FC = () => {
             <option value=''>All Status</option>
             <option value='IN_STORE'>In Store</option>
             <option value='IN_USE'>In Use</option>
-            <option value='INSTALLED'>Installed</option>
             <option value='IN_MAINTENANCE'>Under Maintenance</option>
+            <option value='READY_FOR_DISPOSAL'>Ready for Disposal</option>
             <option value='IN_TRANSIT'>In Transit</option>
+            <option value='LOST'>Lost</option>
+            <option value='STOLEN'>Stolen</option>
             <option value='DISPOSED'>Disposed</option>
             <option value='SOLD'>Sold</option>
             <option value='DAMAGED'>Damaged</option>
