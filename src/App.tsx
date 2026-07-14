@@ -6,6 +6,7 @@ import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import RootRedirect from '@/components/auth/RootRedirect';
 import AuthLayout from '@/components/auth/AuthLayout';
 import LoginPage from '@/pages/auth/Login';
+import PortalSelectionPage from '@/pages/auth/PortalSelection';
 import RegisterPage from '@/pages/auth/Register';
 import ForgotPasswordPage from '@/pages/auth/ForgotPassword';
 import UnauthorizedPage from '@/pages/Unauthorized';
@@ -189,6 +190,9 @@ const App: React.FC = () => {
               <Routes>
                 {/* Root Redirect - handles / and redirects based on auth status */}
                 <Route path='/' element={<RootRedirect />} />
+
+                {/* Portal Selection - Buyer / Supplier chooser shown before login */}
+                <Route path='/portal' element={<PortalSelectionPage />} />
 
                 {/* Public Auth Routes */}
                 <Route path='/auth' element={<AuthLayout />}>
@@ -959,7 +963,7 @@ const App: React.FC = () => {
                 </Route>
 
                 {/* Fallback route */}
-                <Route path='*' element={<Navigate to='/login' replace />} />
+                <Route path='*' element={<Navigate to='/portal' replace />} />
               </Routes>
             </ErrorBoundary>
           </ChatProvider>

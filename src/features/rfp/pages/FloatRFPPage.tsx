@@ -18,8 +18,17 @@ import {
   Mail,
   Plus,
   X,
+  Users,
 } from 'lucide-react';
 import { useRFPById, useAllVendors, useFloatRFP } from '../hooks/useFloatRFP';
+import { useSupplierCategories } from '@/features/master/hooks/useSupplierCategoryAPI';
+
+/** Supplier group membership is stored as a comma-separated id list on the vendor. */
+const vendorGroupIds = (vendor: { supplierCategoryIds?: string }): string[] =>
+  (vendor.supplierCategoryIds || '')
+    .split(',')
+    .map(part => part.trim())
+    .filter(Boolean);
 
 export const FloatRFPPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -34,6 +43,7 @@ export const FloatRFPPage: React.FC = () => {
   } = useRFPById(rfpId);
   const { data: allVendors = [], isLoading: isLoadingVendors } =
     useAllVendors();
+  const { data: supplierGroups = [] } = useSupplierCategories();
   const floatRFPMutation = useFloatRFP();
 
   // State for supplier selection
@@ -41,6 +51,7 @@ export const FloatRFPPage: React.FC = () => {
     new Set()
   );
   const [availableSearch, setAvailableSearch] = useState('');
+  const [groupFilter, setGroupFilter] = useState<number | 'all'>('all');
   const [selectedSearch, setSelectedSearch] = useState('');
   const [availableSelected, setAvailableSelected] = useState<Set<number>>(
     new Set()
@@ -64,6 +75,11 @@ export const FloatRFPPage: React.FC = () => {
       .filter(v => !selectedIds.includes(v.id))
       .filter(
         v =>
+          groupFilter === 'all' ||
+          vendorGroupIds(v).includes(String(groupFilter))
+      )
+      .filter(
+        v =>
           !availableSearch ||
           (v.name &&
             v.name.toLowerCase().includes(availableSearch.toLowerCase())) ||
@@ -72,7 +88,7 @@ export const FloatRFPPage: React.FC = () => {
           (v.email &&
             v.email.toLowerCase().includes(availableSearch.toLowerCase()))
       );
-  }, [allVendors, selectedSuppliers, availableSearch]);
+  }, [allVendors, selectedSuppliers, availableSearch, groupFilter]);
 
   const selectedVendors = useMemo(() => {
     const selectedIds = Array.from(selectedSuppliers);
@@ -104,6 +120,35 @@ export const FloatRFPPage: React.FC = () => {
     selectedListSelected.forEach(id => newSelected.delete(id));
     setSelectedSuppliers(newSelected);
     setSelectedListSelected(new Set());
+  };
+
+  // Add every supplier currently visible in the available list (group + search applied)
+  const addAllShown = () => {
+    const newSelected = new Set(selectedSuppliers);
+    availableVendors.forEach(v => newSelected.add(v.id));
+    setSelectedSuppliers(newSelected);
+    setAvailableSelected(new Set());
+  };
+
+  // Picking a group pre-ticks that group's suppliers in the available list; the
+  // user still moves them across. Derived from allVendors since availableVendors
+  // still reflects the previous filter at this point.
+  const handleGroupChange = (group: number | 'all') => {
+    setGroupFilter(group);
+
+    if (group === 'all') {
+      setAvailableSelected(new Set());
+      return;
+    }
+
+    setAvailableSelected(
+      new Set(
+        allVendors
+          .filter(v => !selectedSuppliers.has(v.id))
+          .filter(v => vendorGroupIds(v).includes(String(group)))
+          .map(v => v.id)
+      )
+    );
   };
 
   // Handle float RFP submission
@@ -379,6 +424,33 @@ export const FloatRFPPage: React.FC = () => {
                 <label className='text-sm font-medium text-gray-700'>
                   Available Suppliers ({availableVendors.length})
                 </label>
+                <button
+                  type='button'
+                  onClick={addAllShown}
+                  disabled={availableVendors.length === 0}
+                  className='text-xs font-medium text-purple-600 hover:text-purple-700 disabled:opacity-40 disabled:cursor-not-allowed'
+                >
+                  Add all shown
+                </button>
+              </div>
+              <div className='flex items-center gap-2 mb-3'>
+                <Users size={16} className='text-gray-400 shrink-0' />
+                <select
+                  value={groupFilter}
+                  onChange={e =>
+                    handleGroupChange(
+                      e.target.value === 'all' ? 'all' : Number(e.target.value)
+                    )
+                  }
+                  className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm'
+                >
+                  <option value='all'>All groups</option>
+                  {supplierGroups.map(group => (
+                    <option key={group.id} value={group.id}>
+                      {group.name}
+                    </option>
+                  ))}
+                </select>
               </div>
               <div className='relative mb-3'>
                 <Search
@@ -396,8 +468,8 @@ export const FloatRFPPage: React.FC = () => {
               <div className='flex-1 border border-gray-300 rounded-lg overflow-y-auto min-h-0 bg-gray-50'>
                 {availableVendors.length === 0 ? (
                   <div className='flex items-center justify-center h-full text-gray-500 text-sm'>
-                    {availableSearch
-                      ? 'No suppliers match your search'
+                    {availableSearch || groupFilter !== 'all'
+                      ? 'No suppliers match your filters'
                       : 'All suppliers selected'}
                   </div>
                 ) : (

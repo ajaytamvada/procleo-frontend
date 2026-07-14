@@ -27,7 +27,7 @@ interface CompanyInfoSidebarProps {
 const testimonials = [
   {
     quote:
-      "RiditStack's Autovitica P2P has transformed our procurement process. We've reduced processing time by 60% and achieved significant cost savings.",
+      "RiditStack's ProcLeo P2P has transformed our procurement process. We've reduced processing time by 60% and achieved significant cost savings.",
     author: 'Rajesh Kumar',
     position: 'CFO, TechCorp India',
     rating: 5,
@@ -41,7 +41,7 @@ const testimonials = [
   },
   {
     quote:
-      'Implementing Autovitica P2P was the best decision for our supply chain. The automation and insights have been game-changing.',
+      'Implementing ProcLeo P2P was the best decision for our supply chain. The automation and insights have been game-changing.',
     author: 'Amit Patel',
     position: 'Operations Director',
     rating: 5,

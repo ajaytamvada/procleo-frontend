@@ -7,7 +7,7 @@ import { useAuth } from '@/hooks/useAuth';
  *
  * Handles the root path (/) by redirecting to either:
  * - /dashboard if user is authenticated
- * - /login if user is not authenticated
+ * - /portal (Buyer/Supplier chooser) if user is not authenticated
  */
 const RootRedirect: React.FC = () => {
   const navigate = useNavigate();
@@ -18,7 +18,7 @@ const RootRedirect: React.FC = () => {
       if (isAuthenticated) {
         navigate('/dashboard', { replace: true });
       } else {
-        navigate('/login', { replace: true });
+        navigate('/portal', { replace: true });
       }
     }
   }, [isAuthenticated, isLoading, navigate]);
