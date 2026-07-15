@@ -20,7 +20,7 @@ export function VendorRegistrationPage() {
           <p className='text-sm font-medium text-gray-600'>
             Already have an account?{' '}
             <Link
-              to='/auth/login'
+              to='/login?portal=supplier'
               className='text-indigo-600 font-semibold hover:underline'
             >
               Sign In

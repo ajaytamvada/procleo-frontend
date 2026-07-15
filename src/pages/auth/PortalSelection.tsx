@@ -12,62 +12,79 @@ import {
   Receipt,
   Building2,
   Wallet,
-  Container,
-  ScrollText,
-  Truck,
-  BarChart3,
-  Link2,
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
+import {
+  GlassPurchaseOrder,
+  GlassShipment,
+  GlassAnalytics,
+  GlassContract,
+  GlassFloatStyles,
+} from '@/components/glass-objects';
 
-// Floating procurement "3D" props scattered across the background.
-const FLOATERS: {
-  icon: React.ComponentType<{ className?: string }>;
-  className: string; // position + size
-  delay: string;
-  rotate: string;
+// Placement collage — outer thirds only, generous clear zone around the
+// headline / subtitle / portal cards. `lower` objects are hidden < 1200px;
+// everything is hidden < 900px (mobile gets the clean gradient only).
+const GLASS_OBJECTS: {
+  key: string;
+  Component: React.ComponentType;
+  className: string; // absolute positioning
+  rot: number; // base rotation (deg)
+  scale: number; // base scale
+  opacity: number; // near/far depth
+  dur: string; // float duration
+  delay: string; // float delay
+  lower?: boolean; // hidden < 1200px
 }[] = [
   {
-    icon: ScrollText,
-    className: 'top-[14%] left-[8%] h-24 w-24',
+    key: 'po',
+    Component: GlassPurchaseOrder,
+    className: 'top-[12%] left-[-2%]',
+    rot: -8,
+    scale: 1.1,
+    opacity: 0.9,
+    dur: '17s',
     delay: '0s',
-    rotate: '-12deg',
   },
   {
-    icon: Container,
-    className: 'top-[22%] right-[9%] h-28 w-28',
+    // upper-right outer third, near layer: mirrors the Purchase Order's
+    // upper-left position; bleeds slightly off the right edge (~75%+ visible).
+    key: 'shipment',
+    Component: GlassShipment,
+    className: 'top-[12%] right-[-2%]',
+    rot: 7,
+    scale: 1.05,
+    opacity: 0.9,
+    dur: '15s',
+    delay: '2.5s',
+  },
+  {
+    // lower-right outer third, far layer: mirrors the Contract's lower-left
+    // rhythm but sits just below the Supplier card's bottom edge (the right
+    // gutter is too narrow to clear the card horizontally), so the label + bars
+    // stay fully in the open gradient. Pulled in (right-[-1%]) so nothing crops.
+    key: 'analytics',
+    Component: GlassAnalytics,
+    className: 'bottom-[3%] right-[-1%]',
+    rot: -6,
+    scale: 0.9,
+    opacity: 0.75,
+    dur: '19s',
     delay: '1.2s',
-    rotate: '10deg',
+    lower: true,
   },
   {
-    icon: Link2,
-    className: 'top-[52%] left-[5%] h-20 w-20',
-    delay: '2.4s',
-    rotate: '8deg',
-  },
-  {
-    icon: FileText,
-    className: 'bottom-[14%] left-[13%] h-24 w-24',
-    delay: '0.8s',
-    rotate: '14deg',
-  },
-  {
-    icon: BarChart3,
-    className: 'bottom-[16%] right-[10%] h-24 w-24',
-    delay: '1.8s',
-    rotate: '-8deg',
-  },
-  {
-    icon: Truck,
-    className: 'top-[8%] right-[24%] h-20 w-20',
-    delay: '3s',
-    rotate: '6deg',
-  },
-  {
-    icon: Receipt,
-    className: 'bottom-[30%] right-[4%] h-20 w-20',
-    delay: '2s',
-    rotate: '-14deg',
+    // lower-left outer third: hugs / bleeds off the left edge, below the
+    // Buyer card — clear of the card's backdrop-blur footprint.
+    key: 'contract',
+    Component: GlassContract,
+    className: 'bottom-[9%] left-[-3%]',
+    rot: 10,
+    scale: 0.9,
+    opacity: 0.75,
+    dur: '20s',
+    delay: '3.4s',
+    lower: true,
   },
 ];
 
@@ -153,23 +170,27 @@ export function PortalSelection() {
         <div className='portal-blob top-1/3 left-1/2 portal-delay-1000' />
       </div>
 
-      {/* Floating procurement 3D-style props */}
-      <div className='pointer-events-none absolute inset-0 overflow-hidden hidden md:block'>
-        {FLOATERS.map((f, i) => {
-          const FIcon = f.icon;
+      {/* Composed glass procurement objects */}
+      <div className='pointer-events-none absolute inset-0 overflow-hidden'>
+        {GLASS_OBJECTS.map(o => {
+          const Obj = o.Component;
           return (
             <div
-              key={i}
-              className={`portal-floater absolute ${f.className}`}
+              key={o.key}
+              className={`glass-object absolute ${o.lower ? 'glass-lower ' : ''}${o.className}`}
               style={
                 {
-                  animationDelay: f.delay,
-                  '--rot': f.rotate,
+                  opacity: o.opacity,
+                  '--dur': o.dur,
+                  '--delay': o.delay,
                 } as React.CSSProperties
               }
             >
-              <div className='portal-floater-tile flex h-full w-full items-center justify-center'>
-                <FIcon className='h-1/2 w-1/2 text-white/70' />
+              <div
+                className='glass-inner'
+                style={{ transform: `rotate(${o.rot}deg) scale(${o.scale})` }}
+              >
+                <Obj />
               </div>
             </div>
           );
@@ -179,7 +200,7 @@ export function PortalSelection() {
       {/* Header */}
       <header className='relative z-10 flex items-center justify-between px-6 sm:px-10 lg:px-16 py-6'>
         <img
-          src={import.meta.env.BASE_URL + 'riditstack-logo-new.png'}
+          src={import.meta.env.BASE_URL + 'riditstack-logo-new-white.png'}
           alt='ProcLeo by RiditStack'
           className='h-9 w-auto'
         />
@@ -207,7 +228,7 @@ export function PortalSelection() {
         </div>
 
         {/* Portal cards */}
-        <div className='grid grid-cols-1 md:grid-cols-2 gap-16 w-full max-w-5xl'>
+        <div className='grid grid-cols-1 md:grid-cols-2 gap-16 w-full'>
           {PORTALS.map(portal => {
             const Icon = portal.icon;
             return (
@@ -227,7 +248,7 @@ export function PortalSelection() {
 
                 {/* Content */}
                 <div className='min-w-0 flex-1'>
-                  <h2 className='text-xl font-bold text-white mb-0.5'>
+                  <h2 className='text-2xl font-bold text-white mb-0.5'>
                     {portal.title}
                   </h2>
                   <p className='text-xs font-medium text-indigo-200 mb-2'>
@@ -275,6 +296,9 @@ export function PortalSelection() {
         </p>
       </footer>
 
+      {/* Shared float/hide/reduced-motion CSS for the glass objects */}
+      <GlassFloatStyles />
+
       <style>{`
         .portal-blob {
           position: absolute;
@@ -291,25 +315,6 @@ export function PortalSelection() {
         @keyframes portalFloat {
           0%, 100% { transform: translateY(0) scale(1); }
           50% { transform: translateY(-24px) scale(1.08); }
-        }
-        /* Floating procurement props */
-        .portal-floater {
-          animation: portalPropFloat 11s ease-in-out infinite;
-          will-change: transform;
-        }
-        .portal-floater-tile {
-          border-radius: 1.25rem;
-          transform: rotate(var(--rot, 0deg));
-          background: linear-gradient(150deg, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0.04) 60%, rgba(255, 255, 255, 0.02) 100%);
-          border: 1px solid rgba(255, 255, 255, 0.18);
-          -webkit-backdrop-filter: blur(8px) saturate(140%);
-          backdrop-filter: blur(8px) saturate(140%);
-          box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.3), 0 16px 40px -14px rgba(0, 0, 0, 0.6);
-          opacity: 0.85;
-        }
-        @keyframes portalPropFloat {
-          0%, 100% { transform: translateY(0); }
-          50% { transform: translateY(-26px); }
         }
         .portal-card {
           animation: portalCardIn 0.5s ease-out both;

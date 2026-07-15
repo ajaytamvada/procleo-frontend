@@ -11,7 +11,22 @@
       "Bash(ls:*)",
       "Bash(wc:*)",
       "Bash(npx tsc:*)",
-      "Bash(npx eslint:*)"
+      "Bash(npx eslint:*)",
+      "Bash(git stash *)",
+      "Bash(node -e \"console.log\\('node ok', process.version\\)\")",
+      "Bash(python3 -c \"import rembg; print\\('rembg available'\\)\")",
+      "Bash(python3 -c \"import PIL; print\\('Pillow', PIL.__version__\\)\")",
+      "Bash(node shot.mjs)",
+      "Bash(node page.mjs)",
+      "Bash(pkill -f \"vite --port 5174\")",
+      "Bash(pkill -f \"5174\")",
+      "Bash(node -e \"try{require.resolve\\('puppeteer'\\);console.log\\('puppeteer yes'\\)}catch\\(e\\){console.log\\('no puppeteer'\\)}\")",
+      "Bash(node -e \"try{require.resolve\\('playwright'\\);console.log\\('playwright yes'\\)}catch\\(e\\){console.log\\('no playwright'\\)}\")",
+      "Bash(npx vite *)",
+      "Bash(break)",
+      "Bash(node shot.mjs http://localhost:5174/portal __TRACKED_VAR__/portal.png)",
+      "Bash(node *)",
+      "Bash(git rm *)"
     ],
     "deny": [],
     "ask": []

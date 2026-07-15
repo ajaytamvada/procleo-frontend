@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import {
+  Check,
   CheckCircle,
   Globe,
   Mail,
@@ -48,9 +49,255 @@ const testimonials = [
   },
 ];
 
-export function CompanyInfoSidebar({
-  variant = 'login',
-}: CompanyInfoSidebarProps) {
+// ---------------------------------------------------------------------------
+// Buyer-login right panel — a static, single-viewport, fully on-theme panel:
+//   a) 2×2 stats grid   b) industry distribution   c) 3-way-match vignette
+// Replaces the auto-rotating carousel (kept for register/vendor) and the raster
+// banner illustration.
+// ---------------------------------------------------------------------------
+
+const LOGIN_STATS = [
+  {
+    icon: Users,
+    value: '500+',
+    label: 'Active Clients',
+    tint: 'text-indigo-300',
+  },
+  {
+    icon: TrendingUp,
+    value: '40%',
+    label: 'Cost Reduction',
+    tint: 'text-emerald-300',
+  },
+  { icon: Package, value: '2M+', label: 'Transactions', tint: 'text-sky-300' },
+  {
+    icon: Clock,
+    value: '24/7',
+    label: 'Support Available',
+    tint: 'text-purple-300',
+  },
+];
+
+const LOGIN_INDUSTRIES = [
+  { name: 'Manufacturing', value: 35, color: '#6366f1' },
+  { name: 'Healthcare', value: 25, color: '#8b5cf6' },
+  { name: 'Retail', value: 20, color: '#a855f7' },
+  { name: 'Technology', value: 15, color: '#c084fc' },
+  { name: 'Financial', value: 5, color: '#d8b4fe' },
+];
+
+// Three overlapping glass cards telling the PO → Invoice → GRN matching story,
+// in our glass language (muted green pills = semantic status only).
+const MATCH_CARDS = [
+  {
+    label: 'APPROVED PO',
+    status: 'Validated',
+    rot: -4,
+    z: 10,
+    left: 2,
+    top: 14,
+  },
+  {
+    label: 'SUPPLIER INVOICE',
+    status: 'Matched',
+    rot: 0,
+    z: 20,
+    left: 72,
+    top: 2,
+  },
+  { label: 'GRN', status: 'Approved', rot: 4, z: 30, left: 142, top: 14 },
+];
+
+function ThreeWayMatchVignette() {
+  return (
+    <div>
+      <div className='tw-vignette'>
+        {/* dashed connector linking the three amount rows */}
+        <div className='tw-connector' />
+        {MATCH_CARDS.map(c => (
+          <div
+            key={c.label}
+            className='tw-card'
+            style={{
+              left: c.left,
+              top: c.top,
+              zIndex: c.z,
+              transform: `rotate(${c.rot}deg)`,
+            }}
+          >
+            <div className='tw-label'>{c.label}</div>
+            <div className='tw-line' />
+            <div className='tw-line tw-line-short' />
+            <div className='tw-amount'>$220,000</div>
+            <div className='tw-pill'>
+              <Check className='tw-check' />
+              {c.status}
+            </div>
+          </div>
+        ))}
+      </div>
+      <p className='tw-caption'>3-way matching, automated.</p>
+      <style>{`
+        .tw-vignette { position: relative; height: 128px; width: 282px; margin: 0 auto; }
+        .tw-card {
+          position: absolute;
+          width: 138px;
+          padding: 11px 12px;
+          border-radius: 12px;
+          background: rgba(255,255,255,0.06);
+          border: 1px solid rgba(255,255,255,0.14);
+          box-shadow:
+            inset 0 1px 0 0 rgba(255,255,255,0.18),
+            0 10px 24px -10px rgba(0,0,0,0.55);
+          -webkit-backdrop-filter: blur(6px);
+          backdrop-filter: blur(6px);
+        }
+        .tw-label { font-size: 9px; letter-spacing: 1px; font-weight: 600; color: rgba(255,255,255,0.5); }
+        .tw-line { height: 4px; border-radius: 2px; background: rgba(255,255,255,0.16); margin-top: 8px; }
+        .tw-line-short { width: 58%; background: rgba(255,255,255,0.12); }
+        .tw-amount { margin-top: 9px; font-size: 13px; font-weight: 600; color: #fff; font-variant-numeric: tabular-nums; }
+        .tw-pill {
+          display: inline-flex; align-items: center; gap: 3px;
+          margin-top: 9px; padding: 2px 7px; border-radius: 9999px;
+          background: rgba(74,222,128,0.15); color: #86EFAC;
+          font-size: 10px; font-weight: 600;
+        }
+        .tw-check { width: 10px; height: 10px; }
+        .tw-connector {
+          position: absolute; left: 10px; right: 10px; top: 68px;
+          border-top: 1px dashed rgba(255,255,255,0.30);
+          z-index: 25;
+        }
+        .tw-caption { margin-top: 14px; font-size: 13px; color: rgba(255,255,255,0.55); text-align: center; }
+      `}</style>
+    </div>
+  );
+}
+
+function LoginInfoPanel() {
+  return (
+    <aside
+      className='hidden lg:flex lg:w-[380px] lg:min-w-[380px] lg:h-screen relative overflow-hidden'
+      style={{
+        background:
+          'linear-gradient(180deg, #2d1b69 0%, #1a0d3d 50%, #0f0620 100%)',
+      }}
+    >
+      {/* soft floating glow */}
+      <div className='absolute inset-0 overflow-hidden pointer-events-none'>
+        <div className='bp-float top-10 -right-10' />
+        <div className='bp-float top-1/3 -left-20 bp-delay-1' />
+        <div className='bp-float bottom-24 right-16 bp-delay-2' />
+      </div>
+
+      <div className='relative h-full w-full flex flex-col text-white bp-panel-inner'>
+        {/* a) Stats grid (natural height) */}
+        <div className='grid grid-cols-2 bp-stats-grid'>
+          {LOGIN_STATS.map(s => {
+            const Icon = s.icon;
+            return (
+              <div key={s.label} className='bp-card bp-stat'>
+                <Icon className={`h-4 w-4 mb-1.5 ${s.tint}`} />
+                <div className='bp-stat-value'>{s.value}</div>
+                <div className='bp-stat-label'>{s.label}</div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* b) Industry distribution (natural height) */}
+        <div className='bp-card bp-industry'>
+          <h3 className='bp-industry-title'>
+            <BarChart3 className='h-4 w-4' />
+            Industry Distribution
+          </h3>
+          <div className='bp-industry-rows'>
+            {LOGIN_INDUSTRIES.map(ind => (
+              <div key={ind.name}>
+                <div className='bp-industry-row'>
+                  <span>{ind.name}</span>
+                  <span>{ind.value}%</span>
+                </div>
+                <div className='bp-bar-track'>
+                  <div
+                    className='bp-bar-fill'
+                    style={{ width: `${ind.value}%`, background: ind.color }}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* c) Three-way match vignette — takes the remaining space and centres
+            within it (scaled on short viewports so it never clips the bottom). */}
+        <div className='bp-vignette-slot'>
+          <div className='bp-vignette-scale'>
+            <ThreeWayMatchVignette />
+          </div>
+        </div>
+      </div>
+
+      <style>{`
+        .bp-float {
+          position: absolute; width: 150px; height: 150px; border-radius: 50%;
+          background: radial-gradient(circle, rgba(99,102,241,0.3) 0%, transparent 70%);
+          opacity: 0.15; animation: bpFloat 6s ease-in-out infinite;
+        }
+        .bp-delay-1 { animation-delay: 1s; }
+        .bp-delay-2 { animation-delay: 2s; }
+        @keyframes bpFloat {
+          0%, 100% { transform: translateY(0) scale(1); }
+          50% { transform: translateY(-20px) scale(1.1); }
+        }
+        @media (prefers-reduced-motion: reduce) { .bp-float { animation: none; } }
+
+        /* Explicit flex column: the two top cards keep their natural height and
+           the vignette takes ALL remaining space, centring within it — so it can
+           never be crushed against the bottom edge. */
+        .bp-panel-inner { padding: 32px; gap: 24px; }
+        .bp-stats-grid { flex: none; gap: 12px; }
+        .bp-industry { flex: none; padding: 18px; }
+        .bp-vignette-slot {
+          flex: 1; min-height: 0;
+          display: flex; align-items: center; justify-content: center;
+        }
+        .bp-vignette-scale { transform-origin: center; }
+        /* Scale the vignette down on shorter viewports (clamped 0.75–1) so the
+           full composition + caption always fits its slot with clearance. */
+        @media (max-height: 880px) { .bp-vignette-scale { transform: scale(0.92); } }
+        @media (max-height: 800px) { .bp-vignette-scale { transform: scale(0.85); } }
+        @media (max-height: 720px) { .bp-vignette-scale { transform: scale(0.75); } }
+
+        .bp-card {
+          background: rgba(255,255,255,0.05);
+          border: 1px solid rgba(255,255,255,0.12);
+          border-radius: 14px;
+        }
+        .bp-stat { padding: 13px 14px; display: flex; flex-direction: column; }
+        .bp-stat-value { font-size: 20px; font-weight: 700; line-height: 1.1; }
+        .bp-stat-label { font-size: 11px; color: rgba(255,255,255,0.7); margin-top: 3px; }
+
+        .bp-industry-title {
+          display: flex; align-items: center; gap: 8px;
+          font-size: 14px; font-weight: 600; margin-bottom: 12px;
+        }
+        .bp-industry-rows { display: flex; flex-direction: column; gap: 8px; }
+        .bp-industry-row {
+          display: flex; justify-content: space-between;
+          font-size: 13px; margin-bottom: 4px; color: rgba(255,255,255,0.85);
+        }
+        .bp-bar-track {
+          width: 100%; height: 4px; border-radius: 9999px;
+          background: rgba(255,255,255,0.15); overflow: hidden;
+        }
+        .bp-bar-fill { height: 100%; border-radius: 9999px; }
+      `}</style>
+    </aside>
+  );
+}
+
+function CarouselPanel({ variant = 'login' }: CompanyInfoSidebarProps) {
   const [currentSection, setCurrentSection] = useState(0);
   const [currentTestimonial, setCurrentTestimonial] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
@@ -384,7 +631,7 @@ export function CompanyInfoSidebar({
 
   return (
     <aside
-      className='hidden lg:flex lg:w-[380px] lg:min-w-[380px] relative overflow-hidden'
+      className='hidden lg:flex lg:w-[380px] lg:min-w-[380px] lg:h-screen relative overflow-hidden'
       style={{
         background:
           'linear-gradient(180deg, #2d1b69 0%, #1a0d3d 50%, #0f0620 100%)',
@@ -442,12 +689,8 @@ export function CompanyInfoSidebar({
               />
             ))}
           </div>
-          <div className='flex space-x-2 mt-auto'>
-            <img
-              src={import.meta.env.BASE_URL + 'banner2.png'}
-              alt='Sidebar Image'
-              className='w-100'
-            />
+          <div className='mt-auto'>
+            <ThreeWayMatchVignette />
           </div>
         </div>
 
@@ -614,6 +857,17 @@ export function CompanyInfoSidebar({
       `}</style>
     </aside>
   );
+}
+
+// Buyer/default login gets the new static single-viewport panel; register and
+// vendor keep the existing auto-rotating carousel.
+export function CompanyInfoSidebar({
+  variant = 'login',
+}: CompanyInfoSidebarProps) {
+  if (variant === 'login') {
+    return <LoginInfoPanel />;
+  }
+  return <CarouselPanel variant={variant} />;
 }
 
 export default CompanyInfoSidebar;

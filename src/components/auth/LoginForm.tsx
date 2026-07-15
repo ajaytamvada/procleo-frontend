@@ -423,18 +423,6 @@ export function LoginForm({ onSuccess, className = '' }: LoginFormProps) {
           <Mail className='w-4 h-4' />
           <span>Continue with Email</span>
         </button>
-
-        <div className='mt-5 pt-5 border-t border-gray-100'>
-          <p className='text-center text-[13px] text-gray-500 font-medium'>
-            Are you a vendor?{' '}
-            <Link
-              to='/vendors/register'
-              className='font-medium text-[rgb(103,62,230)] hover:text-[rgb(83,42,210)] hover:underline'
-            >
-              Register as Vendor
-            </Link>
-          </p>
-        </div>
       </div>
     );
   }
@@ -550,19 +538,6 @@ export function LoginForm({ onSuccess, className = '' }: LoginFormProps) {
           <span>Continue with Phone Number</span>
         </button>
       </form>
-
-      {/* Vendor Registration Link */}
-      <div className='mt-5 pt-5 border-t border-gray-100'>
-        <p className='text-center text-[13px] text-gray-500 font-medium'>
-          Are you a vendor?{' '}
-          <Link
-            to='/vendors/register'
-            className='font-medium text-[rgb(103,62,230)] hover:text-[rgb(83,42,210)] hover:underline'
-          >
-            Register as Vendor
-          </Link>
-        </p>
-      </div>
     </div>
   );
 }
