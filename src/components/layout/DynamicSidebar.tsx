@@ -17,6 +17,7 @@ import {
   Receipt,
   Database,
   CreditCard,
+  Bot,
 } from 'lucide-react';
 import { usePermissions } from '@/hooks/usePermissions';
 import { getModuleCode } from '@/config/moduleMapping';
@@ -62,6 +63,7 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   CreditCard,
   ClipboardList,
   Cog,
+  Bot,
 };
 
 const DynamicSidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {

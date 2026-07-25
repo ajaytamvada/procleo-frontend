@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { ArrowLeft, Package, CheckCircle, ChevronDown } from 'lucide-react';
 import toast from 'react-hot-toast';
 import {
@@ -45,6 +45,20 @@ const CreateGRNPage: React.FC = () => {
     useInvoicesForGRN();
   const { data: invoiceDetails } = useInvoiceDetailsForGRN(selectedInvoiceId);
   const createMutation = useCreateGRN();
+
+  // Deep-link prefill: /grn/create?invoiceId=42 pre-selects the invoice (e.g. from the agent).
+  const [searchParams] = useSearchParams();
+  useEffect(() => {
+    const inv = searchParams.get('invoiceId');
+    if (inv) {
+      const n = parseInt(inv, 10);
+      if (!Number.isNaN(n)) {
+        setSelectedInvoiceId(n);
+      }
+    }
+    // Seed once on mount from the URL; the dropdown drives it thereafter.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Load invoice items when invoice is selected
   useEffect(() => {

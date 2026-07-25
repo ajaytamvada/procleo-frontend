@@ -121,12 +121,12 @@ export const ChatbotWidget: React.FC<ChatbotWidgetProps> = ({
     return null;
   };
 
-  // Handle free-text message
-  const handleSendMessage = async () => {
-    const text = inputValue.trim();
+  // Handle free-text message. Pass overrideText to send a suggestion chip's text.
+  const handleSendMessage = async (overrideText?: string) => {
+    const text = (overrideText ?? inputValue).trim();
     if (!text || isLoading) return;
 
-    setInputValue('');
+    if (!overrideText) setInputValue('');
     setShowSuggestions(false);
 
     const userMsg: Message = {
@@ -158,6 +158,20 @@ export const ChatbotWidget: React.FC<ChatbotWidgetProps> = ({
             {response.reply}
           </div>
           {renderData(response)}
+          {response.suggestions && response.suggestions.length > 0 && (
+            <div className='flex flex-wrap gap-1.5 pt-1'>
+              {response.suggestions.map((s, i) => (
+                <button
+                  key={i}
+                  onClick={() => handleSendMessage(s)}
+                  disabled={isLoading}
+                  className='text-xs border border-violet-200 bg-violet-50 hover:bg-violet-100 text-violet-700 px-2.5 py-1 rounded-full transition-all disabled:opacity-50'
+                >
+                  {s}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       );
 
@@ -441,7 +455,7 @@ export const ChatbotWidget: React.FC<ChatbotWidgetProps> = ({
               className='flex-1 px-4 py-2.5 border border-gray-300 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 disabled:opacity-50 disabled:bg-gray-50'
             />
             <button
-              onClick={handleSendMessage}
+              onClick={() => handleSendMessage()}
               disabled={isLoading || !inputValue.trim()}
               className='p-2.5 bg-violet-600 text-white rounded-full hover:bg-violet-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0'
             >

@@ -5,8 +5,8 @@
  * 2. Edit RFP details and item prices
  */
 
-import { useState, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useMemo, useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   ArrowLeft,
   FileText,
@@ -69,11 +69,29 @@ export const CreateRFPFromPRPage = () => {
     return approvedPRs; // All approved PRs can now be used for RFP creation
   }, [approvedPRs]);
 
-
   const { data: prItems = [], isLoading: loadingItems } =
     useApprovedPRItemsForRFPCreation(selectedPRIds, phase === 'create-rfp');
 
   const createRFPMutation = useCreateRFPFromPRs();
+
+  // Deep-link prefill: /rfp/create?prIds=1,2,3 pre-selects those approved PRs and jumps to Phase 2
+  // (e.g. when the agent hands off "build an RFP from these PRs").
+  const [searchParams] = useSearchParams();
+  useEffect(() => {
+    const raw = searchParams.get('prIds');
+    if (raw) {
+      const ids = raw
+        .split(',')
+        .map(s => parseInt(s, 10))
+        .filter(n => !Number.isNaN(n));
+      if (ids.length > 0) {
+        setSelectedPRIds(ids);
+        setPhase('create-rfp');
+      }
+    }
+    // Seed once on mount from the URL.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Pagination calculations
   const totalPages = Math.ceil(filteredPRs.length / itemsPerPage);
@@ -535,10 +553,11 @@ export const CreateRFPFromPRPage = () => {
                         ) : (
                           <button
                             onClick={() => setCurrentPage(page as number)}
-                            className={`min-w-[36px] h-9 px-3 rounded-lg text-sm font-medium transition-colors ${currentPage === page
-                              ? 'bg-violet-600 text-white border border-violet-600'
-                              : 'text-gray-600 border border-gray-200 hover:bg-gray-50 hover:border-gray-300'
-                              }`}
+                            className={`min-w-[36px] h-9 px-3 rounded-lg text-sm font-medium transition-colors ${
+                              currentPage === page
+                                ? 'bg-violet-600 text-white border border-violet-600'
+                                : 'text-gray-600 border border-gray-200 hover:bg-gray-50 hover:border-gray-300'
+                            }`}
                           >
                             {page}
                           </button>
@@ -736,8 +755,9 @@ export const CreateRFPFromPRPage = () => {
                         return (
                           <tr
                             key={item.itemId}
-                            className={`transition-colors ${isSelected ? 'bg-violet-50' : 'hover:bg-gray-50'
-                              }`}
+                            className={`transition-colors ${
+                              isSelected ? 'bg-violet-50' : 'hover:bg-gray-50'
+                            }`}
                           >
                             <td className='px-4 py-3.5'>
                               <input

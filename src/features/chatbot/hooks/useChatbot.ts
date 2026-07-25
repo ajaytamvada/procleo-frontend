@@ -19,6 +19,7 @@ export interface AIChatResponse {
   hasData: boolean;
   data?: any[];
   dataType?: 'empty' | 'single_value' | 'table';
+  suggestions?: string[];
 }
 
 export const useChatbot = () => {

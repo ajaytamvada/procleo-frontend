@@ -152,7 +152,7 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ onOpenChatbot }) => {
       />
 
       <div
-        className='fixed bottom-6 right-6 flex flex-col items-end gap-3'
+        className='fixed bottom-24 right-6 flex flex-col items-end gap-3'
         style={{ zIndex: 60 }}
       >
         {/* Chat Window */}

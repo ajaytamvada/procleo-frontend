@@ -1,16 +1,25 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import Header from './Header';
 import DynamicSidebar from './DynamicSidebar';
 import ErrorBoundary from '@/components/common/ErrorBoundary';
 
-import { ChatbotWidget } from '@/features/chatbot/ChatbotWidget';
 import { ChatWidget } from '@/components/chat/ChatWidget';
+import AgentLauncher from '@/features/agent/components/AgentLauncher';
 
 const Layout: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [chatbotOpen, setChatbotOpen] = useState(false);
+  // The single AI assistant (merged from the old chatbot). The human "Need Help" chat's
+  // Assistant button also opens this.
+  const [agentOpen, setAgentOpen] = useState(false);
   const location = useLocation();
+
+  // Any component can open the assistant by dispatching this event (e.g. the welcome banner).
+  useEffect(() => {
+    const open = () => setAgentOpen(true);
+    window.addEventListener('procleo:open-agent', open);
+    return () => window.removeEventListener('procleo:open-agent', open);
+  }, []);
 
   return (
     <div
@@ -68,14 +77,11 @@ const Layout: React.FC = () => {
         </main>
       </div>
 
-      {/* Chatbot Widget - Controlled by ChatWidget */}
-      <ChatbotWidget
-        isOpen={chatbotOpen}
-        onClose={() => setChatbotOpen(false)}
-      />
+      {/* Global AI assistant — floating launcher + slide-over, on every authenticated page */}
+      <AgentLauncher open={agentOpen} onOpenChange={setAgentOpen} />
 
-      {/* Chat Widget with Need Help button - Opens both Chat and Chatbot */}
-      <ChatWidget onOpenChatbot={() => setChatbotOpen(true)} />
+      {/* Human-to-human chat "Need Help" launcher. Its Assistant button now opens the AI agent. */}
+      <ChatWidget onOpenChatbot={() => setAgentOpen(true)} />
     </div>
   );
 };

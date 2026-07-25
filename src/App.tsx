@@ -24,6 +24,12 @@ import {
   PRStatusPage,
   PRPreviewPage,
 } from '@/features/purchase-requisition';
+import {
+  AgentExceptionsPage,
+  AgentApprovalsPage,
+  AgentPoTimelinePage,
+  AgentChatPage,
+} from '@/features/agent';
 import VendorRegistrationPage from '@/pages/vendors/VendorRegistration';
 import TestLayout from '@/pages/auth/TestLayout';
 import TestLayout2 from '@/pages/auth/TestLayout2';
@@ -330,6 +336,25 @@ const App: React.FC = () => {
                   <Route
                     path='purchase-requisition/preview/:id'
                     element={<PRPreviewPage />}
+                  />
+
+                  {/* Agent PO Routes (post-PO agentic follow-up) */}
+                  <Route
+                    path='agent'
+                    element={<Navigate to='/agent/exceptions' replace />}
+                  />
+                  <Route
+                    path='agent/exceptions'
+                    element={<AgentExceptionsPage />}
+                  />
+                  <Route
+                    path='agent/approvals'
+                    element={<AgentApprovalsPage />}
+                  />
+                  <Route path='agent/chat' element={<AgentChatPage />} />
+                  <Route
+                    path='agent/pos/:poId'
+                    element={<AgentPoTimelinePage />}
                   />
 
                   {/* RFP Activity Routes */}

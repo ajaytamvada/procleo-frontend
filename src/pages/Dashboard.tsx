@@ -30,6 +30,8 @@ import { useAuth } from '@/hooks/useAuth';
 import RecentActivityWidget from '@/components/dashboard/RecentActivityWidget';
 import StatusSummaryCard from '@/components/dashboard/StatusSummaryCard';
 import LiveSourcingEvents from './LiveSourcingEvents';
+import AgentWelcomeBanner from '@/features/agent/components/AgentWelcomeBanner';
+import AgentBriefCard from '@/features/agent/components/AgentBriefCard';
 
 const Dashboard: React.FC = () => {
   const { data: dashboardData, isLoading } = useDashboardData();
@@ -186,6 +188,10 @@ const Dashboard: React.FC = () => {
             </select>
           </div>
         </div>
+
+        {/* AI assistant nudge + "what needs me today" */}
+        <AgentWelcomeBanner />
+        <AgentBriefCard />
 
         {/* Stats Grid - Cashfree Style Cards */}
         {/* 
