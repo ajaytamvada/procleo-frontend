@@ -19,11 +19,13 @@ import {
   useSubmitFeedback,
 } from '../hooks/useAgent';
 import { useAgentChatStore } from '../store/agentChatStore';
+import { streamChat } from '../services/agent.service';
 import type {
   Brief,
   BriefItem,
   ChatHistoryItem,
   ChatResponse,
+  ChatUiMessage,
 } from '../types/agent.types';
 
 /** Short, human phrase for a brief item, used in the opening greeting. */
@@ -107,6 +109,13 @@ const AgentChat = ({ onNavigate }: AgentChatProps) => {
   const navigate = useNavigate();
   const location = useLocation();
   const bottomRef = useRef<HTMLDivElement>(null);
+  const [streaming, setStreaming] = useState(false);
+  const abortRef = useRef<AbortController | null>(null);
+
+  // Abort any in-flight stream when the component unmounts.
+  useEffect(() => () => abortRef.current?.abort(), []);
+
+  const busy = streaming || send.isPending;
 
   // Greet only when there's no existing conversation to resume.
   useEffect(() => {
@@ -141,33 +150,104 @@ const AgentChat = ({ onNavigate }: AgentChatProps) => {
     return starterChips;
   }, [messages, starterChips]);
 
-  const appendAssistant = (res: ChatResponse) =>
-    setMessages(prev => [
-      ...prev,
-      {
-        role: 'assistant',
-        content: res.message,
-        proposedAction:
-          res.type === 'proposed_action' ? res.proposedAction : null,
-        handoff: res.type === 'handoff' ? res.handoff : null,
-        steps: res.steps ?? null,
-        suggestions: res.suggestions ?? null,
-      },
-    ]);
+  // Patch the last message (the in-flight assistant turn) as stream events arrive.
+  const patchLast = (patch: (m: ChatUiMessage) => ChatUiMessage) =>
+    setMessages(prev => {
+      if (prev.length === 0) return prev;
+      const next = [...prev];
+      next[next.length - 1] = patch(next[next.length - 1]);
+      return next;
+    });
+
+  // Fold a complete (non-streamed) response — WRITE proposal, handoff, or canned text — onto the turn.
+  const applyFinal = (m: ChatUiMessage, res: ChatResponse): ChatUiMessage => ({
+    ...m,
+    content: res.message ?? m.content,
+    proposedAction:
+      res.type === 'proposed_action'
+        ? res.proposedAction
+        : (m.proposedAction ?? null),
+    handoff: res.type === 'handoff' ? res.handoff : (m.handoff ?? null),
+    steps: res.steps ?? m.steps ?? null,
+    suggestions: res.suggestions ?? m.suggestions ?? null,
+  });
 
   const submit = (text: string) => {
     const trimmed = text.trim();
-    if (!trimmed || send.isPending) return;
+    if (!trimmed || busy) return;
     const history: ChatHistoryItem[] = messages.map(m => ({
       role: m.role,
       content: m.content,
     }));
-    setMessages(prev => [...prev, { role: 'user', content: trimmed }]);
+    const context = describeRoute(location.pathname);
+    // Add the user turn and an empty assistant turn that the stream fills in.
+    setMessages(prev => [
+      ...prev,
+      { role: 'user', content: trimmed },
+      { role: 'assistant', content: '' },
+    ]);
     setInput('');
-    send.mutate(
-      { message: trimmed, history, context: describeRoute(location.pathname) },
-      { onSuccess: appendAssistant }
-    );
+    setStreaming(true);
+
+    const controller = new AbortController();
+    abortRef.current = controller;
+    let streamedAny = false;
+
+    streamChat(
+      trimmed,
+      history,
+      context,
+      {
+        onStep: s => {
+          streamedAny = true;
+          patchLast(m => ({ ...m, steps: [...(m.steps ?? []), s] }));
+        },
+        onToken: t => {
+          streamedAny = true;
+          patchLast(m => ({ ...m, content: (m.content ?? '') + t }));
+        },
+        onMeta: suggestions => patchLast(m => ({ ...m, suggestions })),
+        onFinal: res => {
+          streamedAny = true;
+          patchLast(m => applyFinal(m, res));
+        },
+        onError: msg => patchLast(m => ({ ...m, content: m.content || msg })),
+      },
+      controller.signal
+    )
+      .catch(async err => {
+        if (controller.signal.aborted) return;
+        // SSE blocked or failed mid-flight: fall back to the plain endpoint so we still answer.
+        if (!streamedAny) {
+          await new Promise<void>(resolve =>
+            send.mutate(
+              { message: trimmed, history, context },
+              {
+                onSuccess: res =>
+                  patchLast(m => applyFinal({ ...m, content: '' }, res)),
+                onSettled: () => resolve(),
+              }
+            )
+          );
+        } else {
+          patchLast(m => ({
+            ...m,
+            content: m.content || 'The assistant could not finish responding.',
+          }));
+        }
+        void err;
+      })
+      .finally(() => {
+        setStreaming(false);
+        abortRef.current = null;
+      });
+  };
+
+  const handleReset = () => {
+    abortRef.current?.abort();
+    abortRef.current = null;
+    setStreaming(false);
+    reset();
   };
 
   const resolveAction = (
@@ -215,7 +295,7 @@ const AgentChat = ({ onNavigate }: AgentChatProps) => {
       <div className='flex items-center justify-end border-b border-gray-200 px-3 py-1.5 dark:border-gray-800'>
         <button
           type='button'
-          onClick={reset}
+          onClick={handleReset}
           className='flex items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-foreground'
         >
           <RotateCcw className='h-3 w-3' /> New chat
@@ -252,7 +332,17 @@ const AgentChat = ({ onNavigate }: AgentChatProps) => {
                   ))}
                 </div>
               )}
-              {m.content}
+              {m.content
+                ? m.content
+                : m.role === 'assistant' &&
+                  (!m.steps || m.steps.length === 0) &&
+                  streaming &&
+                  i === messages.length - 1 && (
+                    <span className='inline-flex items-center gap-1 text-muted-foreground'>
+                      <span className='h-1.5 w-1.5 animate-pulse rounded-full bg-current' />
+                      Thinking…
+                    </span>
+                  )}
               {m.proposedAction && (
                 <div className='mt-3 rounded-lg border border-amber-300 bg-amber-50 p-3 dark:border-amber-700 dark:bg-amber-950/40'>
                   <div className='mb-2 text-xs font-semibold uppercase tracking-wide text-amber-800 dark:text-amber-300'>
@@ -339,13 +429,6 @@ const AgentChat = ({ onNavigate }: AgentChatProps) => {
             </div>
           </div>
         ))}
-        {send.isPending && (
-          <div className='flex justify-start'>
-            <div className='rounded-2xl bg-gray-100 px-4 py-2 text-sm text-muted-foreground dark:bg-gray-800'>
-              Thinking…
-            </div>
-          </div>
-        )}
         <div ref={bottomRef} />
       </div>
 
@@ -356,7 +439,7 @@ const AgentChat = ({ onNavigate }: AgentChatProps) => {
               key={s}
               type='button'
               onClick={() => submit(s)}
-              disabled={send.isPending}
+              disabled={busy}
               className='rounded-full border border-gray-300 px-3 py-1 text-xs text-gray-600 transition-colors hover:border-violet-300 hover:bg-violet-50 hover:text-violet-700 disabled:opacity-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800'
             >
               {s}
@@ -379,7 +462,7 @@ const AgentChat = ({ onNavigate }: AgentChatProps) => {
           <Button
             type='submit'
             leftIcon={<Send className='h-4 w-4' />}
-            loading={send.isPending}
+            loading={busy}
           >
             Send
           </Button>

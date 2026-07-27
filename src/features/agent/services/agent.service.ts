@@ -3,7 +3,8 @@
  * centrally). URLs are relative to VITE_API_BASE_URL (which already includes /api).
  */
 
-import { apiClient } from '@/lib/api';
+import { apiClient, TokenManager } from '@/lib/api';
+import { env } from '@/utils/env';
 import type {
   AgentAnalytics,
   ApprovalDecision,
@@ -125,6 +126,109 @@ export const sendChat = async (
     context,
   });
   return response.data;
+};
+
+/** Callbacks for a streamed chat turn. */
+export interface StreamHandlers {
+  onStep?: (text: string) => void;
+  onToken?: (text: string) => void;
+  onMeta?: (suggestions: string[]) => void;
+  onFinal?: (response: ChatResponse) => void;
+  onError?: (message: string) => void;
+  onDone?: () => void;
+}
+
+/**
+ * Stream a chat turn over SSE. Uses fetch (not EventSource) so we can POST the message/history and
+ * send the JWT. Dispatches the backend's step/token/meta/final/error/done events to the handlers.
+ * Resolves when the stream ends. Pass an AbortSignal to cancel.
+ */
+export const streamChat = async (
+  message: string,
+  history: ChatHistoryItem[],
+  context: string | undefined,
+  handlers: StreamHandlers,
+  signal?: AbortSignal
+): Promise<void> => {
+  const token = TokenManager.getAccessToken();
+  const response = await fetch(`${env.VITE_API_BASE_URL}/agent/chat/stream`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Accept: 'text/event-stream',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+    body: JSON.stringify({ message, history, context }),
+    signal,
+  });
+
+  if (!response.ok || !response.body) {
+    throw new Error(`Stream failed (${response.status})`);
+  }
+
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = '';
+
+  const dispatch = (eventName: string, data: string) => {
+    let payload: Record<string, unknown>;
+    try {
+      payload = data ? JSON.parse(data) : {};
+    } catch {
+      return;
+    }
+    switch (eventName) {
+      case 'step':
+        handlers.onStep?.(String(payload.text ?? ''));
+        break;
+      case 'token':
+        handlers.onToken?.(String(payload.text ?? ''));
+        break;
+      case 'meta':
+        handlers.onMeta?.((payload.suggestions as string[]) ?? []);
+        break;
+      case 'final':
+        handlers.onFinal?.(payload as unknown as ChatResponse);
+        break;
+      case 'error':
+        handlers.onError?.(
+          String(payload.message ?? 'The assistant hit an error.')
+        );
+        break;
+      case 'done':
+        handlers.onDone?.();
+        break;
+    }
+  };
+
+  // Parse SSE frames: events are separated by a blank line; each frame has `event:` and `data:` lines.
+  const flushFrame = (frame: string) => {
+    let eventName = 'message';
+    const dataLines: string[] = [];
+    for (const line of frame.split('\n')) {
+      if (line.startsWith('event:')) {
+        eventName = line.slice(6).trim();
+      } else if (line.startsWith('data:')) {
+        dataLines.push(line.slice(5).trimStart());
+      }
+    }
+    if (dataLines.length > 0) {
+      dispatch(eventName, dataLines.join('\n'));
+    }
+  };
+
+  for (;;) {
+    const { value, done } = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, { stream: true });
+    let sep: number;
+    while ((sep = buffer.indexOf('\n\n')) !== -1) {
+      const frame = buffer.slice(0, sep);
+      buffer = buffer.slice(sep + 2);
+      if (frame.trim()) flushFrame(frame);
+    }
+  }
+  if (buffer.trim()) flushFrame(buffer);
 };
 
 export const confirmAction = async (
