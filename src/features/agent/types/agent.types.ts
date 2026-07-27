@@ -120,6 +120,8 @@ export interface ChatResponse {
   handoff?: Handoff | null;
   /** Trail of the lookups the agent ran to get here. */
   steps?: string[] | null;
+  /** Context-aware suggested replies (chips) for this turn. */
+  suggestions?: string[] | null;
 }
 
 // --- Proactive brief ---
@@ -140,6 +142,19 @@ export interface Brief {
   items: BriefItem[];
 }
 
+// --- Analytics ---
+
+export interface AgentAnalytics {
+  totalActions: number;
+  confirmed: number;
+  cancelled: number;
+  failed: number;
+  pending: number;
+  topTools: { tool: string; count: number }[];
+  feedbackUp: number;
+  feedbackDown: number;
+}
+
 /** History item sent back to the server for context. */
 export interface ChatHistoryItem {
   role: 'user' | 'assistant';
@@ -156,4 +171,8 @@ export interface ChatUiMessage {
   actionResolved?: boolean;
   /** Lookups the agent ran before answering. */
   steps?: string[] | null;
+  /** Context-aware suggested replies (chips) for this turn. */
+  suggestions?: string[] | null;
+  /** Thumbs feedback the user gave on this reply. */
+  feedback?: 'up' | 'down';
 }

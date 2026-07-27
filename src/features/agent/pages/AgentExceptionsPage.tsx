@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import AgentNav from '../components/AgentNav';
+import AgentInsightsCard from '../components/AgentInsightsCard';
 import { prettify, severityVariant } from '../components/severity';
 import {
   useExceptions,
@@ -156,6 +157,8 @@ const AgentExceptionsPage = () => {
           )}
         </CardContent>
       </Card>
+
+      <AgentInsightsCard />
     </div>
   );
 };

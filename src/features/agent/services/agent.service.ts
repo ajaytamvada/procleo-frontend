@@ -5,6 +5,7 @@
 
 import { apiClient } from '@/lib/api';
 import type {
+  AgentAnalytics,
   ApprovalDecision,
   ApprovalItem,
   Brief,
@@ -115,11 +116,13 @@ export const simulateInbound = async (
 
 export const sendChat = async (
   message: string,
-  history: ChatHistoryItem[]
+  history: ChatHistoryItem[],
+  context?: string
 ): Promise<ChatResponse> => {
   const response = await apiClient.post<ChatResponse>(`${BASE}/chat`, {
     message,
     history,
+    context,
   });
   return response.data;
 };
@@ -132,5 +135,22 @@ export const confirmAction = async (
     actionId,
     confirm,
   });
+  return response.data;
+};
+
+export const submitFeedback = async (
+  rating: 'up' | 'down',
+  userMessage: string,
+  assistantReply: string
+): Promise<void> => {
+  await apiClient.post(`${BASE}/chat/feedback`, {
+    rating,
+    userMessage,
+    assistantReply,
+  });
+};
+
+export const getAnalytics = async (): Promise<AgentAnalytics> => {
+  const response = await apiClient.get<AgentAnalytics>(`${BASE}/analytics`);
   return response.data;
 };

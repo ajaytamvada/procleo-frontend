@@ -8,9 +8,11 @@ import {
   confirmAction,
   decideApproval,
   enrollPo,
+  getAnalytics,
   getApprovals,
   getBrief,
   getExceptions,
+  submitFeedback,
   getThread,
   getTimeline,
   pausePo,
@@ -59,6 +61,29 @@ export const useBrief = () =>
     queryKey: ['agent-brief'],
     queryFn: getBrief,
     staleTime: 30000,
+  });
+
+export const useAnalytics = () =>
+  useQuery({
+    queryKey: ['agent-analytics'],
+    queryFn: getAnalytics,
+    staleTime: 60000,
+  });
+
+export const useSubmitFeedback = () =>
+  useMutation({
+    mutationFn: ({
+      rating,
+      userMessage,
+      assistantReply,
+    }: {
+      rating: 'up' | 'down';
+      userMessage: string;
+      assistantReply: string;
+    }) => submitFeedback(rating, userMessage, assistantReply),
+    onError: () => {
+      /* feedback is best-effort; stay silent on failure */
+    },
   });
 
 export const useApprovals = () =>
@@ -166,10 +191,12 @@ export const useSendChat = () =>
     mutationFn: ({
       message,
       history,
+      context,
     }: {
       message: string;
       history: ChatHistoryItem[];
-    }) => sendChat(message, history),
+      context?: string;
+    }) => sendChat(message, history, context),
     onError: (error: any) =>
       toast.error(errText(error, 'The assistant could not respond')),
   });

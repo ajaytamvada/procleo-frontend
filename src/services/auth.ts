@@ -162,6 +162,17 @@ export class AuthService {
       // Clear permission store
       const { usePermissionStore } = await import('@/store/permissionStore');
       usePermissionStore.getState().clearModules();
+
+      // Clear the agent conversation so it doesn't leak to the next user on a shared machine
+      try {
+        const { useAgentChatStore } = await import(
+          '@/features/agent/store/agentChatStore'
+        );
+        useAgentChatStore.getState().reset();
+        localStorage.removeItem('procleo-agent-chat');
+      } catch {
+        /* non-fatal */
+      }
     }
   }
 

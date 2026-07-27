@@ -1,15 +1,29 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { ArrowUpRight, Check, Search, Send, X } from 'lucide-react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import {
+  ArrowUpRight,
+  Check,
+  RotateCcw,
+  Search,
+  Send,
+  ThumbsDown,
+  ThumbsUp,
+  X,
+} from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { cn } from '@/lib/utils';
-import { useBrief, useConfirmAction, useSendChat } from '../hooks/useAgent';
+import {
+  useBrief,
+  useConfirmAction,
+  useSendChat,
+  useSubmitFeedback,
+} from '../hooks/useAgent';
+import { useAgentChatStore } from '../store/agentChatStore';
 import type {
   Brief,
   BriefItem,
   ChatHistoryItem,
   ChatResponse,
-  ChatUiMessage,
 } from '../types/agent.types';
 
 /** Short, human phrase for a brief item, used in the opening greeting. */
@@ -36,6 +50,33 @@ const shortLabel = (item: BriefItem): string => {
   }
 };
 
+/**
+ * Best-effort read of "what record am I looking at" from the URL, sent to the agent so "approve
+ * this" / "chase it" resolves to the record on screen. It's only a hint — the confirm card still
+ * shows the real record, so a wrong guess is caught.
+ */
+const describeRoute = (pathname: string): string | undefined => {
+  const idSeg = pathname
+    .split('/')
+    .filter(Boolean)
+    .reverse()
+    .find(s => /^\d+$/.test(s));
+  if (!idSeg) return undefined;
+  let type: string | undefined;
+  if (pathname.includes('purchase-orders') || pathname.includes('/agent/pos'))
+    type = 'Purchase Order';
+  else if (
+    pathname.includes('purchase-requisition') ||
+    pathname.includes('/purchase/')
+  )
+    type = 'Purchase Requisition';
+  else if (pathname.includes('/rfp')) type = 'RFP';
+  else if (pathname.includes('invoice')) type = 'Invoice';
+  else if (pathname.includes('/grn')) type = 'GRN';
+  else if (pathname.includes('/asset')) type = 'Asset';
+  return type ? `${type} (id ${idSeg})` : undefined;
+};
+
 const buildGreeting = (brief?: Brief): string => {
   if (!brief || brief.totalCount === 0) {
     return "Hi 👋 I'm your ProcLeo assistant. You're all clear right now — nothing needs your attention. I can raise a requisition, chase a supplier, approve things, or answer questions about your procurement data. What would you like to do?";
@@ -50,32 +91,34 @@ interface AgentChatProps {
 }
 
 /**
- * The reusable Agent conversation UI (message list + input). Fills its container's height,
- * so the parent decides the frame — the full page or the floating panel. Opens with a
- * dynamic greeting summarising the user's live workload.
+ * The reusable Agent conversation UI. Its messages live in a persisted store (agentChatStore), so
+ * the conversation survives navigation, panel open/close, and refresh — and the full page and the
+ * floating panel share ONE conversation. Opens with a dynamic greeting; chips adapt each turn.
  */
 const AgentChat = ({ onNavigate }: AgentChatProps) => {
   const { data: brief, isLoading: briefLoading } = useBrief();
-  const [messages, setMessages] = useState<ChatUiMessage[]>([]);
+  const messages = useAgentChatStore(s => s.messages);
+  const setMessages = useAgentChatStore(s => s.setMessages);
+  const reset = useAgentChatStore(s => s.reset);
   const [input, setInput] = useState('');
   const send = useSendChat();
   const confirm = useConfirmAction();
+  const feedback = useSubmitFeedback();
   const navigate = useNavigate();
+  const location = useLocation();
   const bottomRef = useRef<HTMLDivElement>(null);
-  const greeted = useRef(false);
 
-  // Seed the opening greeting once the brief has resolved (or failed).
+  // Greet only when there's no existing conversation to resume.
   useEffect(() => {
-    if (greeted.current || briefLoading) return;
-    greeted.current = true;
+    if (briefLoading || messages.length > 0) return;
     setMessages([{ role: 'assistant', content: buildGreeting(brief) }]);
-  }, [brief, briefLoading]);
+  }, [brief, briefLoading, messages.length, setMessages]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  const quickChips = useMemo(() => {
+  const starterChips = useMemo(() => {
     const chips: string[] = [];
     const hasApprovals = (brief?.items ?? []).some(i =>
       i.kind.includes('approval')
@@ -87,6 +130,17 @@ const AgentChat = ({ onNavigate }: AgentChatProps) => {
     return chips.slice(0, 4);
   }, [brief]);
 
+  // Chips "keep changing": show the latest assistant turn's suggestions, else the starters.
+  const activeChips = useMemo(() => {
+    for (let i = messages.length - 1; i >= 0; i--) {
+      if (messages[i].role === 'assistant') {
+        const s = messages[i].suggestions;
+        return s && s.length > 0 ? s : starterChips;
+      }
+    }
+    return starterChips;
+  }, [messages, starterChips]);
+
   const appendAssistant = (res: ChatResponse) =>
     setMessages(prev => [
       ...prev,
@@ -97,6 +151,7 @@ const AgentChat = ({ onNavigate }: AgentChatProps) => {
           res.type === 'proposed_action' ? res.proposedAction : null,
         handoff: res.type === 'handoff' ? res.handoff : null,
         steps: res.steps ?? null,
+        suggestions: res.suggestions ?? null,
       },
     ]);
 
@@ -109,7 +164,10 @@ const AgentChat = ({ onNavigate }: AgentChatProps) => {
     }));
     setMessages(prev => [...prev, { role: 'user', content: trimmed }]);
     setInput('');
-    send.mutate({ message: trimmed, history }, { onSuccess: appendAssistant });
+    send.mutate(
+      { message: trimmed, history, context: describeRoute(location.pathname) },
+      { onSuccess: appendAssistant }
+    );
   };
 
   const resolveAction = (
@@ -137,8 +195,33 @@ const AgentChat = ({ onNavigate }: AgentChatProps) => {
     onNavigate?.();
   };
 
+  const rate = (index: number, rating: 'up' | 'down') => {
+    const prev = messages[index - 1];
+    const userMessage = prev && prev.role === 'user' ? prev.content : '';
+    feedback.mutate({
+      rating,
+      userMessage,
+      assistantReply: messages[index].content,
+    });
+    setMessages(cur => {
+      const next = [...cur];
+      if (next[index]) next[index] = { ...next[index], feedback: rating };
+      return next;
+    });
+  };
+
   return (
     <div className='flex h-full flex-col'>
+      <div className='flex items-center justify-end border-b border-gray-200 px-3 py-1.5 dark:border-gray-800'>
+        <button
+          type='button'
+          onClick={reset}
+          className='flex items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-foreground'
+        >
+          <RotateCcw className='h-3 w-3' /> New chat
+        </button>
+      </div>
+
       <div className='flex flex-1 flex-col gap-4 overflow-y-auto p-4'>
         {messages.map((m, i) => (
           <div
@@ -216,6 +299,43 @@ const AgentChat = ({ onNavigate }: AgentChatProps) => {
                   </Button>
                 </div>
               )}
+              {m.role === 'assistant' && i > 0 && (
+                <div className='mt-2 flex items-center gap-0.5'>
+                  <button
+                    type='button'
+                    disabled={!!m.feedback}
+                    onClick={() => rate(i, 'up')}
+                    aria-label='Helpful'
+                    className={cn(
+                      'rounded p-1 hover:bg-black/5 disabled:hover:bg-transparent dark:hover:bg-white/10',
+                      m.feedback === 'up'
+                        ? 'text-green-600'
+                        : 'text-muted-foreground'
+                    )}
+                  >
+                    <ThumbsUp className='h-3.5 w-3.5' />
+                  </button>
+                  <button
+                    type='button'
+                    disabled={!!m.feedback}
+                    onClick={() => rate(i, 'down')}
+                    aria-label='Not helpful'
+                    className={cn(
+                      'rounded p-1 hover:bg-black/5 disabled:hover:bg-transparent dark:hover:bg-white/10',
+                      m.feedback === 'down'
+                        ? 'text-red-600'
+                        : 'text-muted-foreground'
+                    )}
+                  >
+                    <ThumbsDown className='h-3.5 w-3.5' />
+                  </button>
+                  {m.feedback && (
+                    <span className='ml-1 text-xs text-muted-foreground'>
+                      Thanks!
+                    </span>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         ))}
@@ -229,9 +349,9 @@ const AgentChat = ({ onNavigate }: AgentChatProps) => {
         <div ref={bottomRef} />
       </div>
 
-      <div className='border-t p-3'>
+      <div className='border-t border-gray-200 p-3 dark:border-gray-800'>
         <div className='mb-2 flex flex-wrap gap-1.5'>
-          {quickChips.map(s => (
+          {activeChips.map(s => (
             <button
               key={s}
               type='button'
