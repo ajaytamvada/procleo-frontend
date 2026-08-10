@@ -229,6 +229,14 @@ export const QuotationComparisonPage: React.FC = () => {
                       <p className='text-xs text-gray-500'>Supplier Name</p>
                       <p className='text-sm font-semibold text-gray-900'>
                         {quotation.supplierName}
+                        {(quotation as any).submissionChannel === 'EMAIL' && (
+                          <span
+                            className='ml-2 inline-flex px-2 py-0.5 rounded-full text-[10px] font-medium border bg-blue-50 text-blue-700 border-blue-200 align-middle'
+                            title='Submitted through the email magic link — no portal login'
+                          >
+                            via email
+                          </span>
+                        )}
                       </p>
                     </div>
                   </div>

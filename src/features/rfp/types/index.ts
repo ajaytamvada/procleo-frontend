@@ -63,6 +63,8 @@ export interface RFPQuotation {
   remarks?: string;
   items?: RFPQuotationItem[];
   submittedDate?: string;
+  /** PORTAL (default) or EMAIL — how the supplier submitted this quote */
+  submissionChannel?: string;
   evaluatedBy?: string;
   evaluatedDate?: string;
 }
