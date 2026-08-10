@@ -103,6 +103,49 @@ export const PrintPOListPage: React.FC = () => {
     );
   };
 
+  /**
+   * Supplier's email-channel response to the PO (magic-link flow).
+   * "Awaiting" until the supplier acts on the emailed link.
+   */
+  const getSupplierResponseBadge = (po: any) => {
+    const styles: Record<string, string> = {
+      ACCEPTED: 'bg-green-50 text-green-700 border-green-200',
+      CHANGE_REQUESTED: 'bg-amber-50 text-amber-700 border-amber-200',
+      DECLINED: 'bg-red-50 text-red-700 border-red-200',
+    };
+    const labels: Record<string, string> = {
+      ACCEPTED: 'Accepted',
+      CHANGE_REQUESTED: 'Change requested',
+      DECLINED: 'Declined',
+    };
+    if (!po.vendorResponse) {
+      return (
+        <span className='inline-flex px-2.5 py-1 rounded-full text-xs font-medium border bg-gray-50 text-gray-500 border-gray-200'>
+          Awaiting
+        </span>
+      );
+    }
+    const title = [
+      po.vendorResponseRemarks,
+      po.vendorProposedDeliveryDate
+        ? `Proposed delivery: ${po.vendorProposedDeliveryDate}`
+        : null,
+    ]
+      .filter(Boolean)
+      .join(' — ');
+    return (
+      <span
+        className={`inline-flex px-2.5 py-1 rounded-full text-xs font-medium border ${
+          styles[po.vendorResponse] ||
+          'bg-gray-50 text-gray-500 border-gray-200'
+        }`}
+        title={title || undefined}
+      >
+        {labels[po.vendorResponse] || po.vendorResponse}
+      </span>
+    );
+  };
+
   if (isLoading) {
     return (
       <div className='flex items-center justify-center h-64'>
@@ -199,6 +242,9 @@ export const PrintPOListPage: React.FC = () => {
                       Total Amount
                     </th>
                     <th className='px-6 py-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wide'>
+                      Supplier Response
+                    </th>
+                    <th className='px-6 py-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wide'>
                       Actions
                     </th>
                   </tr>
@@ -236,6 +282,9 @@ export const PrintPOListPage: React.FC = () => {
                           minimumFractionDigits: 2,
                           maximumFractionDigits: 2,
                         }) || '0.00'}
+                      </td>
+                      <td className='px-6 py-4 whitespace-nowrap'>
+                        {getSupplierResponseBadge(po)}
                       </td>
                       <td className='px-6 py-4 whitespace-nowrap'>
                         <div className='flex items-center space-x-2'>

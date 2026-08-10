@@ -103,6 +103,65 @@ export const getTrailEventTypes = async (): Promise<string[]> => {
   return Array.isArray(response.data) ? response.data : [];
 };
 
+// ---- Financial trail (asset_valuation_history) ----
+
+export interface AssetValuationRow {
+  id: number;
+  assetId: number;
+  assetTag: string | null;
+  itemName: string | null;
+  eventType: 'ACQUISITION' | 'DEPRECIATION' | 'DISPOSAL';
+  periodYear: number | null;
+  periodMonth: number | null;
+  periodLabel: string | null;
+  openingValue: number | null;
+  depreciationAmount: number | null;
+  accumulatedDepreciation: number | null;
+  closingValue: number | null;
+  depreciationMethod: string | null;
+  proceeds: number | null;
+  gainLoss: number | null;
+  remarks: string | null;
+  postedAt: string;
+  postedBy: string | null;
+}
+
+export const getValuationTrail = async (
+  assetTag?: string,
+  eventType?: string
+): Promise<AssetValuationRow[]> => {
+  const response = await apiClient.get<AssetValuationRow[]>(
+    '/assets/valuation',
+    {
+      params: {
+        assetTag: assetTag || undefined,
+        eventType: eventType || undefined,
+      },
+    }
+  );
+  return Array.isArray(response.data) ? response.data : [];
+};
+
+export const getAssetValuationTrail = async (
+  assetId: number
+): Promise<AssetValuationRow[]> => {
+  const response = await apiClient.get<AssetValuationRow[]>(
+    `/assets/${assetId}/valuation`
+  );
+  return Array.isArray(response.data) ? response.data : [];
+};
+
+export const runDepreciation = async (
+  upTo?: string
+): Promise<{ upTo: string; rowsPosted: number }> => {
+  const response = await apiClient.post<{ upTo: string; rowsPosted: number }>(
+    '/assets/depreciation/run',
+    null,
+    { params: { upTo: upTo || undefined } }
+  );
+  return response.data;
+};
+
 export const getAssetsByStatus = async (status: string): Promise<Asset[]> => {
   const response = await apiClient.get<Asset[]>(`/assets/status/${status}`);
   return Array.isArray(response.data) ? response.data : [];

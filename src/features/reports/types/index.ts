@@ -120,6 +120,21 @@ export interface SubmittedRFPReport {
   totalPrice: number;
 }
 
+// Approver activity ("My Approvals") report row
+export interface ApproverActivity {
+  id: number;
+  module: string;
+  documentId: number | null;
+  documentNumber: string | null;
+  itemId: number | null;
+  itemLabel: string | null;
+  approvalLevel: string | null;
+  decision: 'APPROVED' | 'REJECTED';
+  approverName: string | null;
+  decidedAt: string;
+  remarks: string | null;
+}
+
 // Date range filter type
 export interface DateRangeFilter {
   startDate: string;

@@ -253,6 +253,7 @@ const DynamicSidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
         { name: '3-Way Match', href: '/reports/three-way-match' },
         { name: 'RFP Float', href: '/reports/rfp-float' },
         { name: 'RFP Submitted', href: '/reports/rfp-submitted' },
+        { name: 'My Approvals', href: '/reports/my-approvals' },
       ],
     },
     {

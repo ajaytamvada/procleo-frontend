@@ -107,6 +107,15 @@ export const useTrailEventTypes = () => {
   });
 };
 
+/** Financial trail (valuation/depreciation rows), filterable. */
+export const useValuationTrail = (assetTag?: string, eventType?: string) => {
+  return useQuery({
+    queryKey: ['asset-valuation', assetTag, eventType],
+    queryFn: () => api.getValuationTrail(assetTag, eventType),
+    staleTime: 30000,
+  });
+};
+
 export const useExpiringAssets = (days = 30, enabled = true) => {
   return useQuery({
     queryKey: ['assets', 'expiring', days],

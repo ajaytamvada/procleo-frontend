@@ -8,6 +8,7 @@ import {
   getGRNReport,
   getFloatRFPReport,
   getSubmittedRFPReport,
+  getMyApprovalsReport,
 } from '../api/reportApi';
 
 /**
@@ -97,6 +98,17 @@ export const useSubmittedRFPReport = () => {
   return useQuery({
     queryKey: ['reports', 'rfp-submitted'],
     queryFn: () => getSubmittedRFPReport(),
+    staleTime: 300000,
+  });
+};
+
+/**
+ * Hook to fetch My Approvals Report (current user's decisions, all modules)
+ */
+export const useMyApprovalsReport = (startDate?: string, endDate?: string) => {
+  return useQuery({
+    queryKey: ['reports', 'my-approvals', startDate, endDate],
+    queryFn: () => getMyApprovalsReport(startDate, endDate),
     staleTime: 300000,
   });
 };

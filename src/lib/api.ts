@@ -104,6 +104,22 @@ const createApiClient = (): AxiosInstance => {
         config.headers.Authorization = `Bearer ${token}`;
       }
 
+      // Entity (plant) scoping: tell the backend which entity the user is
+      // working in so new documents get stamped correctly. Validated
+      // server-side against the caller's allowed entities.
+      try {
+        const entityStorage = localStorage.getItem('entity-storage');
+        if (entityStorage) {
+          const selectedEntityId =
+            JSON.parse(entityStorage)?.state?.selectedEntityId;
+          if (selectedEntityId != null) {
+            config.headers['X-Entity-Id'] = String(selectedEntityId);
+          }
+        }
+      } catch {
+        /* malformed storage — skip header */
+      }
+
       // Add request timestamp
       config.metadata = { startTime: Date.now() };
 

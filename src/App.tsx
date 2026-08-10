@@ -87,6 +87,7 @@ import {
   AssetMaintenancePage,
   AssetDamagePage,
   AssetTrailPage,
+  AssetFinancialTrailPage,
 } from '@/features/assets';
 import InvoiceListPage from '@/features/invoice/pages/InvoiceListPage';
 import InvoiceEntryPage from '@/features/invoice/pages/InvoiceEntryPage';
@@ -108,6 +109,7 @@ import POReportPage from '@/features/reports/pages/POReportPage';
 import GRNReportPage from '@/features/reports/pages/GRNReportPage';
 import FloatRFPReportPage from '@/features/reports/pages/FloatRFPReportPage';
 import SubmittedRFPReportPage from '@/features/reports/pages/SubmittedRFPReportPage';
+import MyApprovalsReportPage from '@/features/reports/pages/MyApprovalsReportPage';
 // Import Master Configuration Components
 import {
   MasterDashboard,
@@ -139,6 +141,8 @@ import TermsAndConditionsPage from '@/features/master/components/termsandconditi
 // Import Access Management Components
 import UserTypePage from '@/features/access/components/usertype/UserTypePage';
 import UserPermissionPage from '@/features/access/components/userpermission/UserPermissionPage';
+import EntitiesPage from '@/features/rbac/pages/EntitiesPage';
+import UserAccessPage from '@/features/rbac/pages/UserAccessPage';
 import LoginProvisionPage from '@/features/access/components/loginprovision/LoginProvisionPage';
 // Vendor Onboarding (admin)
 import {
@@ -604,6 +608,10 @@ const App: React.FC = () => {
                   />
                   <Route path='assets/damage' element={<AssetDamagePage />} />
                   <Route path='assets/trail' element={<AssetTrailPage />} />
+                  <Route
+                    path='assets/financial-trail'
+                    element={<AssetFinancialTrailPage />}
+                  />
 
                   {/* Invoice Routes */}
                   <Route
@@ -869,6 +877,8 @@ const App: React.FC = () => {
                       path='login-provision'
                       element={<LoginProvisionPage />}
                     />
+                    <Route path='entities' element={<EntitiesPage />} />
+                    <Route path='user-access' element={<UserAccessPage />} />
                   </Route>
 
                   <Route path='vendors' element={<Vendors />} />
@@ -899,6 +909,10 @@ const App: React.FC = () => {
                   <Route
                     path='reports/rfp-submitted'
                     element={<SubmittedRFPReportPage />}
+                  />
+                  <Route
+                    path='reports/my-approvals'
+                    element={<MyApprovalsReportPage />}
                   />
 
                   <Route path='documents' element={<Documents />} />

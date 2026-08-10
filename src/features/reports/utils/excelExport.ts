@@ -8,7 +8,34 @@ import type {
   GRNReport,
   FloatRFPReport,
   SubmittedRFPReport,
+  ApproverActivity,
 } from '../types';
+
+/**
+ * Export My Approvals Report to Excel
+ */
+export const exportMyApprovalsToExcel = (
+  data: ApproverActivity[],
+  filename = 'My_Approvals_Report.xlsx'
+) => {
+  const worksheetData = data.map((item, index) => ({
+    'S No.': index + 1,
+    Module: item.module,
+    'Document No.': item.documentNumber || '',
+    Item: item.itemLabel || '',
+    Level: item.approvalLevel || '',
+    Decision: item.decision,
+    'Date & Time': item.decidedAt
+      ? new Date(item.decidedAt).toLocaleString('en-IN')
+      : '',
+    Remarks: item.remarks || '',
+  }));
+
+  const worksheet = XLSX.utils.json_to_sheet(worksheetData);
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, 'My Approvals');
+  XLSX.writeFile(workbook, filename);
+};
 
 /**
  * Export PR Report to Excel

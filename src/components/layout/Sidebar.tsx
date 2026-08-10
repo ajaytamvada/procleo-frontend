@@ -148,6 +148,7 @@ const navigation: NavigationItem[] = [
       { name: '3-Way Match', href: '/reports/three-way-match' },
       { name: 'RFP Float', href: '/reports/rfp-float' },
       { name: 'RFP Submitted', href: '/reports/rfp-submitted' },
+      { name: 'My Approvals', href: '/reports/my-approvals' },
     ],
   },
   { name: 'Settings', href: '/settings', icon: Settings },

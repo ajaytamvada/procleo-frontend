@@ -163,6 +163,14 @@ export class AuthService {
       const { usePermissionStore } = await import('@/store/permissionStore');
       usePermissionStore.getState().clearModules();
 
+      // Clear entity scope store
+      try {
+        const { useEntityStore } = await import('@/store/entityStore');
+        useEntityStore.getState().clearScope();
+      } catch {
+        /* non-fatal */
+      }
+
       // Clear the agent conversation so it doesn't leak to the next user on a shared machine
       try {
         const { useAgentChatStore } = await import(

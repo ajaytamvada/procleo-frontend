@@ -8,6 +8,7 @@ import type {
   GRNReport,
   FloatRFPReport,
   SubmittedRFPReport,
+  ApproverActivity,
 } from '../types';
 
 /**
@@ -123,6 +124,23 @@ export const getSubmittedRFPReport = async (): Promise<
 > => {
   const response = await apiClient.get<SubmittedRFPReport[]>(
     '/reports/rfp-submitted'
+  );
+  return Array.isArray(response.data) ? response.data : [];
+};
+
+/**
+ * Get My Approvals Report (current user's approve/reject activity, all modules)
+ */
+export const getMyApprovalsReport = async (
+  startDate?: string,
+  endDate?: string
+): Promise<ApproverActivity[]> => {
+  const params = new URLSearchParams();
+  if (startDate) params.append('startDate', startDate);
+  if (endDate) params.append('endDate', endDate);
+
+  const response = await apiClient.get<ApproverActivity[]>(
+    `/reports/my-approvals?${params.toString()}`
   );
   return Array.isArray(response.data) ? response.data : [];
 };

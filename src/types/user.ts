@@ -176,6 +176,14 @@ export interface UserSearchParams {
 // Role Configuration
 // ========================================
 
+/**
+ * @deprecated Hardcoded role scheme that matches neither the backend roles
+ * nor the permission matrix. Real permissions come from the backend
+ * (role_module_permission) via usePermissionStore / usePermissions — use
+ * those instead. Only the legacy mock user screens (UserList,
+ * CreateUserForm) still reference this; it will be deleted when user
+ * management is rebuilt on the real API (RBAC redesign Phase 3).
+ */
 export const ROLE_PERMISSIONS: Record<UserRole, RolePermissions> = {
   SUPER_USER: {
     role: 'SUPER_USER',

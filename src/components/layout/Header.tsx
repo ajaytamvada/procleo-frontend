@@ -26,6 +26,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { AuthService } from '@/services/auth';
 import NotificationBell from '@/components/common/NotificationBell';
+import EntitySwitcher from './EntitySwitcher';
 
 interface HeaderProps {
   onMenuClick: () => void;
@@ -494,6 +495,9 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
               )}
             </div>
           )}
+
+          {/* Entity (plant) switcher — hidden for single-entity users */}
+          <EntitySwitcher />
 
           {/* Notifications */}
           <NotificationBell />
