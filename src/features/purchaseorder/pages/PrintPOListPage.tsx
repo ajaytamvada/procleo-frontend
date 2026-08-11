@@ -5,7 +5,7 @@
 
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, Loader2, Printer, Download } from 'lucide-react';
+import { Search, Loader2, Printer, Download, Paperclip, X } from 'lucide-react';
 import { Input } from '@/components/ui/Input';
 import { usePurchaseOrdersByStatus } from '../hooks/usePurchaseOrders';
 import { format, parseISO } from 'date-fns';
@@ -17,6 +17,11 @@ export const PrintPOListPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [downloadingId, setDownloadingId] = useState<number | null>(null);
+  const [docsPo, setDocsPo] = useState<{ id: number; poNumber: string } | null>(
+    null
+  );
+  const [supplierDocs, setSupplierDocs] = useState<any[]>([]);
+  const [docsLoading, setDocsLoading] = useState(false);
 
   const itemsPerPage = 15;
 
@@ -103,6 +108,50 @@ export const PrintPOListPage: React.FC = () => {
     );
   };
 
+  // Supplier documents (email-channel uploads) for one PO
+  const handleShowDocs = async (po: any) => {
+    setDocsPo({ id: po.id, poNumber: po.poNumber });
+    setDocsLoading(true);
+    try {
+      const response = await apiClient.get('/supplier-documents', {
+        params: { referenceType: 'PO', referenceId: po.id },
+      });
+      setSupplierDocs(Array.isArray(response.data) ? response.data : []);
+    } catch (error) {
+      console.error('Error loading supplier documents:', error);
+      toast.error('Failed to load supplier documents');
+      setSupplierDocs([]);
+    } finally {
+      setDocsLoading(false);
+    }
+  };
+
+  const handleDownloadDoc = async (doc: any) => {
+    try {
+      const response = await apiClient.get(
+        `/supplier-documents/${doc.id}/download`,
+        { responseType: 'blob' }
+      );
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', doc.originalFilename || 'document');
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode?.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Error downloading document:', error);
+      toast.error('Failed to download document');
+    }
+  };
+
+  const formatDocType = (type: string) =>
+    (type || '')
+      .replace('_', ' ')
+      .toLowerCase()
+      .replace(/\b\w/g, l => l.toUpperCase());
+
   /**
    * Supplier's email-channel response to the PO (magic-link flow).
    * "Awaiting" until the supplier acts on the emailed link.
@@ -172,6 +221,76 @@ export const PrintPOListPage: React.FC = () => {
 
   return (
     <div className='space-y-6'>
+      {/* Supplier documents modal */}
+      {docsPo && (
+        <div className='fixed inset-0 z-50 flex items-center justify-center'>
+          <div
+            className='absolute inset-0 bg-gray-900/50'
+            onClick={() => setDocsPo(null)}
+          />
+          <div className='relative bg-white rounded-xl shadow-2xl border border-gray-200 w-full max-w-lg mx-4 overflow-hidden'>
+            <div className='px-5 py-4 border-b border-gray-100 flex items-center justify-between'>
+              <div>
+                <h3 className='text-sm font-semibold text-gray-900'>
+                  Supplier documents — {docsPo.poNumber}
+                </h3>
+                <p className='text-xs text-gray-500 mt-0.5'>
+                  Files the supplier sent through the email link
+                </p>
+              </div>
+              <button
+                onClick={() => setDocsPo(null)}
+                className='p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100'
+              >
+                <X className='w-4 h-4' />
+              </button>
+            </div>
+            <div className='max-h-[360px] overflow-y-auto'>
+              {docsLoading ? (
+                <div className='flex justify-center py-10'>
+                  <Loader2 className='w-6 h-6 animate-spin text-violet-600' />
+                </div>
+              ) : supplierDocs.length === 0 ? (
+                <p className='text-sm text-gray-500 text-center py-10'>
+                  No documents received yet
+                </p>
+              ) : (
+                <ul className='divide-y divide-gray-100'>
+                  {supplierDocs.map(doc => (
+                    <li
+                      key={doc.id}
+                      className='px-5 py-3 flex items-center justify-between gap-3'
+                    >
+                      <div className='min-w-0'>
+                        <p className='text-sm font-medium text-gray-900 truncate'>
+                          {doc.originalFilename}
+                        </p>
+                        <p className='text-xs text-gray-500'>
+                          {formatDocType(doc.docType)}
+                          {doc.uploadedByEmail
+                            ? ` · from ${doc.uploadedByEmail}`
+                            : ''}
+                          {doc.uploadedAt
+                            ? ` · ${new Date(doc.uploadedAt).toLocaleDateString('en-IN')}`
+                            : ''}
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => handleDownloadDoc(doc)}
+                        className='inline-flex items-center gap-1.5 px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white text-xs font-semibold rounded-md transition-colors flex-shrink-0'
+                      >
+                        <Download className='w-3.5 h-3.5' />
+                        Download
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className='flex items-center justify-between'>
         <div>
           <h1 className='text-xl font-semibold text-gray-800'>
@@ -310,6 +429,13 @@ export const PrintPOListPage: React.FC = () => {
                               <Download className='w-4 h-4 mr-1.5' />
                             )}
                             PDF
+                          </button>
+                          <button
+                            onClick={() => handleShowDocs(po)}
+                            className='inline-flex items-center px-2.5 py-1.5 border border-gray-200 text-gray-600 hover:text-violet-600 hover:border-violet-300 hover:bg-violet-50 text-sm font-semibold rounded-md transition-colors'
+                            title='Supplier documents'
+                          >
+                            <Paperclip className='w-4 h-4' />
                           </button>
                         </div>
                       </td>
