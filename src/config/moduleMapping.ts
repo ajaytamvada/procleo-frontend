@@ -85,6 +85,17 @@ export const routeToModuleMap: Record<string, string> = {
   '/master/user-permissions': 'MASTER_USER_PERMISSION',
   '/master/login-provision': 'MASTER_LOGIN_PROVISION',
   '/reports': 'REPORTS',
+  '/reports/pr': 'REPORT_PR',
+  '/reports/po': 'REPORT_PO',
+  '/reports/grn': 'REPORT_GRN',
+  '/reports/invoices': 'REPORT_INVOICE',
+  '/reports/vendor': 'REPORT_VENDOR',
+  '/reports/three-way-match': 'REPORT_3WAY',
+  '/reports/rfp-float': 'REPORT_RFP_FLOAT',
+  '/reports/rfp-submitted': 'REPORT_RFP_SUBMITTED',
+  '/reports/my-approvals': 'REPORT_MY_APPROVALS',
+  '/master/entities': 'MASTER_ENTITIES',
+  '/master/user-access': 'MASTER_USER_ACCESS',
   '/settings': 'SETTINGS',
 };
 
