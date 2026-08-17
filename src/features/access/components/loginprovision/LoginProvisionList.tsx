@@ -196,7 +196,7 @@ const LoginProvisionList: React.FC<LoginProvisionListProps> = ({ onEdit }) => {
                           <User size={14} className='text-violet-600' />
                         </div>
                         <span className='text-sm font-medium text-gray-700'>
-                          {user.employeeName || user.employeeId}
+                          {user.employeeName || user.vendorName || '—'}
                         </span>
                       </div>
                     </td>

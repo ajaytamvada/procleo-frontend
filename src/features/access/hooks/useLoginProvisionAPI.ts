@@ -12,6 +12,8 @@ export interface LoginProvision {
   password?: string;
   userTypeId?: number;
   userTypeName?: string;
+  vendorId?: number;
+  vendorName?: string;
   status: number;
   disableDate?: string;
 }
