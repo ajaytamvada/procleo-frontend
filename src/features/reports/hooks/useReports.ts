@@ -109,6 +109,9 @@ export const useMyApprovalsReport = (startDate?: string, endDate?: string) => {
   return useQuery({
     queryKey: ['reports', 'my-approvals', startDate, endDate],
     queryFn: () => getMyApprovalsReport(startDate, endDate),
-    staleTime: 300000,
+    // Personal activity feed: always refetch so a decision made moments ago
+    // appears without a manual page refresh
+    staleTime: 0,
+    refetchOnMount: 'always',
   });
 };
