@@ -18,12 +18,19 @@ export const exportMyApprovalsToExcel = (
   data: ApproverActivity[],
   filename = 'My_Approvals_Report.xlsx'
 ) => {
+  const levelLabels: Record<string, string> = {
+    RM: 'L1',
+    ACCOUNTS: 'L2',
+    ADMIN: 'L3',
+  };
   const worksheetData = data.map((item, index) => ({
     'S No.': index + 1,
     Module: item.module,
-    'Document No.': item.documentNumber || '',
+    Document: item.documentNumber || '',
     Item: item.itemLabel || '',
-    Level: item.approvalLevel || '',
+    Level: item.approvalLevel
+      ? levelLabels[item.approvalLevel] || item.approvalLevel
+      : '',
     Decision: item.decision,
     'Date & Time': item.decidedAt
       ? new Date(item.decidedAt).toLocaleString('en-IN')

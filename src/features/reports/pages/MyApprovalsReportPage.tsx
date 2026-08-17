@@ -10,6 +10,13 @@ import toast from 'react-hot-toast';
 import { useMyApprovalsReport } from '../hooks/useReports';
 import { exportMyApprovalsToExcel } from '../utils/excelExport';
 
+// Internal ledger codes -> the level names used across the product UI
+export const LEVEL_LABELS: Record<string, string> = {
+  RM: 'L1',
+  ACCOUNTS: 'L2',
+  ADMIN: 'L3',
+};
+
 const MODULE_LABELS: Record<string, string> = {
   PR: 'Purchase Requisition',
   PO: 'Purchase Order',
@@ -251,7 +258,9 @@ const MyApprovalsReportPage: React.FC = () => {
                       )}
                     </td>
                     <td className='px-4 py-3.5 text-sm text-gray-700'>
-                      {item.approvalLevel || '--'}
+                      {item.approvalLevel
+                        ? LEVEL_LABELS[item.approvalLevel] || item.approvalLevel
+                        : '--'}
                     </td>
                     <td className='px-4 py-3.5'>
                       <span
